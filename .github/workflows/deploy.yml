@@ -1,0 +1,75 @@
+name: Deploy SPARK Backend
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+env:
+  DOCKER_IMAGE: spark-backend
+  DEPLOY_PATH: /opt/spark-backend
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          cd spark_backend
+          pip install black ruff mypy
+      - name: Check formatting
+        run: cd spark_backend && black --check .
+      - name: Lint
+        run: cd spark_backend && ruff check .
+      - name: Type check
+        run: cd spark_backend && mypy --config-file pyproject.toml . || true
+
+  build:
+    needs: lint
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Build Docker image
+        run: |
+          cd spark_backend
+          docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
+          docker tag ${{ env.DOCKER_IMAGE }}:${{ github.sha }} ${{ env.DOCKER_IMAGE }}:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -e
+            cd ${{ env.DEPLOY_PATH }}
+            git pull origin main
+            cp ../.env spark_backend/.env
+            cd spark_backend
+            docker compose pull
+            docker compose up -d --build --remove-orphans
+            docker system prune -f --filter "until=24h"
+            echo "Deployment completed at $(date)"
