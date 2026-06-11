@@ -9,14 +9,19 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('comms', '0001_initial'),
-        ('hazards', '0001_initial'),
+        ("comms", "0001_initial"),
+        ("hazards", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='inboundmessage',
-            name='classified_hazard',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='hazards.hazard'),
+            model_name="inboundmessage",
+            name="classified_hazard",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="hazards.hazard",
+            ),
         ),
     ]

@@ -1,7 +1,8 @@
 from django.db import transaction
-from django.utils import timezone
-from .models import Booking
+
 from core.exceptions import BookingConflictError
+
+from .models import Booking
 
 
 class BookingService:
@@ -13,6 +14,4 @@ class BookingService:
         ).count()
         if concurrent >= hub.max_concurrent_bookings:
             raise BookingConflictError("Hub is at full capacity for this time slot.")
-        return Booking.objects.create(
-            user=user, hub=hub, start_time=start_time, end_time=end_time
-        )
+        return Booking.objects.create(user=user, hub=hub, start_time=start_time, end_time=end_time)

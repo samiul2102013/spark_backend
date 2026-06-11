@@ -7,7 +7,6 @@ on:
     branches: [main, master]
 
 env:
-  DOCKER_IMAGE: spark-backend
   DEPLOY_PATH: /opt/spark-backend
 
 jobs:
@@ -21,43 +20,22 @@ jobs:
       - name: Install dependencies
         run: |
           cd spark_backend
-          pip install black ruff mypy
+          pip install -q black ruff mypy
       - name: Check formatting
         run: cd spark_backend && black --check .
       - name: Lint
         run: cd spark_backend && ruff check .
       - name: Type check
-        run: cd spark_backend && mypy --config-file pyproject.toml . || true
+        run: cd spark_backend && mypy . || true
 
-  build:
+  deploy:
     needs: lint
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-      - name: Build Docker image
-        run: |
-          cd spark_backend
-          docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
-          docker tag ${{ env.DOCKER_IMAGE }}:${{ github.sha }} ${{ env.DOCKER_IMAGE }}:latest
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    steps:
-      - uses: actions/checkout@v4
       - name: Deploy to VPS via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -69,7 +47,6 @@ jobs:
             git pull origin main
             cp ../.env spark_backend/.env
             cd spark_backend
-            docker compose pull
             docker compose up -d --build --remove-orphans
             docker system prune -f --filter "until=24h"
             echo "Deployment completed at $(date)"

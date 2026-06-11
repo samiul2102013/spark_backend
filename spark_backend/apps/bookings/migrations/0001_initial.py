@@ -7,25 +7,43 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Booking',
+            name="Booking",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('start_time', models.DateTimeField()),
-                ('end_time', models.DateTimeField()),
-                ('status', models.CharField(choices=[('active', 'Active'), ('cancelled', 'Cancelled'), ('completed', 'Completed')], default='active', max_length=10)),
-                ('confirmation_sent', models.BooleanField(default=False)),
-                ('client_uuid', models.CharField(blank=True, max_length=255, null=True, unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("start_time", models.DateTimeField()),
+                ("end_time", models.DateTimeField()),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("active", "Active"),
+                            ("cancelled", "Cancelled"),
+                            ("completed", "Completed"),
+                        ],
+                        default="active",
+                        max_length=10,
+                    ),
+                ),
+                ("confirmation_sent", models.BooleanField(default=False)),
+                (
+                    "client_uuid",
+                    models.CharField(blank=True, max_length=255, null=True, unique=True),
+                ),
             ],
             options={
-                'db_table': 'bookings',
-                'ordering': ['-start_time'],
+                "db_table": "bookings",
+                "ordering": ["-start_time"],
             },
         ),
     ]

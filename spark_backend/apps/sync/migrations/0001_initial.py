@@ -7,30 +7,51 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='SyncLog',
+            name="SyncLog",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('device_id', models.CharField(max_length=255)),
-                ('model_name', models.CharField(max_length=100)),
-                ('action', models.CharField(max_length=20)),
-                ('payload', models.JSONField()),
-                ('client_uuid', models.CharField(max_length=255)),
-                ('client_timestamp', models.DateTimeField()),
-                ('server_timestamp', models.DateTimeField(auto_now_add=True)),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('synced', 'Synced'), ('conflict', 'Conflict'), ('error', 'Error')], default='pending', max_length=20)),
-                ('error_message', models.TextField(blank=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("device_id", models.CharField(max_length=255)),
+                ("model_name", models.CharField(max_length=100)),
+                ("action", models.CharField(max_length=20)),
+                ("payload", models.JSONField()),
+                ("client_uuid", models.CharField(max_length=255)),
+                ("client_timestamp", models.DateTimeField()),
+                ("server_timestamp", models.DateTimeField(auto_now_add=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("synced", "Synced"),
+                            ("conflict", "Conflict"),
+                            ("error", "Error"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                    ),
+                ),
+                ("error_message", models.TextField(blank=True)),
             ],
             options={
-                'db_table': 'sync_logs',
-                'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['device_id', 'status'], name='sync_logs_device__b60fe8_idx'), models.Index(fields=['client_uuid'], name='sync_logs_client__a020bb_idx')],
+                "db_table": "sync_logs",
+                "ordering": ["-created_at"],
+                "indexes": [
+                    models.Index(
+                        fields=["device_id", "status"], name="sync_logs_device__b60fe8_idx"
+                    ),
+                    models.Index(fields=["client_uuid"], name="sync_logs_client__a020bb_idx"),
+                ],
             },
         ),
     ]

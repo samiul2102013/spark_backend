@@ -7,30 +7,85 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Hazard',
+            name="Hazard",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('category', models.CharField(choices=[('flooding', 'Flooding'), ('fallen_tree', 'Fallen Tree'), ('blocked_road', 'Blocked Road'), ('utility_pole', 'Damaged Utility Pole'), ('medical', 'Urgent Medical'), ('fire', 'Fire'), ('collapsed_building', 'Collapsed Building'), ('power_line_down', 'Power Line Down'), ('landslide', 'Landslide'), ('other', 'Other')], max_length=30)),
-                ('description', models.TextField()),
-                ('photo', models.ImageField(blank=True, null=True, upload_to='hazards/')),
-                ('latitude', models.DecimalField(decimal_places=6, max_digits=9)),
-                ('longitude', models.DecimalField(decimal_places=6, max_digits=9)),
-                ('severity', models.PositiveSmallIntegerField(choices=[(1, 'Low'), (2, 'Medium'), (3, 'High')], default=1)),
-                ('source', models.CharField(choices=[('app', 'App'), ('whatsapp', 'WhatsApp'), ('sms', 'SMS'), ('ai', 'AI')], default='app', max_length=20)),
-                ('status', models.CharField(choices=[('active', 'Active'), ('cleared', 'Cleared')], default='active', max_length=10)),
-                ('period', models.CharField(choices=[('pre', 'Pre-Disaster'), ('post', 'Post-Disaster')], default='post', max_length=10)),
-                ('client_uuid', models.CharField(blank=True, max_length=255, null=True, unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "category",
+                    models.CharField(
+                        choices=[
+                            ("flooding", "Flooding"),
+                            ("fallen_tree", "Fallen Tree"),
+                            ("blocked_road", "Blocked Road"),
+                            ("utility_pole", "Damaged Utility Pole"),
+                            ("medical", "Urgent Medical"),
+                            ("fire", "Fire"),
+                            ("collapsed_building", "Collapsed Building"),
+                            ("power_line_down", "Power Line Down"),
+                            ("landslide", "Landslide"),
+                            ("other", "Other"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                ("description", models.TextField()),
+                ("photo", models.ImageField(blank=True, null=True, upload_to="hazards/")),
+                ("latitude", models.DecimalField(decimal_places=6, max_digits=9)),
+                ("longitude", models.DecimalField(decimal_places=6, max_digits=9)),
+                (
+                    "severity",
+                    models.PositiveSmallIntegerField(
+                        choices=[(1, "Low"), (2, "Medium"), (3, "High")], default=1
+                    ),
+                ),
+                (
+                    "source",
+                    models.CharField(
+                        choices=[
+                            ("app", "App"),
+                            ("whatsapp", "WhatsApp"),
+                            ("sms", "SMS"),
+                            ("ai", "AI"),
+                        ],
+                        default="app",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("active", "Active"), ("cleared", "Cleared")],
+                        default="active",
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "period",
+                    models.CharField(
+                        choices=[("pre", "Pre-Disaster"), ("post", "Post-Disaster")],
+                        default="post",
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "client_uuid",
+                    models.CharField(blank=True, max_length=255, null=True, unique=True),
+                ),
             ],
             options={
-                'db_table': 'hazards',
-                'ordering': ['-created_at'],
+                "db_table": "hazards",
+                "ordering": ["-created_at"],
             },
         ),
     ]

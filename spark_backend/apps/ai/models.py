@@ -1,9 +1,12 @@
 from django.db import models
+
 from core.models import TimeStampedModel
 
 
 class SituationReport(TimeStampedModel):
-    hub = models.ForeignKey("hubs.Hub", on_delete=models.CASCADE, null=True, blank=True, related_name="reports")
+    hub = models.ForeignKey(
+        "hubs.Hub", on_delete=models.CASCADE, null=True, blank=True, related_name="reports"
+    )
     summary = models.TextField()
     generated_by = models.CharField(max_length=20, default="ai")
     pdf_file = models.FileField(upload_to="reports/", null=True, blank=True)

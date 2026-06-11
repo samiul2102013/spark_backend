@@ -7,41 +7,50 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='AIConfig',
+            name="AIConfig",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('confidence_threshold', models.FloatField(default=0.7)),
-                ('auto_reporting_enabled', models.BooleanField(default=True)),
-                ('report_interval_minutes', models.PositiveIntegerField(default=60)),
-                ('api_provider', models.CharField(default='openai', max_length=20)),
-                ('api_key_encrypted', models.TextField(blank=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("confidence_threshold", models.FloatField(default=0.7)),
+                ("auto_reporting_enabled", models.BooleanField(default=True)),
+                ("report_interval_minutes", models.PositiveIntegerField(default=60)),
+                ("api_provider", models.CharField(default="openai", max_length=20)),
+                ("api_key_encrypted", models.TextField(blank=True)),
             ],
             options={
-                'verbose_name': 'AI Configuration',
-                'db_table': 'ai_config',
+                "verbose_name": "AI Configuration",
+                "db_table": "ai_config",
             },
         ),
         migrations.CreateModel(
-            name='SituationReport',
+            name="SituationReport",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('summary', models.TextField()),
-                ('generated_by', models.CharField(default='ai', max_length=20)),
-                ('pdf_file', models.FileField(blank=True, null=True, upload_to='reports/')),
-                ('is_auto', models.BooleanField(default=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("summary", models.TextField()),
+                ("generated_by", models.CharField(default="ai", max_length=20)),
+                ("pdf_file", models.FileField(blank=True, null=True, upload_to="reports/")),
+                ("is_auto", models.BooleanField(default=True)),
             ],
             options={
-                'db_table': 'situation_reports',
-                'ordering': ['-created_at'],
+                "db_table": "situation_reports",
+                "ordering": ["-created_at"],
             },
         ),
     ]

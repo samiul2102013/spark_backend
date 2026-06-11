@@ -7,42 +7,72 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='InboundMessage',
+            name="InboundMessage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('source', models.CharField(choices=[('whatsapp', 'WhatsApp'), ('sms', 'SMS')], max_length=20)),
-                ('from_number', models.CharField(max_length=20)),
-                ('body', models.TextField()),
-                ('media_url', models.URLField(blank=True, null=True)),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('classified', 'Classified'), ('unclassified', 'Unclassified')], default='pending', max_length=20)),
-                ('raw_payload', models.JSONField(default=dict)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "source",
+                    models.CharField(
+                        choices=[("whatsapp", "WhatsApp"), ("sms", "SMS")], max_length=20
+                    ),
+                ),
+                ("from_number", models.CharField(max_length=20)),
+                ("body", models.TextField()),
+                ("media_url", models.URLField(blank=True, null=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("classified", "Classified"),
+                            ("unclassified", "Unclassified"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                    ),
+                ),
+                ("raw_payload", models.JSONField(default=dict)),
             ],
             options={
-                'db_table': 'inbound_messages',
-                'ordering': ['-created_at'],
+                "db_table": "inbound_messages",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='SentMessage',
+            name="SentMessage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('to_number', models.CharField(max_length=20)),
-                ('body', models.TextField()),
-                ('channel', models.CharField(choices=[('whatsapp', 'WhatsApp'), ('sms', 'SMS')], max_length=20)),
-                ('status', models.CharField(default='pending', max_length=20)),
-                ('external_id', models.CharField(blank=True, max_length=255, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("to_number", models.CharField(max_length=20)),
+                ("body", models.TextField()),
+                (
+                    "channel",
+                    models.CharField(
+                        choices=[("whatsapp", "WhatsApp"), ("sms", "SMS")], max_length=20
+                    ),
+                ),
+                ("status", models.CharField(default="pending", max_length=20)),
+                ("external_id", models.CharField(blank=True, max_length=255, null=True)),
             ],
             options={
-                'db_table': 'sent_messages',
+                "db_table": "sent_messages",
             },
         ),
     ]

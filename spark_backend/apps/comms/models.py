@@ -1,10 +1,15 @@
 from django.db import models
+
 from core.models import TimeStampedModel
 
 
 class InboundMessage(TimeStampedModel):
     SOURCE_CHOICES = [("whatsapp", "WhatsApp"), ("sms", "SMS")]
-    STATUS_CHOICES = [("pending", "Pending"), ("classified", "Classified"), ("unclassified", "Unclassified")]
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("classified", "Classified"),
+        ("unclassified", "Unclassified"),
+    ]
     source = models.CharField(max_length=20, choices=SOURCE_CHOICES)
     from_number = models.CharField(max_length=20)
     body = models.TextField()

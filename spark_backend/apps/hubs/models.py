@@ -1,4 +1,5 @@
 from django.db import models
+
 from core.models import TimeStampedModel
 
 
@@ -21,7 +22,11 @@ class Hub(TimeStampedModel):
     starlink_status = models.BooleanField(default=True)
     max_concurrent_bookings = models.PositiveIntegerField(default=5)
     coordinator = models.ForeignKey(
-        "users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="coordinated_hubs"
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="coordinated_hubs",
     )
     community_secret_code = models.CharField(max_length=20, unique=True)
 

@@ -1,4 +1,5 @@
 from django.db import models
+
 from core.models import TimeStampedModel
 
 
@@ -35,7 +36,11 @@ class Hazard(TimeStampedModel):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
     period = models.CharField(max_length=10, choices=PERIOD_CHOICES, default="post")
     reporter = models.ForeignKey(
-        "users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="reported_hazards"
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reported_hazards",
     )
     hub = models.ForeignKey(
         "hubs.Hub", on_delete=models.CASCADE, null=True, blank=True, related_name="hazards"
