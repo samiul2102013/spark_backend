@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 
@@ -5,18 +7,21 @@ from core.models import TimeStampedModel
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, phone_number, password=None, **extra_fields):
+    def create_user(self, phone_number=None, password=None, **extra_fields):
         if not phone_number:
-            raise ValueError("Phone number is required")
+            phone_number = f"sys-{uuid.uuid4().hex[:12]}"
         user = self.model(phone_number=phone_number, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, phone_number, password=None, **extra_fields):
+    def create_superuser(self, phone_number=None, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
         extra_fields.setdefault("role", "admin")
+        if not phone_number:
+            phone_number = f"admin-{uuid.uuid4().hex[:12]}"
         return self.create_user(phone_number, password, **extra_fields)
 
 
@@ -36,8 +41,18 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     hub = models.ForeignKey(
         "hubs.Hub", on_delete=models.SET_NULL, null=True, blank=True, related_name="residents"
     )
-    community_secret_code = models.CharField(max_length=20, blank=True)
-    is_active = models.BooleanField(default=True)
+    secondary_hub = models.ForeignKey(
+        "hubs.Hub",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="secondary_residents",
+    )
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    biometric_key = models.CharField(max_length=255, null=True, blank=True)
+    is_active = models.BooleanField(default=False)
+    is_invite_accepted = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     last_sync_at = models.DateTimeField(null=True, blank=True)
 

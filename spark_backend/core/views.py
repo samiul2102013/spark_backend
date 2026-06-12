@@ -1,11 +1,13 @@
 from django.core.cache import cache
 from django.db import connection
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
 from core.responses import success_response
 
 
+@extend_schema_view(get=extend_schema(request=None, responses={200: None}, tags=["health"]))
 class HealthCheckView(APIView):
     permission_classes = [AllowAny]
 

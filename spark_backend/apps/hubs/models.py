@@ -28,7 +28,6 @@ class Hub(TimeStampedModel):
         blank=True,
         related_name="coordinated_hubs",
     )
-    community_secret_code = models.CharField(max_length=20, unique=True)
 
     class Meta:
         db_table = "hubs"
