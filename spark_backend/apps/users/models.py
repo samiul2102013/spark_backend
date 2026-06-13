@@ -7,9 +7,15 @@ from core.models import TimeStampedModel
 
 
 class UserManager(BaseUserManager):
+    def _set_username(self, extra_fields, phone_number=None):
+        if "username" not in extra_fields or not extra_fields["username"]:
+            extra_fields["username"] = extra_fields.get("email") or phone_number or f"user-{uuid.uuid4().hex[:12]}"
+        return extra_fields
+
     def create_user(self, phone_number=None, password=None, **extra_fields):
         if not phone_number:
             phone_number = f"sys-{uuid.uuid4().hex[:12]}"
+        extra_fields = self._set_username(extra_fields, phone_number)
         user = self.model(phone_number=phone_number, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -22,6 +28,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("role", "admin")
         if not phone_number:
             phone_number = f"admin-{uuid.uuid4().hex[:12]}"
+        extra_fields["username"] = extra_fields.get("email") or phone_number
         return self.create_user(phone_number, password, **extra_fields)
 
 
@@ -34,6 +41,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     ]
     phone_number = models.CharField(max_length=20, unique=True, primary_key=True)
     email = models.EmailField(null=True, blank=True)
+    username = models.CharField(max_length=255, unique=True, null=True, blank=True)
     full_name = models.CharField(max_length=255)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="resident")
     household_size = models.PositiveIntegerField(null=True, blank=True)

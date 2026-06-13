@@ -36,6 +36,6 @@ curl.exe -s http://localhost/api/v1/health/
 # Register
 curl.exe -s -X POST http://localhost/api/v1/auth/register/ -H "Content-Type: application/json" -d "{"""phone""":"""+18765550001""","""full_name""":"""John""","""latitude""":17.97,"""longitude""":-76.79}"
 
-# Login (admin)
+# Login (admin — username field = email or phone)
 curl.exe -s -X POST http://localhost/api/v1/auth/login/ -H "Content-Type: application/json" -d "{"""username""":"""admin@test.com""","""password""":"""admin1234"""}"
 ```

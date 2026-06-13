@@ -73,6 +73,11 @@ def assign_hubs(lat, lng):
     return primary, secondary
 ```
 
+### Auto-assigned fields
+- `username` set to `email` if present, otherwise `phone_number`
+- Residents get `username = phone_number`
+- Government users get `username = email`
+
 ### Validation rules
 - Phone must be unique (not already registered)
 - Latitude/Longitude required and validated range
@@ -193,9 +198,9 @@ POST /auth/login/
 Request: { username: "user@example.com" | "+18765551234", password: "..." }
 
 Logic:
-  if username looks like email → auth by email
-  if username looks like phone → auth by phone (USERNAME_FIELD)
-  else → 400 "Invalid username"
+  Looks up User.username (which = email or phone)
+  Checks password → issues JWT
+  If not found → 401
 
 Response:
 {
@@ -296,6 +301,7 @@ POST /auth/otp/verify/ { "phone": "+18005551234", "code": "123456" }
 |-------|------|-------|
 | `phone_number` | PK, CharField | Residents only, null for gov-only users |
 | `email` | Unique, nullable | Required for admin/gov, optional for residents |
+| `username` | CharField, unique | Auto-set: email if present, otherwise phone |
 | `full_name` | CharField | Always required |
 | `role` | ChoiceField | resident / coordinator / government / admin |
 | `hub` | FK → Hub | Auto-assigned by lat/lng, null for gov |
