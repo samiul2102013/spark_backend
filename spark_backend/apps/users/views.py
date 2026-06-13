@@ -242,7 +242,7 @@ def change_password_view(request):
 
 
 @extend_schema(
-    parameters=[OpenApiParameter("user_id", str, OpenApiParameter.PATH)],
+    parameters=[OpenApiParameter("user_id", str, OpenApiParameter.PATH, description="phone_number or username")],
     request=SetRoleSerializer,
     responses={200: None},
     tags=["admin"],
@@ -254,9 +254,12 @@ def set_role_view(request, user_id):
     if not serializer.is_valid():
         return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
     user_model = get_user_model()
-    try:
-        target_user = user_model.objects.get(phone_number=user_id)
-    except user_model.DoesNotExist:
+    user_id = user_id.strip('"')
+    target_user = (
+        user_model.objects.filter(phone_number=user_id).first()
+        or user_model.objects.filter(username=user_id).first()
+    )
+    if not target_user:
         return error_response("User not found.", http_status=status.HTTP_404_NOT_FOUND)
     result = AuthService.set_role(target_user, serializer.validated_data["role"])
     return success_response(result)

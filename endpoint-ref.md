@@ -20,7 +20,7 @@ Base: `http://localhost/api/v1`
 | 14 | GET | `/users/profile/` | JWT | — |
 | 15 | PUT | `/users/profile/` | JWT | `{"full_name"?,"email"?,"household_size"?,"medical_needs"?}` |
 | 16 | PUT | `/users/change-password/` | JWT | `{"old_password","new_password","confirm_password"}` |
-| 17 | PATCH | `/admin/users/{id}/set-role/` | Admin | `{"role":"coordinator"}` |
+| 17 | PATCH | `/admin/users/{phone_number}/set-role/` | Admin | `{"role":"coordinator"}` |
 | 18 | POST | `/admin/users/invite/` | Admin | `{"email","full_name"}` |
 
 ## Quick smoke test (one-liners)
