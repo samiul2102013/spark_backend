@@ -1,4 +1,3 @@
-from django.contrib.auth import authenticate as django_authenticate
 from rest_framework_simplejwt.authentication import JWTAuthentication as BaseJWTAuth
 
 
