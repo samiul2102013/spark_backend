@@ -31,7 +31,7 @@ jobs:
   deploy:
     needs: lint
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/auth'
+    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
       - name: Deploy to VPS via SSH
@@ -45,8 +45,8 @@ jobs:
             set -e
             cd ${{ env.DEPLOY_PATH }}
             git fetch origin
-            git checkout auth
-            git pull origin auth
+            git checkout main
+            git pull origin main
             cd spark_backend
             [ -f .env ] || cp .env.example .env
             docker compose up -d --build --remove-orphans
