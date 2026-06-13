@@ -11,7 +11,7 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ("phone_number", "full_name", "email")
     ordering = ("phone_number",)
     fieldsets = (
-        (None, {"fields": ("phone_number", "password")}),
+        (None, {"fields": ("phone_number", "username", "password")}),
         (
             "Personal info",
             {"fields": ("full_name", "email", "role", "household_size", "medical_needs")},
