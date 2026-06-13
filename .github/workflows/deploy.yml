@@ -52,4 +52,4 @@ jobs:
             docker compose up -d --build --remove-orphans
             docker image prune -f --filter "until=24h"
             echo "Deployment completed at $(date)"
-echo "Triggered by commit ${{ github.sha }}"
+            echo "Triggered by commit ${{ github.sha }}"
