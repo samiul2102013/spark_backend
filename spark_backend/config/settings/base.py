@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "apps.comms",
     "apps.ai",
     "apps.sync",
+    "apps.dashboard",
 ]
 
 MIDDLEWARE = [
