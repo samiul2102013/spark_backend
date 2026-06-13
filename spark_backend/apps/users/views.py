@@ -242,7 +242,11 @@ def change_password_view(request):
 
 
 @extend_schema(
-    parameters=[OpenApiParameter("user_id", str, OpenApiParameter.PATH, description="phone_number or username")],
+    parameters=[
+        OpenApiParameter(
+            "user_id", str, OpenApiParameter.PATH, description="phone_number or username"
+        )
+    ],
     request=SetRoleSerializer,
     responses={200: None},
     tags=["admin"],
