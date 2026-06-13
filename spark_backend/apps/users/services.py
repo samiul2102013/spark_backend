@@ -1,6 +1,7 @@
 import secrets
 from typing import Optional
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db import transaction
@@ -131,7 +132,7 @@ class AuthService:
         token = secrets.token_urlsafe(32)
         cache.set(f"invite:{token}", str(user.pk), timeout=48 * 3600)
 
-        invite_url = f"https://spark.gov/invite/{token}"
+        invite_url = f"{settings.FRONTEND_URL}/invite/{token}"
         EmailAdapter.send_invite(email, invite_url)
         return {"message": "Invitation sent.", "email": email}
 

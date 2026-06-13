@@ -2,12 +2,12 @@ name: Deploy SPARK Backend
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, auth]
   pull_request:
     branches: [main, master]
 
 env:
-  DEPLOY_PATH: /opt/spark-backend
+  DEPLOY_PATH: /home/tamiz/web/spark.kodevio.com/code/backend
 
 jobs:
   lint:
@@ -31,7 +31,7 @@ jobs:
   deploy:
     needs: lint
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/auth'
     steps:
       - uses: actions/checkout@v4
       - name: Deploy to VPS via SSH
@@ -44,9 +44,11 @@ jobs:
           script: |
             set -e
             cd ${{ env.DEPLOY_PATH }}
-            git pull origin main
-            cp ../.env spark_backend/.env
+            git fetch origin
+            git checkout auth
+            git pull origin auth
             cd spark_backend
+            [ -f .env ] || cp .env.example .env
             docker compose up -d --build --remove-orphans
-            docker system prune -f --filter "until=24h"
+            docker image prune -f --filter "until=24h"
             echo "Deployment completed at $(date)"
