@@ -21,6 +21,7 @@ urlpatterns = [
     path(f"{api_prefix}", include("apps.users.urls")),
     path(f"{api_prefix}", include("apps.hubs.urls")),
     path(f"{api_prefix}", include("apps.hazards.urls")),
+    path(f"{api_prefix}", include("apps.bookings.urls")),
 ]
 
 if settings.DEBUG:
