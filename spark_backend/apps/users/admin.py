@@ -6,7 +6,15 @@ from .models import User
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ("phone_number","username", "full_name", "role", "hub", "is_active", "is_invite_accepted")
+    list_display = (
+        "phone_number",
+        "username",
+        "full_name",
+        "role",
+        "hub",
+        "is_active",
+        "is_invite_accepted",
+    )
     list_filter = ("role", "is_active", "is_invite_accepted")
     search_fields = ("phone_number", "full_name", "email")
     ordering = ("phone_number",)

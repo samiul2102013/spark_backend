@@ -9,7 +9,9 @@ from core.models import TimeStampedModel
 class UserManager(BaseUserManager):
     def _set_username(self, extra_fields, phone_number=None):
         if "username" not in extra_fields or not extra_fields["username"]:
-            extra_fields["username"] = extra_fields.get("email") or phone_number or f"user-{uuid.uuid4().hex[:12]}"
+            extra_fields["username"] = (
+                extra_fields.get("email") or phone_number or f"user-{uuid.uuid4().hex[:12]}"
+            )
         return extra_fields
 
     def create_user(self, phone_number=None, password=None, **extra_fields):
