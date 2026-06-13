@@ -19,6 +19,7 @@ urlpatterns = [
         f"{api_prefix}docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"
     ),
     path(f"{api_prefix}", include("apps.users.urls")),
+    path(f"{api_prefix}", include("apps.hubs.urls")),
 ]
 
 if settings.DEBUG:
