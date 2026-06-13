@@ -15,6 +15,8 @@ class Booking(TimeStampedModel):
     end_time = models.DateTimeField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
     confirmation_sent = models.BooleanField(default=False)
+    check_in_time = models.DateTimeField(null=True, blank=True)
+    people_count = models.PositiveIntegerField(default=1)
     client_uuid = models.CharField(max_length=255, unique=True, null=True, blank=True)
 
     class Meta:

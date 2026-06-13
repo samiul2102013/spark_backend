@@ -14,12 +14,10 @@ class BookingSerializer(serializers.ModelSerializer):
             "end_time",
             "status",
             "confirmation_sent",
+            "check_in_time",
+            "people_count",
             "client_uuid",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "status", "confirmation_sent"]
-
-
-class BookingCancelCompleteSerializer(serializers.Serializer):
-    pass
+        read_only_fields = ["id", "created_at", "updated_at", "status", "confirmation_sent", "check_in_time"]

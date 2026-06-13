@@ -41,3 +41,88 @@ class SentMessage(TimeStampedModel):
 
     def __str__(self):
         return f"[{self.channel}] → {self.to_number}: {self.body[:60]}"
+
+
+class CheckIn(TimeStampedModel):
+    STATUS_CHOICES = [("safe", "Safe"), ("need_assistance", "Need Assistance")]
+    ROAD_CHOICES = [("open", "Open"), ("blocked", "Blocked"), ("unknown", "Unknown")]
+    CHANNEL_CHOICES = [("app", "App"), ("whatsapp", "WhatsApp"), ("sms", "SMS")]
+
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="checkins")
+    hub = models.ForeignKey("hubs.Hub", on_delete=models.CASCADE, related_name="checkins")
+    timestamp = models.DateTimeField(auto_now_add=True)
+    people_count = models.PositiveIntegerField(default=1)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="safe")
+    road_access = models.CharField(max_length=10, choices=ROAD_CHOICES, default="unknown")
+    medical_notes = models.TextField(blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    channel = models.CharField(max_length=10, choices=CHANNEL_CHOICES, default="app")
+    client_uuid = models.CharField(max_length=255, unique=True, null=True, blank=True)
+
+    class Meta:
+        db_table = "checkins"
+        ordering = ["-timestamp"]
+
+    def __str__(self):
+        return f"{self.user} @ {self.hub} — {self.status}"
+
+
+class Broadcast(TimeStampedModel):
+    PRIORITY_CHOICES = [("info", "Info"), ("warning", "Warning"), ("urgent", "Urgent")]
+
+    hub = models.ForeignKey("hubs.Hub", on_delete=models.CASCADE, related_name="broadcasts")
+    sender = models.ForeignKey(
+        "users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="sent_broadcasts"
+    )
+    subject = models.CharField(max_length=255)
+    body = models.TextField()
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default="info")
+
+    class Meta:
+        db_table = "broadcasts"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"[{self.priority}] {self.subject}"
+
+
+class BroadcastRead(TimeStampedModel):
+    broadcast = models.ForeignKey(
+        "comms.Broadcast", on_delete=models.CASCADE, related_name="reads"
+    )
+    user = models.ForeignKey(
+        "users.User", on_delete=models.CASCADE, related_name="broadcast_reads"
+    )
+    read_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "broadcast_reads"
+        unique_together = [("broadcast", "user")]
+
+    def __str__(self):
+        return f"{self.user} read {self.broadcast}"
+
+
+class Notification(TimeStampedModel):
+    TYPE_CHOICES = [
+        ("broadcast", "Broadcast"),
+        ("alert", "Alert"),
+        ("booking", "Booking"),
+        ("hub_status", "Hub Status"),
+    ]
+
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="notifications")
+    hub = models.ForeignKey("hubs.Hub", on_delete=models.SET_NULL, null=True, blank=True, related_name="notifications")
+    type = models.CharField(max_length=15, choices=TYPE_CHOICES)
+    title = models.CharField(max_length=255)
+    body = models.TextField()
+    read = models.BooleanField(default=False)
+    link = models.CharField(max_length=500, null=True, blank=True)
+
+    class Meta:
+        db_table = "notifications"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"[{self.get_type_display()}] {self.title}"
