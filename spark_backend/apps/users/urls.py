@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import admin_views, views
 
 urlpatterns = [
     # Resident OTP Flow
@@ -28,4 +28,8 @@ urlpatterns = [
     # Admin
     path("admin/users/invite/", views.invite_government_view, name="admin-users-invite"),
     path("admin/users/<str:user_id>/set-role/", views.set_role_view, name="admin-users-set-role"),
+    path("admin/users/", admin_views.admin_user_list_view, name="admin-user-list"),
+    path("admin/users/<int:user_id>/", admin_views.admin_user_detail_view, name="admin-user-detail"),
+    path("admin/users/<int:user_id>/update/", admin_views.admin_user_update_view, name="admin-user-update"),
+    path("admin/users/<int:user_id>/delete/", admin_views.admin_user_delete_view, name="admin-user-delete"),
 ]

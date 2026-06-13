@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db import transaction
+from django.db.models import Q
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from core.exceptions import SparkBaseError
@@ -216,6 +217,38 @@ class AuthService:
         return {"message": "Password changed."}
 
     # ── Admin ──────────────────────────────────────────────────────
+
+    @staticmethod
+    def list_users(role=None, search=None):
+        qs = User.objects.all()
+        if role:
+            qs = qs.filter(role=role)
+        if search:
+            qs = qs.filter(
+                Q(full_name__icontains=search)
+                | Q(email__icontains=search)
+                | Q(phone_number__icontains=search)
+            )
+        return qs
+
+    @staticmethod
+    def get_user(user_id):
+        return User.objects.get(id=user_id)
+
+    @staticmethod
+    @transaction.atomic
+    def update_user(user_id, data):
+        user = User.objects.get(id=user_id)
+        for key, value in data.items():
+            setattr(user, key, value)
+        user.save()
+        return user
+
+    @staticmethod
+    @transaction.atomic
+    def delete_user(user_id):
+        user = User.objects.get(id=user_id)
+        user.delete()
 
     @staticmethod
     def set_role(user: User, role: str) -> dict:
