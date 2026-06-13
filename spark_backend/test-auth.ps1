@@ -93,7 +93,7 @@ if ($jwt) {
 # ── 5. Login as Admin (hardcoded) ───────────────────────
 Write-Host "`n── 4. Admin Login ──────────────────────────" -ForegroundColor Yellow
 $admin_login = Test-Step -Name "Login admin@test.com / admin1234" -Method POST -Path "/auth/login/" -Body @'
-{"identifier":"admin@test.com","password":"admin1234"}
+{"username":"admin@test.com","password":"admin1234"}
 '@
 $admin_jwt = if ($admin_login -and $admin_login.data.access) { $admin_login.data.access } else { $null }
 
@@ -118,7 +118,7 @@ if ($token) {
 # ── 8. Login as Government ─────────────────────────────
 Write-Host "`n── 7. Government Login ─────────────────────" -ForegroundColor Yellow
 $gov_login = Test-Step -Name "Login gov@demo.com / DemoGov123" -Method POST -Path "/auth/login/" -Body @'
-{"identifier":"gov@demo.com","password":"DemoGov123"}
+{"username":"gov@demo.com","password":"DemoGov123"}
 '@
 $gov_jwt = if ($gov_login -and $gov_login.data.access) { $gov_login.data.access } else { $null }
 
@@ -161,8 +161,16 @@ Test-Step -Name "Forgot password (email)" -Method POST -Path "/auth/forgot-passw
 {"identifier":"admin@test.com"}
 '@
 
-# ── 14. Token Refresh ──────────────────────────────────
-Write-Host "`n── 13. Token Refresh ───────────────────────" -ForegroundColor Yellow
+# ── 14. Logout ─────────────────────────────────────────
+Write-Host "`n── 13. Logout ──────────────────────────────" -ForegroundColor Yellow
+if ($jwt) {
+    Test-Step -Name "Resident logout" -Method POST -Path "/auth/logout/" -Body @"
+{"refresh":"$(if ($otp_verify -and $otp_verify.data.refresh) { $otp_verify.data.refresh } else { 'test' })"}
+"@
+}
+
+# ── 15. Token Refresh ──────────────────────────────────
+Write-Host "`n── 14. Token Refresh ───────────────────────" -ForegroundColor Yellow
 if ($gov_login -and $gov_login.data.refresh) {
     Test-Step -Name "Refresh token" -Method POST -Path "/auth/refresh/" -Body @"
 {"refresh":"$($gov_login.data.refresh)"}

@@ -82,8 +82,8 @@ class AuthService:
     # ── Email/Password Login ───────────────────────────────────────
 
     @staticmethod
-    def login(identifier: str, password: str) -> dict:
-        user = authenticate(identifier, password)
+    def login(username: str, password: str) -> dict:
+        user = authenticate(username, password)
         if user is None:
             raise AuthError("Invalid credentials.")
         if not user.is_active:

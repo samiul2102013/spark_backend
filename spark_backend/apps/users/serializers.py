@@ -23,7 +23,7 @@ class OTPVerifySerializer(serializers.Serializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    identifier = serializers.CharField(max_length=255)
+    username = serializers.CharField(max_length=255)
     password = serializers.CharField()
 
 
@@ -104,6 +104,10 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("Passwords do not match.")
         attrs.pop("confirm_password")
         return attrs
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
 
 
 class SetRoleSerializer(serializers.Serializer):

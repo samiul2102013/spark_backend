@@ -3,9 +3,11 @@ from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from core.responses import created_response, error_response, success_response
 
+from .blacklist import blacklist_refresh_token, is_token_blacklisted
 from .permissions import IsAdmin
 from .serializers import (
     AcceptInviteSerializer,
@@ -15,6 +17,7 @@ from .serializers import (
     ForgotPasswordSerializer,
     InviteGovernmentSerializer,
     LoginSerializer,
+    LogoutSerializer,
     OTPSendSerializer,
     OTPVerifySerializer,
     ProfileSerializer,
@@ -257,3 +260,28 @@ def set_role_view(request, user_id):
         return error_response("User not found.", http_status=status.HTTP_404_NOT_FOUND)
     result = AuthService.set_role(target_user, serializer.validated_data["role"])
     return success_response(result)
+
+
+@extend_schema(
+    request=LogoutSerializer,
+    responses={200: None},
+    tags=["auth"],
+)
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def logout_view(request):
+    serializer = LogoutSerializer(data=request.data)
+    if not serializer.is_valid():
+        return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+    blacklist_refresh_token(serializer.validated_data["refresh"])
+    return success_response({"message": "Logged out successfully."})
+
+
+class BlacklistCheckTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        refresh = request.data.get("refresh")
+        if refresh and is_token_blacklisted(refresh):
+            return error_response(
+                "Token has been blacklisted.", http_status=status.HTTP_401_UNAUTHORIZED
+            )
+        return super().post(request, *args, **kwargs)

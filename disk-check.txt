@@ -1,0 +1,21 @@
+On your VPS:
+
+```bash
+cd /home/tamiz/web/spark.kodevio.com/code/backend/spark_backend
+
+# Stash the port change so we can switch branches
+git stash
+
+# Switch to auth branch
+git checkout auth
+
+# Restore the port change
+git stash pop
+
+# Rebuild and restart
+docker compose down
+docker compose up -d --build
+
+# Verify
+curl http://localhost:8000/api/v1/health/
+```

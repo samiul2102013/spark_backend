@@ -190,12 +190,12 @@ POST /auth/login/  →  { identifier, password }
 
 ```
 POST /auth/login/
-Request: { identifier: "user@example.com" | "+18765551234", password: "..." }
+Request: { username: "user@example.com" | "+18765551234", password: "..." }
 
 Logic:
-  if identifier looks like email → auth by email
-  if identifier looks like phone → auth by phone
-  else → 400 "Invalid identifier"
+  if username looks like email → auth by email
+  if username looks like phone → auth by phone (USERNAME_FIELD)
+  else → 400 "Invalid username"
 
 Response:
 {
@@ -238,6 +238,36 @@ Response:
 | 15 | PUT | `/users/change-password/` | JWT | Any | Change password |
 | 16 | PATCH | `/admin/users/{id}/set-role/` | JWT | Admin | Promote to coordinator |
 | 17 | POST | `/admin/users/invite/` | JWT | Admin | Invite government user |
+| 18 | POST | `/auth/logout/` | None | Any | Blacklist refresh token |
+
+---
+
+## Logout & Re-login
+
+### Logout
+
+```
+POST /auth/logout/  [JWT optional]
+Request: { "refresh": "eyJ..." }
+
+Server adds refresh token's jti to Redis blacklist
+  → TokenRefreshView rejects blacklisted tokens
+  → Client should delete stored tokens locally
+```
+
+### Re-login (Resident)
+
+```
+POST /auth/otp/send/   { "phone": "+18005551234" }
+  → SMS with 6-digit code
+
+POST /auth/otp/verify/ { "phone": "+18005551234", "code": "123456" }
+  → Returns new JWT (access + refresh)
+```
+
+- No password needed for residents
+- Refresh token from previous session is blacklisted and unusable
+- Government/Admin re-login via `POST /auth/login/ { username, password }`
 
 ---
 
