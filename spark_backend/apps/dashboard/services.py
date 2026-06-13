@@ -16,13 +16,9 @@ class DashboardService:
         hubs_open = Hub.objects.filter(status="open").count()
         hubs_critical = Hub.objects.filter(status="critical").count()
         hazards_active = Hazard.objects.filter(status="active").count()
-        hazards_today = Hazard.objects.filter(
-            created_at__date=timezone.now().date()
-        ).count()
+        hazards_today = Hazard.objects.filter(created_at__date=timezone.now().date()).count()
         bookings_active = Booking.objects.filter(status="active").count()
-        bookings_today = Booking.objects.filter(
-            start_time__date=timezone.now().date()
-        ).count()
+        bookings_today = Booking.objects.filter(start_time__date=timezone.now().date()).count()
 
         return {
             "hubs": {

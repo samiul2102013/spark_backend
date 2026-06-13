@@ -20,4 +20,11 @@ class BookingSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "status", "confirmation_sent", "check_in_time"]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "status",
+            "confirmation_sent",
+            "check_in_time",
+        ]

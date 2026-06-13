@@ -27,9 +27,7 @@ from .services import BroadcastReadService, BroadcastService, CheckInService, No
 @permission_classes([IsAuthenticated])
 def checkin_list_view(request):
     user = None if request.user.role == "admin" else request.user
-    checkins = CheckInService.list_checkins(
-        hub_id=request.query_params.get("hub_id"), user=user
-    )
+    checkins = CheckInService.list_checkins(hub_id=request.query_params.get("hub_id"), user=user)
     return success_response(CheckInSerializer(checkins, many=True).data)
 
 
@@ -58,9 +56,7 @@ def checkin_create_view(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def broadcast_list_view(request):
-    broadcasts = BroadcastService.list_broadcasts(
-        hub_id=request.query_params.get("hub_id")
-    )
+    broadcasts = BroadcastService.list_broadcasts(hub_id=request.query_params.get("hub_id"))
     return success_response(BroadcastSerializer(broadcasts, many=True).data)
 
 
@@ -102,9 +98,7 @@ def broadcast_mark_read_view(request, broadcast_id):
 @permission_classes([IsAuthenticated])
 def notification_list_view(request):
     unread_only = request.query_params.get("unread_only", "").lower() in ("true", "1")
-    notifications = NotificationService.list_notifications(
-        request.user, unread_only=unread_only
-    )
+    notifications = NotificationService.list_notifications(request.user, unread_only=unread_only)
     return success_response(NotificationSerializer(notifications, many=True).data)
 
 

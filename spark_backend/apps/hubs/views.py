@@ -13,7 +13,13 @@ from .services import HubService
 
 @extend_schema(
     parameters=[
-        OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False, description="Filter by hub status")
+        OpenApiParameter(
+            "status",
+            str,
+            OpenApiParameter.QUERY,
+            required=False,
+            description="Filter by hub status",
+        )
     ],
     responses={200: HubSerializer(many=True)},
     tags=["hubs"],

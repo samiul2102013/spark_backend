@@ -39,9 +39,7 @@ def dashboard_map_view(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def dashboard_reports_view(request):
-    reports = DashboardService.situation_reports(
-        hub_id=request.query_params.get("hub_id")
-    )
+    reports = DashboardService.situation_reports(hub_id=request.query_params.get("hub_id"))
     return success_response(
         [
             {

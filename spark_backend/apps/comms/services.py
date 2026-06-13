@@ -41,9 +41,7 @@ class BroadcastReadService:
     @staticmethod
     @transaction.atomic
     def mark_read(broadcast_id, user):
-        obj, _ = BroadcastRead.objects.get_or_create(
-            broadcast_id=broadcast_id, user=user
-        )
+        obj, _ = BroadcastRead.objects.get_or_create(broadcast_id=broadcast_id, user=user)
         return obj
 
 

@@ -48,6 +48,4 @@ class HazardService:
     @staticmethod
     @transaction.atomic
     def add_comment(hazard_id, body, author=None, photo=None):
-        return Comment.objects.create(
-            hazard_id=hazard_id, author=author, body=body, photo=photo
-        )
+        return Comment.objects.create(hazard_id=hazard_id, author=author, body=body, photo=photo)

@@ -4,11 +4,13 @@ from core.models import TimeStampedModel
 
 
 class Comment(TimeStampedModel):
-    hazard = models.ForeignKey(
-        "hazards.Hazard", on_delete=models.CASCADE, related_name="comments"
-    )
+    hazard = models.ForeignKey("hazards.Hazard", on_delete=models.CASCADE, related_name="comments")
     author = models.ForeignKey(
-        "users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="hazard_comments"
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="hazard_comments",
     )
     body = models.TextField()
     photo = models.ImageField(upload_to="comments/", null=True, blank=True)

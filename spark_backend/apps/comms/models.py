@@ -73,7 +73,11 @@ class Broadcast(TimeStampedModel):
 
     hub = models.ForeignKey("hubs.Hub", on_delete=models.CASCADE, related_name="broadcasts")
     sender = models.ForeignKey(
-        "users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="sent_broadcasts"
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sent_broadcasts",
     )
     subject = models.CharField(max_length=255)
     body = models.TextField()
@@ -88,12 +92,8 @@ class Broadcast(TimeStampedModel):
 
 
 class BroadcastRead(TimeStampedModel):
-    broadcast = models.ForeignKey(
-        "comms.Broadcast", on_delete=models.CASCADE, related_name="reads"
-    )
-    user = models.ForeignKey(
-        "users.User", on_delete=models.CASCADE, related_name="broadcast_reads"
-    )
+    broadcast = models.ForeignKey("comms.Broadcast", on_delete=models.CASCADE, related_name="reads")
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="broadcast_reads")
     read_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -113,7 +113,9 @@ class Notification(TimeStampedModel):
     ]
 
     user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="notifications")
-    hub = models.ForeignKey("hubs.Hub", on_delete=models.SET_NULL, null=True, blank=True, related_name="notifications")
+    hub = models.ForeignKey(
+        "hubs.Hub", on_delete=models.SET_NULL, null=True, blank=True, related_name="notifications"
+    )
     type = models.CharField(max_length=15, choices=TYPE_CHOICES)
     title = models.CharField(max_length=255)
     body = models.TextField()

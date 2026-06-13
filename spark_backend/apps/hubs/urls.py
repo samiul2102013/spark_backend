@@ -9,5 +9,9 @@ urlpatterns = [
     path("hubs/<int:hub_id>/update/", views.hub_update_view, name="hub-update"),
     path("hubs/<int:hub_id>/delete/", views.hub_delete_view, name="hub-delete"),
     path("hubs/<int:hub_id>/status/", views.hub_status_update_view, name="hub-status-update"),
-    path("hubs/<int:hub_id>/assign-coordinator/", views.hub_assign_coordinator_view, name="hub-assign-coordinator"),
+    path(
+        "hubs/<int:hub_id>/assign-coordinator/",
+        views.hub_assign_coordinator_view,
+        name="hub-assign-coordinator",
+    ),
 ]
