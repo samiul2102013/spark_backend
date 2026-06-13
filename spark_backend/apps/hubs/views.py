@@ -3,9 +3,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from core.responses import created_response, deleted_response, error_response, success_response
-
 from apps.users.permissions import IsAdmin
+from core.responses import created_response, deleted_response, error_response, success_response
 
 from .serializers import HubCoordinatorSerializer, HubSerializer, HubStatusSerializer
 from .services import HubService

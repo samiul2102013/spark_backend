@@ -3,9 +3,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-from core.responses import created_response, error_response, success_response
-
 from apps.users.permissions import IsResidentOrCoordinator
+from core.responses import created_response, error_response, success_response
 
 from .serializers import (
     BroadcastReadSerializer,

@@ -1,6 +1,3 @@
-from datetime import datetime, timedelta
-
-from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.ai.models import SituationReport
