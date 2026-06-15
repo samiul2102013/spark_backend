@@ -5,15 +5,27 @@ from twilio.rest import Client
 
 class SMSAdapter:
     @staticmethod
+    def _to_e164(phone: str) -> str:
+        phone = phone.strip()
+        if phone.startswith("+"):
+            return phone
+        if phone.startswith("00"):
+            return f"+{phone[2:]}"
+        if phone.startswith("0"):
+            return f"+880{phone[1:]}"
+        return f"+{phone}"
+
+    @staticmethod
     def send_otp(phone_number: str, code: str) -> None:
+        to_number = SMSAdapter._to_e164(phone_number)
         if getattr(settings, "OTP_MOCK_MODE", False):
-            print(f"[SMS MOCK] To: {phone_number} — Code: {code}")
+            print(f"[SMS MOCK] To: {to_number} — Code: {code}")
             return
         client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
         client.messages.create(
             body=f"Your SPARK verification code: {code}",
             from_=settings.TWILIO_PHONE_NUMBER,
-            to=phone_number,
+            to=to_number,
         )
 
 
