@@ -50,12 +50,16 @@ class DashboardService:
             lng_max = bounds.get("lng_max")
             if all([lat_min, lat_max, lng_min, lng_max]):
                 hubs = hubs.filter(
-                    latitude__gte=lat_min, latitude__lte=lat_max,
-                    longitude__gte=lng_min, longitude__lte=lng_max,
+                    latitude__gte=lat_min,
+                    latitude__lte=lat_max,
+                    longitude__gte=lng_min,
+                    longitude__lte=lng_max,
                 )
                 hazards = hazards.filter(
-                    latitude__gte=lat_min, latitude__lte=lat_max,
-                    longitude__gte=lng_min, longitude__lte=lng_max,
+                    latitude__gte=lat_min,
+                    latitude__lte=lat_max,
+                    longitude__gte=lng_min,
+                    longitude__lte=lng_max,
                 )
         return {"hubs": hubs, "hazards": hazards}
 

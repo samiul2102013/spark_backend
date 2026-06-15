@@ -12,17 +12,25 @@ urlpatterns = [
     path("auth/logout/", views.LogoutView.as_view(), name="auth-logout"),
     path("auth/refresh/", views.BlacklistCheckTokenRefreshView.as_view(), name="auth-refresh"),
     # Biometric
-    path("auth/biometric/register/", views.BiometricRegisterView.as_view(), name="auth-biometric-register"),
+    path(
+        "auth/biometric/register/",
+        views.BiometricRegisterView.as_view(),
+        name="auth-biometric-register",
+    ),
     path("auth/biometric/login/", views.BiometricLoginView.as_view(), name="auth-biometric-login"),
     # Offline Token
     path("auth/offline-token/", views.OfflineTokenView.as_view(), name="auth-offline-token"),
     # Government Invite
     path("auth/invite/accept/", views.InviteAcceptView.as_view(), name="auth-invite-accept"),
-    path("auth/invite/<str:token>/", views.InviteValidateView.as_view(), name="auth-invite-validate"),
+    path(
+        "auth/invite/<str:token>/", views.InviteValidateView.as_view(), name="auth-invite-validate"
+    ),
     # Password Reset
     path("auth/forgot-password/", views.ForgotPasswordView.as_view(), name="auth-forgot-password"),
     path("auth/reset-password/", views.ResetPasswordView.as_view(), name="auth-reset-password"),
     # Profile
     path("users/profile/", views.ProfileView.as_view(), name="users-profile"),
-    path("users/change-password/", views.ChangePasswordView.as_view(), name="users-change-password"),
+    path(
+        "users/change-password/", views.ChangePasswordView.as_view(), name="users-change-password"
+    ),
 ]

@@ -111,7 +111,9 @@ class HubStatusView(APIView):
 class HubCoordinatorView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["mobile"], request=HubCoordinatorSerializer, responses={200: HubSerializer})
+    @extend_schema(
+        tags=["mobile"], request=HubCoordinatorSerializer, responses={200: HubSerializer}
+    )
     def patch(self, request, hub_id):
         try:
             serializer = HubCoordinatorSerializer(data=request.data)
@@ -137,10 +139,9 @@ class HubCheckinsView(APIView):
     def get(self, request, hub_id):
         try:
             service = HubService()
-            checkins = service.get_hub_checkins(
-                hub_id, date=request.query_params.get("date")
-            )
+            checkins = service.get_hub_checkins(hub_id, date=request.query_params.get("date"))
             from apps.comms.serializers import CheckInSerializer
+
             serializer = CheckInSerializer(checkins, many=True)
             return success_response(serializer.data)
         except Exception as e:
@@ -156,6 +157,7 @@ class HubBroadcastsView(APIView):
             service = HubService()
             broadcasts = service.get_hub_broadcasts(hub_id)
             from apps.comms.serializers import BroadcastSerializer
+
             serializer = BroadcastSerializer(broadcasts, many=True)
             return success_response(serializer.data)
         except Exception as e:

@@ -20,7 +20,9 @@ from .services import BroadcastService, CheckInService, NotificationService
 class CheckInView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], request=CheckInCreateSerializer, responses={201: CheckInSerializer})
+    @extend_schema(
+        tags=["mobile"], request=CheckInCreateSerializer, responses={201: CheckInSerializer}
+    )
     def post(self, request):
         try:
             serializer = CheckInCreateSerializer(data=request.data)
@@ -102,7 +104,9 @@ class BroadcastListView(APIView):
 class BroadcastCreateView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrCoordinator]
 
-    @extend_schema(tags=["mobile"], request=BroadcastCreateSerializer, responses={201: BroadcastSerializer})
+    @extend_schema(
+        tags=["mobile"], request=BroadcastCreateSerializer, responses={201: BroadcastSerializer}
+    )
     def post(self, request):
         try:
             hub_id = request.data.get("hub")
@@ -112,7 +116,9 @@ class BroadcastCreateView(APIView):
             if not serializer.is_valid():
                 return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
             service = BroadcastService()
-            broadcast = service.create_broadcast(hub_id, serializer.validated_data, sender=request.user)
+            broadcast = service.create_broadcast(
+                hub_id, serializer.validated_data, sender=request.user
+            )
             return created_response(BroadcastSerializer(broadcast).data)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)

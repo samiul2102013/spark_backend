@@ -56,10 +56,12 @@ class DashboardMapView(APIView):
             data = service.map_data(bounds=bounds)
             hubs_serializer = HubMapSerializer(data["hubs"], many=True)
             hazards_serializer = HazardMapSerializer(data["hazards"], many=True)
-            return success_response({
-                "hubs": hubs_serializer.data,
-                "hazards": hazards_serializer.data,
-            })
+            return success_response(
+                {
+                    "hubs": hubs_serializer.data,
+                    "hazards": hazards_serializer.data,
+                }
+            )
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

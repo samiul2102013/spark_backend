@@ -54,19 +54,17 @@ class BookingService:
 
     def get_available_slots(self, hub_id, date):
         hub = Hub.objects.get(id=hub_id)
-        bookings = Booking.objects.filter(
-            hub_id=hub_id, status="active", start_time__date=date
-        )
+        bookings = Booking.objects.filter(hub_id=hub_id, status="active", start_time__date=date)
         slots = []
         start = timezone.make_aware(timezone.datetime.combine(date, timezone.datetime.min.time()))
         for hour in range(6, 22):
             slot_start = start + timedelta(hours=hour)
             slot_end = slot_start + timedelta(hours=1)
-            concurrent = bookings.filter(
-                start_time__lt=slot_end, end_time__gt=slot_start
-            ).count()
-            slots.append({
-                "start_time": slot_start.isoformat(),
-                "available": concurrent < hub.max_concurrent_bookings,
-            })
+            concurrent = bookings.filter(start_time__lt=slot_end, end_time__gt=slot_start).count()
+            slots.append(
+                {
+                    "start_time": slot_start.isoformat(),
+                    "available": concurrent < hub.max_concurrent_bookings,
+                }
+            )
         return slots

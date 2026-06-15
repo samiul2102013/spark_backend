@@ -10,9 +10,20 @@ class CheckInSerializer(serializers.ModelSerializer):
     class Meta:
         model = CheckIn
         fields = [
-            "id", "user", "user_full_name", "hub", "hub_name",
-            "timestamp", "people_count", "status", "road_access",
-            "medical_notes", "latitude", "longitude", "channel", "client_uuid",
+            "id",
+            "user",
+            "user_full_name",
+            "hub",
+            "hub_name",
+            "timestamp",
+            "people_count",
+            "status",
+            "road_access",
+            "medical_notes",
+            "latitude",
+            "longitude",
+            "channel",
+            "client_uuid",
         ]
         read_only_fields = ["id", "timestamp", "user"]
 
@@ -28,8 +39,12 @@ class CheckInCreateSerializer(serializers.Serializer):
     people_count = serializers.IntegerField(default=1)
     road_access = serializers.ChoiceField(choices=["open", "blocked", "unknown"], default="unknown")
     medical_notes = serializers.CharField(required=False, allow_blank=True)
-    latitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, allow_null=True)
-    longitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, allow_null=True)
+    latitude = serializers.DecimalField(
+        max_digits=9, decimal_places=6, required=False, allow_null=True
+    )
+    longitude = serializers.DecimalField(
+        max_digits=9, decimal_places=6, required=False, allow_null=True
+    )
     client_uuid = serializers.CharField(required=False, allow_null=True)
     hub = serializers.IntegerField()
 

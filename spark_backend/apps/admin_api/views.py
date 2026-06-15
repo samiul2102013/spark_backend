@@ -15,15 +15,24 @@ from apps.users.serializers import ProfileSerializer
 from core.pagination import StandardPagination
 from core.responses import created_response, error_response, success_response
 
-
 # ─── Serializers ─────────────────────────────────────────────────────
+
 
 class ResidentListSerializer(serializers.ModelSerializer):
     hub_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["phone_number", "full_name", "email", "role", "is_active", "hub_name", "household_size", "created_at"]
+        fields = [
+            "phone_number",
+            "full_name",
+            "email",
+            "role",
+            "is_active",
+            "hub_name",
+            "household_size",
+            "created_at",
+        ]
 
     def get_hub_name(self, obj):
         return obj.hub.name if obj.hub else None
@@ -35,8 +44,20 @@ class ResidentDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["phone_number", "full_name", "email", "role", "household_size", "medical_needs",
-                   "is_active", "hub_name", "latitude", "longitude", "checkins_count", "created_at"]
+        fields = [
+            "phone_number",
+            "full_name",
+            "email",
+            "role",
+            "household_size",
+            "medical_needs",
+            "is_active",
+            "hub_name",
+            "latitude",
+            "longitude",
+            "checkins_count",
+            "created_at",
+        ]
 
     def get_hub_name(self, obj):
         return obj.hub.name if obj.hub else None
@@ -62,11 +83,21 @@ class CoordinatorDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["phone_number", "full_name", "email", "role", "is_active", "hub", "checkins_managed", "created_at"]
+        fields = [
+            "phone_number",
+            "full_name",
+            "email",
+            "role",
+            "is_active",
+            "hub",
+            "checkins_managed",
+            "created_at",
+        ]
 
     def get_hub(self, obj):
         if obj.hub:
             from apps.hubs.serializers import HubSerializer
+
             return HubSerializer(obj.hub).data
         return None
 
@@ -82,8 +113,16 @@ class AdminHubListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Hub
-        fields = ["id", "name", "address", "status", "battery_percentage",
-                   "starlink_status", "coordinator_name", "residents_count"]
+        fields = [
+            "id",
+            "name",
+            "address",
+            "status",
+            "battery_percentage",
+            "starlink_status",
+            "coordinator_name",
+            "residents_count",
+        ]
 
     def get_coordinator_name(self, obj):
         return obj.coordinator.full_name if obj.coordinator else None
@@ -116,11 +155,13 @@ class AdminHubDetailSerializer(serializers.ModelSerializer):
 
     def get_recent_checkins(self, obj):
         from apps.comms.serializers import CheckInSerializer
+
         qs = CheckIn.objects.filter(hub=obj).order_by("-timestamp")[:10]
         return CheckInSerializer(qs, many=True).data
 
     def get_recent_hazards(self, obj):
         from apps.hazards.serializers import HazardSerializer
+
         qs = Hazard.objects.filter(hub=obj).order_by("-created_at")[:10]
         return HazardSerializer(qs, many=True).data
 
@@ -199,6 +240,7 @@ class AdminOverviewSerializer(serializers.Serializer):
 
 # ─── Services ────────────────────────────────────────────────────────
 
+
 class AdminUserService:
     def list_residents(self, hub_id=None, is_active=None, search=None):
         qs = User.objects.filter(role="resident")
@@ -207,7 +249,11 @@ class AdminUserService:
         if is_active is not None:
             qs = qs.filter(is_active=is_active)
         if search:
-            qs = qs.filter(Q(full_name__icontains=search) | Q(phone_number__icontains=search) | Q(email__icontains=search))
+            qs = qs.filter(
+                Q(full_name__icontains=search)
+                | Q(phone_number__icontains=search)
+                | Q(email__icontains=search)
+            )
         return qs
 
     def get_resident(self, user_id):
@@ -220,7 +266,11 @@ class AdminUserService:
         if is_active is not None:
             qs = qs.filter(is_active=is_active)
         if search:
-            qs = qs.filter(Q(full_name__icontains=search) | Q(phone_number__icontains=search) | Q(email__icontains=search))
+            qs = qs.filter(
+                Q(full_name__icontains=search)
+                | Q(phone_number__icontains=search)
+                | Q(email__icontains=search)
+            )
         return qs
 
     def get_coordinator(self, user_id):
@@ -350,6 +400,7 @@ class AdminMessageService:
 class AdminOverviewService:
     def overview(self):
         from django.utils import timezone
+
         today = timezone.now().date()
         users = User.objects.all()
         return {
@@ -369,7 +420,9 @@ class AdminOverviewService:
             "checkins": {
                 "total_today": CheckIn.objects.filter(timestamp__date=today).count(),
                 "safe": CheckIn.objects.filter(timestamp__date=today, status="safe").count(),
-                "need_assistance": CheckIn.objects.filter(timestamp__date=today, status="need_assistance").count(),
+                "need_assistance": CheckIn.objects.filter(
+                    timestamp__date=today, status="need_assistance"
+                ).count(),
             },
             "users": {
                 "total": users.count(),
@@ -386,6 +439,7 @@ class AdminOverviewService:
 
 # ─── Views ───────────────────────────────────────────────────────────
 
+
 class AdminOverviewView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
@@ -400,6 +454,7 @@ class AdminOverviewView(APIView):
 
 
 # ── Users ────────────────────────────────────────────────────────────
+
 
 class AdminResidentListView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
@@ -545,7 +600,9 @@ class AdminInviteUserView(APIView):
 class AdminSetRoleView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], request=RoleDetailSerializer, responses={200: RoleDetailSerializer})
+    @extend_schema(
+        tags=["admin"], request=RoleDetailSerializer, responses={200: RoleDetailSerializer}
+    )
     def patch(self, request, user_id):
         try:
             role = request.data.get("role")
@@ -561,6 +618,7 @@ class AdminSetRoleView(APIView):
 
 
 # ── Hubs ─────────────────────────────────────────────────────────────
+
 
 class AdminHubListView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
@@ -605,7 +663,9 @@ class AdminHubDetailView(APIView):
 class AdminHubCreateView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], request=HubCreateSerializer, responses={201: AdminHubListSerializer})
+    @extend_schema(
+        tags=["admin"], request=HubCreateSerializer, responses={201: AdminHubListSerializer}
+    )
     def post(self, request):
         try:
             serializer = HubCreateSerializer(data=request.data)
@@ -621,7 +681,9 @@ class AdminHubCreateView(APIView):
 class AdminHubAssignCoordinatorView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], request=AssignCoordinatorSerializer, responses={200: AdminHubListSerializer})
+    @extend_schema(
+        tags=["admin"], request=AssignCoordinatorSerializer, responses={200: AdminHubListSerializer}
+    )
     def patch(self, request, hub_id):
         try:
             serializer = AssignCoordinatorSerializer(data=request.data)
@@ -637,20 +699,27 @@ class AdminHubAssignCoordinatorView(APIView):
 class AdminHubReassignCoordinatorView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], request=ReassignCoordinatorSerializer, responses={200: AdminHubListSerializer})
+    @extend_schema(
+        tags=["admin"],
+        request=ReassignCoordinatorSerializer,
+        responses={200: AdminHubListSerializer},
+    )
     def patch(self, request, hub_id):
         try:
             serializer = ReassignCoordinatorSerializer(data=request.data)
             if not serializer.is_valid():
                 return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
             service = AdminHubService()
-            hub = service.reassign_coordinator(hub_id, serializer.validated_data["new_coordinator_id"])
+            hub = service.reassign_coordinator(
+                hub_id, serializer.validated_data["new_coordinator_id"]
+            )
             return success_response(AdminHubListSerializer(hub).data)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # ── Reports & AI ─────────────────────────────────────────────────────
+
 
 class AdminReportListView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
@@ -696,15 +765,17 @@ class AdminReportDetailView(APIView):
         try:
             service = AdminReportService()
             r = service.get_report(report_id)
-            return success_response({
-                "id": r.id,
-                "hub": r.hub_id,
-                "summary": r.summary,
-                "generated_by": r.generated_by,
-                "is_auto": r.is_auto,
-                "created_at": r.created_at.isoformat(),
-                "pdf_file": r.pdf_file.url if r.pdf_file else None,
-            })
+            return success_response(
+                {
+                    "id": r.id,
+                    "hub": r.hub_id,
+                    "summary": r.summary,
+                    "generated_by": r.generated_by,
+                    "is_auto": r.is_auto,
+                    "created_at": r.created_at.isoformat(),
+                    "pdf_file": r.pdf_file.url if r.pdf_file else None,
+                }
+            )
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -734,6 +805,7 @@ class AdminAIConfigView(APIView):
 
 
 # ── Messages ─────────────────────────────────────────────────────────
+
 
 class AdminMessageListView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]

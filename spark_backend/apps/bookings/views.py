@@ -39,7 +39,9 @@ class BookingListView(APIView):
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @extend_schema(tags=["mobile"], request=BookingCreateSerializer, responses={201: BookingSerializer})
+    @extend_schema(
+        tags=["mobile"], request=BookingCreateSerializer, responses={201: BookingSerializer}
+    )
     def post(self, request):
         try:
             self.permission_classes = [IsAuthenticated, IsResidentOrCoordinator]
@@ -98,8 +100,11 @@ class HubSlotsView(APIView):
             hub_id = request.query_params.get("hub_id")
             date = request.query_params.get("date")
             if not hub_id or not date:
-                return error_response("hub_id and date are required.", http_status=status.HTTP_400_BAD_REQUEST)
+                return error_response(
+                    "hub_id and date are required.", http_status=status.HTTP_400_BAD_REQUEST
+                )
             from datetime import datetime
+
             parsed_date = datetime.strptime(date, "%Y-%m-%d").date()
             service = BookingService()
             slots = service.get_available_slots(hub_id, parsed_date)

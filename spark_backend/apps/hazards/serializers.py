@@ -9,9 +9,22 @@ class HazardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hazard
         fields = [
-            "id", "category", "description", "photo", "latitude", "longitude",
-            "severity", "source", "status", "period", "reporter", "reporter_name",
-            "hub", "client_uuid", "created_at", "updated_at",
+            "id",
+            "category",
+            "description",
+            "photo",
+            "latitude",
+            "longitude",
+            "severity",
+            "source",
+            "status",
+            "period",
+            "reporter",
+            "reporter_name",
+            "hub",
+            "client_uuid",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at", "reporter"]
 

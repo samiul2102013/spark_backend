@@ -37,7 +37,15 @@ class OverviewSerializer(serializers.Serializer):
 class HubMapSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hub
-        fields = ["id", "name", "latitude", "longitude", "status", "battery_percentage", "starlink_status"]
+        fields = [
+            "id",
+            "name",
+            "latitude",
+            "longitude",
+            "status",
+            "battery_percentage",
+            "starlink_status",
+        ]
 
 
 class HazardMapSerializer(serializers.ModelSerializer):
@@ -51,7 +59,16 @@ class SituationReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SituationReport
-        fields = ["id", "hub", "hub_name", "summary", "generated_by", "is_auto", "created_at", "pdf_file"]
+        fields = [
+            "id",
+            "hub",
+            "hub_name",
+            "summary",
+            "generated_by",
+            "is_auto",
+            "created_at",
+            "pdf_file",
+        ]
 
     def get_hub_name(self, obj):
         return obj.hub.name if obj.hub else None
@@ -64,8 +81,16 @@ class AlertSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hazard
         fields = [
-            "id", "category", "severity", "status", "description",
-            "latitude", "longitude", "hub_name", "reporter_name", "created_at",
+            "id",
+            "category",
+            "severity",
+            "status",
+            "description",
+            "latitude",
+            "longitude",
+            "hub_name",
+            "reporter_name",
+            "created_at",
         ]
 
     def get_hub_name(self, obj):
@@ -82,10 +107,19 @@ class InfrastructureHubSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hub
         fields = [
-            "id", "name", "status", "battery_percentage", "solar_input_w",
-            "solar_output_w", "estimated_runtime_h", "starlink_status",
-            "max_concurrent_bookings", "latitude", "longitude",
-            "checkins_today", "active_bookings",
+            "id",
+            "name",
+            "status",
+            "battery_percentage",
+            "solar_input_w",
+            "solar_output_w",
+            "estimated_runtime_h",
+            "starlink_status",
+            "max_concurrent_bookings",
+            "latitude",
+            "longitude",
+            "checkins_today",
+            "active_bookings",
         ]
 
     def get_checkins_today(self, obj):

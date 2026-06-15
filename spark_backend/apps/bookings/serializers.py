@@ -10,11 +10,29 @@ class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = [
-            "id", "user", "user_name", "hub", "hub_name",
-            "start_time", "end_time", "status", "confirmation_sent",
-            "check_in_time", "people_count", "client_uuid", "created_at", "updated_at",
+            "id",
+            "user",
+            "user_name",
+            "hub",
+            "hub_name",
+            "start_time",
+            "end_time",
+            "status",
+            "confirmation_sent",
+            "check_in_time",
+            "people_count",
+            "client_uuid",
+            "created_at",
+            "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "status", "confirmation_sent", "check_in_time"]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "status",
+            "confirmation_sent",
+            "check_in_time",
+        ]
 
     def get_user_name(self, obj):
         return obj.user.full_name if obj.user else None
