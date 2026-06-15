@@ -1,0 +1,256 @@
+# Test Data — ChargeSafe Mobile API
+
+**Base URL**: `http://spark.kodevio.com:8000/api/v1/`
+
+**Authentication**: Setup for Apidog (use Bearer Token for JWT endpoints)
+
+## Phase 1: Authentication (NO AUTH REQUIRED)
+
+### 1. Register User
+**Method**: POST
+**URL**: `http://spark.kodevio.com:8000/api/v1/auth/register/`
+**Auth**: None
+**Body**:
+```json
+{
+  "phone": "01712345678",
+  "full_name": "Test User",
+  "household_size": 4,
+  "medical_needs": "none",
+  "latitude": 23.8,
+  "longitude": 90.4
+}
+```
+
+### 2. Send OTP
+**Method**: POST
+**URL**: `http://spark.kodevio.com:8000/api/v1/auth/otp/send/`
+**Auth**: None
+**Body**:
+```json
+{
+  "phone": "01712345678"
+}
+```
+
+### 3. Verify OTP
+**Method**: POST
+**URL**: `http://spark.kodevio.com:8000/api/v1/auth/otp/verify/`
+**Auth**: None
+**Body**:
+```json
+{
+  "phone": "01712345678",
+  "code": "123456"
+}
+```
+
+### 4. Login (Get Access Token)
+**Method**: POST
+**URL**: `http://spark.kodevio.com:8000/api/v1/auth/login/`
+**Auth**: None
+**Body**:
+```json
+{
+  "username": "01712345678",
+  "password": "manual123"
+}
+```
+**Response**: Returns `{"access": "<jwt_token>"}`
+
+---
+
+## Phase 2: Resident Dashboard (JWT AUTH REQUIRED)
+
+### 5. Get Open Hubs (for registration)
+**Method**: GET
+**URL**: `http://spark.kodevio.com:8000/api/v1/hubs/`
+**Auth**: Bearer Token (from Step 4)
+**Query Params**:
+```
+?status=registered
+```
+
+### 6. Get Active Hazards
+**Method**: GET
+**URL**: `http://spark.kodevio.com:8000/api/v1/hazards/`
+**Auth**: Bearer Token (from Step 4)
+**Query Params**:
+```
+?status=active
+```
+
+### 7. Create Hazard Report
+**Method**: POST
+**URL**: `http://spark.kodevio.com:8000/api/v1/hazards/create/`
+**Auth**: Bearer Token (from Step 4)
+**Headers**:
+```
+Content-Type: application/json
+```
+**Body**:
+```json
+{
+  "category": "flooding",
+  "description": "Water on road",
+  "latitude": 23.8,
+  "longitude": 90.4,
+  "hub": 1,
+  "client_uuid": "REQ-001"
+}
+```
+
+### 8. Comment on Hazard
+**Method**: POST
+**URL**: `http://spark.kodevio.com:8000/api/v1/hazards/{{hazard_id}}/comments/create/`
+**Auth**: Bearer Token (from Step 4)
+**Headers**:
+```
+Content-Type: application/json
+```
+**Body**:
+```json
+{
+  "body": "Getting worse",
+  "hazard": 1,
+  "client_uuid": "REQ-002"
+}
+```
+
+---
+
+## Phase 3: Bookings (JWT AUTH REQUIRED)
+
+### 9. Get My Bookings
+**Method**: GET
+**URL**: `http://spark.kodevio.com:8000/api/v1/bookings/`
+**Auth**: Bearer Token (from Step 4)
+**Query Params**:
+```
+?status=pending&status=upcoming
+```
+
+### 10. Create Booking
+**Method**: POST
+**URL**: `http://spark.kodevio.com:8000/api/v1/bookings/create/`
+**Auth**: Bearer Token (from Step 4)
+**Headers**:
+```
+Content-Type: application/json
+```
+**Body**:
+```json
+{
+  "hub": 1,
+  "start_time": "2026-06-15T10:00:00Z",
+  "end_time": "2026-06-15T10:30:00Z",
+  "client_uuid": "REQ-003"
+}
+```
+
+### 11. Cancel Booking
+**Method**: PATCH
+**URL**: `http://spark.kodevio.com:8000/api/v1/bookings/{{booking_id}}/cancel/`
+**Auth**: Bearer Token (from Step 4)
+**Body**:
+```json
+{
+  "client_uuid": "REQ-004"
+}
+```
+
+---
+
+## Phase 4: Check-in & Comms (JWT AUTH REQUIRED)
+
+### 12. Submit Check-in
+**Method**: POST
+**URL**: `http://spark.kodevio.com:8000/api/v1/checkins/create/`
+**Auth**: Bearer Token (from Step 4)
+**Headers**:
+```
+Content-Type: application/json
+```
+**Body**:
+```json
+{
+  "hub": 1,
+  "people_count": 1,
+  "status": "safe",
+  "road_access": "open",
+  "latitude": 23.8,
+  "longitude": 90.4,
+  "client_uuid": "REQ-005"
+}
+```
+
+### 13. Create Notify Broadcast
+**Method**: POST
+**URL**: `http://spark.kodevio.com:8000/api/v1/broadcasts/create/`
+**Auth**: Bearer Token (from Step 4)
+**Headers**:
+```
+Content-Type: application/json
+```
+**Body**:
+```json
+{
+  "hub": 1,
+  "subject": "Emergency Alert",
+  "body": "Flash flooding reported near the hub",
+  "priority": "urgent"
+}
+```
+
+### 14. Get Notifications
+**Method**: GET
+**URL**: `http://spark.kodevio.com:8000/api/v1/notifications/`
+**Auth**: Bearer Token (from Step 4)
+**Query Params**:
+```
+?unread_only=true
+```
+
+---
+
+## Phase 5: Dashboard (JWT AUTH REQUIRED)
+
+### 15. Dashboard Overview
+**Method**: GET
+**URL**: `http://spark.kodevio.com:8000/api/v1/dashboard/overview/`
+**Auth**: Bearer Token (from Step 4)
+
+### 16. Dashboard Map Data
+**Method**: GET
+**URL**: `http://spark.kodevio.com:8000/api/v1/dashboard/map/`
+**Auth**: Bearer Token (from Step 4)
+
+---
+
+## Authentication Setup (for Apidog/Postman/etc.)
+
+1. **For Phase 1**: Leave `Authorization` header empty or set to `None` type
+2. **After Step 4 (Login)**: Save the `access` token value
+3. **For Phases 2-6**: Set `Authorization` type to `Bearer Token`
+   - Token value: `{{access}}` (or paste your token directly)
+
+---
+
+## Common Query Parameters
+
+### Hubs
+- `?status=registered` - Hubs available for registration
+- `?status=active` - Active hubs
+- `?status=offline` - Offline hubs
+
+### Bookings
+- `?status=pending` - Pending bookings
+- `?status=upcoming` - Upcoming bookings
+- `?status=active` - Active bookings
+- `?status=completed` - Completed bookings
+- `?status_cancelled` - Cancelled bookings
+
+### Notifications
+- `?unread_only=true` - Only unread notifications
+- `?unread_only=false` - All notifications
+```
