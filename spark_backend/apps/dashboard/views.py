@@ -9,8 +9,8 @@ from core.responses import error_response, success_response
 
 from .serializers import (
     AlertSerializer,
-    HubMapSerializer,
     HazardMapSerializer,
+    HubMapSerializer,
     InfrastructureHubSerializer,
     OverviewSerializer,
     SituationReportSerializer,

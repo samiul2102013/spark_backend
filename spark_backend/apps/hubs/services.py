@@ -1,9 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.utils import timezone
 
-from apps.comms.models import Broadcast, CheckIn
 from apps.bookings.models import Booking
+from apps.comms.models import Broadcast, CheckIn
 from core.exceptions import HubNotFoundError
 
 from .models import Hub
@@ -83,7 +82,6 @@ class HubService:
 
     def get_hub_resources(self, hub_id):
         hub = self.get_hub(hub_id)
-        today = timezone.now().date()
         active_bookings = Booking.objects.filter(hub=hub, status="active").count()
         return {
             "battery_percentage": hub.battery_percentage,
