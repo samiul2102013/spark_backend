@@ -152,6 +152,9 @@ CELERY_TIMEZONE = "America/Jamaica"
 
 FRONTEND_URL = env.str("FRONTEND_URL", default="http://localhost:3000")
 
+# OTP Mock Mode (set True to use "000000" for all codes — dev only)
+OTP_MOCK_MODE = env.bool("OTP_MOCK_MODE", default=False)
+
 # Email (SMTP)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = env.str("EMAIL_HOST", default="smtp.gmail.com")

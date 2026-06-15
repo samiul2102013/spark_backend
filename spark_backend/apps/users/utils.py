@@ -2,13 +2,18 @@ import math
 import random
 from typing import Optional, Tuple
 
+from django.conf import settings
 from django.core.cache import cache
 
 from apps.hubs.models import Hub
 
 
 def generate_otp(phone: str) -> str:
-    code = f"{random.randint(100000, 999999)}"
+    if getattr(settings, "OTP_MOCK_MODE", False):
+        code = "000000"
+        print(f"[OTP MOCK] Code for {phone}: {code}")
+    else:
+        code = f"{random.randint(100000, 999999)}"
     cache.set(f"otp:{phone}", code, timeout=300)
     return code
 
