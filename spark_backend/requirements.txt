@@ -13,3 +13,4 @@ gunicorn>=22.0,<22.1
 psycopg2-binary>=2.9,<2.10
 Pillow>=10.3,<10.4
 python-decouple>=3.8,<3.9
+twilio>=9.0,<10.0

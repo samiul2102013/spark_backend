@@ -27,9 +27,9 @@ class AuthService:
 
     # ── Resident OTP Flow ──────────────────────────────────────────
 
-    @staticmethod
     @transaction.atomic
     def register(
+        self,
         phone: str,
         full_name: str,
         household_size: Optional[int],
@@ -58,8 +58,7 @@ class AuthService:
         SMSAdapter.send_otp(phone, code)
         return {"user_id": user.phone_number}
 
-    @staticmethod
-    def send_otp(phone: str) -> dict:
+    def send_otp(self, phone: str) -> dict:
         try:
             User.objects.get(phone_number=phone, role__in=("resident", "coordinator"))
         except User.DoesNotExist:
@@ -68,8 +67,7 @@ class AuthService:
         SMSAdapter.send_otp(phone, code)
         return {"message": "OTP sent"}
 
-    @staticmethod
-    def verify_otp(phone: str, code: str) -> dict:
+    def verify_otp(self, phone: str, code: str) -> dict:
         if not verify_otp(phone, code):
             raise AuthError("Invalid or expired OTP.")
         try:
@@ -83,8 +81,7 @@ class AuthService:
 
     # ── Email/Password Login ───────────────────────────────────────
 
-    @staticmethod
-    def login(username: str, password: str) -> dict:
+    def login(self, username: str, password: str) -> dict:
         user = authenticate(username, password)
         if user is None:
             raise AuthError("Invalid credentials.")
@@ -94,14 +91,12 @@ class AuthService:
 
     # ── Biometric ──────────────────────────────────────────────────
 
-    @staticmethod
-    def register_biometric(user: User, key: str) -> dict:
+    def register_biometric(self, user: User, key: str) -> dict:
         user.biometric_key = key
         user.save(update_fields=["biometric_key"])
         return {"message": "Biometric key registered."}
 
-    @staticmethod
-    def biometric_login(key: str) -> dict:
+    def biometric_login(self, key: str) -> dict:
         try:
             user = User.objects.get(biometric_key=key, is_active=True)
         except User.DoesNotExist:
@@ -110,16 +105,14 @@ class AuthService:
 
     # ── Offline Token ──────────────────────────────────────────────
 
-    @staticmethod
-    def issue_offline_token(user: User) -> dict:
+    def issue_offline_token(self, user: User) -> dict:
         refresh = RefreshToken.for_user(user)
         refresh.set_exp(lifetime=__import__("datetime").timedelta(hours=24))
         return {"offline_token": str(refresh.access_token)}
 
     # ── Government Invite ──────────────────────────────────────────
 
-    @staticmethod
-    def invite_government(email: str, full_name: str) -> dict:
+    def invite_government(self, email: str, full_name: str) -> dict:
         if User.objects.filter(email=email).exists():
             raise AuthError("Email already registered.")
 
@@ -137,8 +130,7 @@ class AuthService:
         EmailAdapter.send_invite(email, invite_url)
         return {"message": "Invitation sent.", "email": email}
 
-    @staticmethod
-    def validate_invite(token: str) -> dict:
+    def validate_invite(self, token: str) -> dict:
         user_pk = cache.get(f"invite:{token}")
         if not user_pk:
             raise AuthError("Invalid or expired invitation token.")
@@ -148,8 +140,7 @@ class AuthService:
             raise AuthError("User not found.")
         return {"email": user.email, "full_name": user.full_name}
 
-    @staticmethod
-    def accept_invite(token: str, password: str) -> dict:
+    def accept_invite(self, token: str, password: str) -> dict:
         user_pk = cache.get(f"invite:{token}")
         if not user_pk:
             raise AuthError("Invalid or expired invitation token.")
@@ -165,8 +156,7 @@ class AuthService:
 
     # ── Password Reset ─────────────────────────────────────────────
 
-    @staticmethod
-    def forgot_password(identifier: str) -> dict:
+    def forgot_password(self, identifier: str) -> dict:
         try:
             if "@" in identifier:
                 user = User.objects.get(email=identifier)
@@ -182,8 +172,7 @@ class AuthService:
             SMSAdapter.send_otp(user.phone_number, code)
         return {"message": "Reset code sent."}
 
-    @staticmethod
-    def reset_password(identifier: str, code: str, new_password: str) -> dict:
+    def reset_password(self, identifier: str, code: str, new_password: str) -> dict:
         if not verify_otp(identifier, code):
             raise AuthError("Invalid or expired code.")
         try:
@@ -199,8 +188,7 @@ class AuthService:
 
     # ── Profile ────────────────────────────────────────────────────
 
-    @staticmethod
-    def update_profile(user: User, data: dict) -> User:
+    def update_profile(self, user: User, data: dict) -> User:
         allowed = ["full_name", "email", "household_size", "medical_needs"]
         for field in allowed:
             if field in data:
@@ -208,8 +196,7 @@ class AuthService:
         user.save()
         return user
 
-    @staticmethod
-    def change_password(user: User, old_password: str, new_password: str) -> dict:
+    def change_password(self, user: User, old_password: str, new_password: str) -> dict:
         if not user.check_password(old_password):
             raise AuthError("Current password is incorrect.")
         user.set_password(new_password)
@@ -218,8 +205,7 @@ class AuthService:
 
     # ── Admin ──────────────────────────────────────────────────────
 
-    @staticmethod
-    def list_users(role=None, search=None):
+    def list_users(self, role=None, search=None):
         qs = User.objects.all()
         if role:
             qs = qs.filter(role=role)
@@ -231,27 +217,23 @@ class AuthService:
             )
         return qs
 
-    @staticmethod
-    def get_user(user_id):
+    def get_user(self, user_id):
         return User.objects.get(id=user_id)
 
-    @staticmethod
     @transaction.atomic
-    def update_user(user_id, data):
+    def update_user(self, user_id, data):
         user = User.objects.get(id=user_id)
         for key, value in data.items():
             setattr(user, key, value)
         user.save()
         return user
 
-    @staticmethod
     @transaction.atomic
-    def delete_user(user_id):
+    def delete_user(self, user_id):
         user = User.objects.get(id=user_id)
         user.delete()
 
-    @staticmethod
-    def set_role(user: User, role: str) -> dict:
+    def set_role(self, user: User, role: str) -> dict:
         if role not in ("resident", "coordinator", "government", "admin"):
             raise AuthError("Invalid role.")
         user.role = role

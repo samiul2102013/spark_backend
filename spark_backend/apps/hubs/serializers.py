@@ -7,23 +7,19 @@ class HubSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hub
         fields = (
-            "id",
-            "name",
-            "address",
-            "latitude",
-            "longitude",
-            "status",
-            "battery_percentage",
-            "solar_input_w",
-            "solar_output_w",
-            "estimated_runtime_h",
-            "starlink_status",
-            "max_concurrent_bookings",
-            "coordinator",
-            "created_at",
-            "updated_at",
+            "id", "name", "address", "latitude", "longitude",
+            "status", "battery_percentage", "solar_input_w", "solar_output_w",
+            "estimated_runtime_h", "starlink_status", "max_concurrent_bookings",
+            "coordinator", "created_at", "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at")
+
+
+class HubListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hub
+        fields = ("id", "name", "address", "status", "battery_percentage",
+                   "latitude", "longitude", "starlink_status")
 
 
 class HubStatusSerializer(serializers.Serializer):

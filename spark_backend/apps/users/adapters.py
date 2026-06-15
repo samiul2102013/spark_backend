@@ -1,11 +1,20 @@
 from django.conf import settings
 from django.core.mail import send_mail
+from twilio.rest import Client
 
 
 class SMSAdapter:
     @staticmethod
     def send_otp(phone_number: str, code: str) -> None:
-        print(f"[SMS] To: {phone_number} — Your SPARK verification code: {code}")
+        if getattr(settings, "OTP_MOCK_MODE", False):
+            print(f"[SMS MOCK] To: {phone_number} — Code: {code}")
+            return
+        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+        client.messages.create(
+            body=f"Your SPARK verification code: {code}",
+            from_=settings.TWILIO_PHONE_NUMBER,
+            to=phone_number,
+        )
 
 
 class EmailAdapter:

@@ -1,45 +1,28 @@
 from django.urls import path
 
-from . import admin_views, views
+from . import views
 
 urlpatterns = [
     # Resident OTP Flow
-    path("auth/register/", views.register_view, name="auth-register"),
-    path("auth/otp/send/", views.otp_send_view, name="auth-otp-send"),
-    path("auth/otp/verify/", views.otp_verify_view, name="auth-otp-verify"),
+    path("auth/register/", views.RegisterView.as_view(), name="auth-register"),
+    path("auth/otp/send/", views.OTPSendView.as_view(), name="auth-otp-send"),
+    path("auth/otp/verify/", views.OTPVerifyView.as_view(), name="auth-otp-verify"),
     # Email/Password Login
-    path("auth/login/", views.login_view, name="auth-login"),
-    path("auth/logout/", views.logout_view, name="auth-logout"),
+    path("auth/login/", views.LoginView.as_view(), name="auth-login"),
+    path("auth/logout/", views.LogoutView.as_view(), name="auth-logout"),
     path("auth/refresh/", views.BlacklistCheckTokenRefreshView.as_view(), name="auth-refresh"),
     # Biometric
-    path("auth/biometric/register/", views.biometric_register_view, name="auth-biometric-register"),
-    path("auth/biometric/login/", views.biometric_login_view, name="auth-biometric-login"),
+    path("auth/biometric/register/", views.BiometricRegisterView.as_view(), name="auth-biometric-register"),
+    path("auth/biometric/login/", views.BiometricLoginView.as_view(), name="auth-biometric-login"),
     # Offline Token
-    path("auth/offline-token/", views.offline_token_view, name="auth-offline-token"),
-    # Government Invite (exact paths BEFORE <str:token>)
-    path("auth/invite/accept/", views.invite_accept_view, name="auth-invite-accept"),
-    path("auth/invite/<str:token>/", views.invite_validate_view, name="auth-invite-validate"),
+    path("auth/offline-token/", views.OfflineTokenView.as_view(), name="auth-offline-token"),
+    # Government Invite
+    path("auth/invite/accept/", views.InviteAcceptView.as_view(), name="auth-invite-accept"),
+    path("auth/invite/<str:token>/", views.InviteValidateView.as_view(), name="auth-invite-validate"),
     # Password Reset
-    path("auth/forgot-password/", views.forgot_password_view, name="auth-forgot-password"),
-    path("auth/reset-password/", views.reset_password_view, name="auth-reset-password"),
+    path("auth/forgot-password/", views.ForgotPasswordView.as_view(), name="auth-forgot-password"),
+    path("auth/reset-password/", views.ResetPasswordView.as_view(), name="auth-reset-password"),
     # Profile
-    path("users/profile/", views.profile_view, name="users-profile"),
-    path("users/change-password/", views.change_password_view, name="users-change-password"),
-    # Admin
-    path("admin/users/invite/", views.invite_government_view, name="admin-users-invite"),
-    path("admin/users/<str:user_id>/set-role/", views.set_role_view, name="admin-users-set-role"),
-    path("admin/users/", admin_views.admin_user_list_view, name="admin-user-list"),
-    path(
-        "admin/users/<int:user_id>/", admin_views.admin_user_detail_view, name="admin-user-detail"
-    ),
-    path(
-        "admin/users/<int:user_id>/update/",
-        admin_views.admin_user_update_view,
-        name="admin-user-update",
-    ),
-    path(
-        "admin/users/<int:user_id>/delete/",
-        admin_views.admin_user_delete_view,
-        name="admin-user-delete",
-    ),
+    path("users/profile/", views.ProfileView.as_view(), name="users-profile"),
+    path("users/change-password/", views.ChangePasswordView.as_view(), name="users-change-password"),
 ]

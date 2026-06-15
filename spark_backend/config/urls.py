@@ -18,12 +18,16 @@ urlpatterns = [
     path(
         f"{api_prefix}docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"
     ),
+    # Mobile
     path(f"{api_prefix}", include("apps.users.urls")),
     path(f"{api_prefix}", include("apps.hubs.urls")),
     path(f"{api_prefix}", include("apps.hazards.urls")),
     path(f"{api_prefix}", include("apps.bookings.urls")),
     path(f"{api_prefix}", include("apps.comms.urls")),
+    # Dashboard
     path(f"{api_prefix}", include("apps.dashboard.urls")),
+    # Admin
+    path(f"{api_prefix}", include("apps.admin_api.urls")),
 ]
 
 if settings.DEBUG:

@@ -3,15 +3,11 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("hubs/", views.hub_list_view, name="hub-list"),
-    path("hubs/<int:hub_id>/", views.hub_detail_view, name="hub-detail"),
-    path("hubs/create/", views.hub_create_view, name="hub-create"),
-    path("hubs/<int:hub_id>/update/", views.hub_update_view, name="hub-update"),
-    path("hubs/<int:hub_id>/delete/", views.hub_delete_view, name="hub-delete"),
-    path("hubs/<int:hub_id>/status/", views.hub_status_update_view, name="hub-status-update"),
-    path(
-        "hubs/<int:hub_id>/assign-coordinator/",
-        views.hub_assign_coordinator_view,
-        name="hub-assign-coordinator",
-    ),
+    path("hubs/", views.HubListView.as_view(), name="hub-list"),
+    path("hubs/<int:hub_id>/", views.HubDetailView.as_view(), name="hub-detail"),
+    path("hubs/<int:hub_id>/status/", views.HubStatusView.as_view(), name="hub-status-update"),
+    path("hubs/<int:hub_id>/coordinator/", views.HubCoordinatorView.as_view(), name="hub-coordinator"),
+    path("hubs/<int:hub_id>/checkins/", views.HubCheckinsView.as_view(), name="hub-checkins"),
+    path("hubs/<int:hub_id>/broadcasts/", views.HubBroadcastsView.as_view(), name="hub-broadcasts"),
+    path("hubs/<int:hub_id>/resources/", views.HubResourcesView.as_view(), name="hub-resources"),
 ]
