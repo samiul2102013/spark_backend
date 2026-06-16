@@ -1,10 +1,32 @@
 from django.core.cache import cache
 from django.db import connection
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.views import SpectacularAPIView
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.responses import success_response
+
+
+class FilteredSpectacularAPIView(SpectacularAPIView):
+    filter_tag = None
+
+    def get(self, request):
+        schema = self._get_schema(request)
+        if not self.filter_tag:
+            return Response(schema)
+        paths = {}
+        for path, methods in schema.get("paths", {}).items():
+            filtered = {}
+            for method, operation in methods.items():
+                tags = operation.get("tags", [])
+                if tags and tags[0] == self.filter_tag:
+                    filtered[method] = operation
+            if filtered:
+                paths[path] = filtered
+        schema["paths"] = paths
+        return Response(schema)
 
 
 @extend_schema_view(get=extend_schema(request=None, responses={200: None}, tags=["health"]))

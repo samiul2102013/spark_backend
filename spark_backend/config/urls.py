@@ -7,7 +7,7 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-from core.views import HealthCheckView
+from core.views import FilteredSpectacularAPIView, HealthCheckView
 
 api_prefix = "api/v1/"
 
@@ -20,9 +20,7 @@ urlpatterns = [
     ),
     path(
         f"{api_prefix}schema/mobile/",
-        SpectacularAPIView.as_view(
-            custom_settings={"TAGS": ["mobile"]},
-        ),
+        FilteredSpectacularAPIView.as_view(filter_tag="mobile"),
         name="schema-mobile",
     ),
     path(
@@ -32,9 +30,7 @@ urlpatterns = [
     ),
     path(
         f"{api_prefix}schema/dashboard/",
-        SpectacularAPIView.as_view(
-            custom_settings={"TAGS": ["dashboard"]},
-        ),
+        FilteredSpectacularAPIView.as_view(filter_tag="dashboard"),
         name="schema-dashboard",
     ),
     path(
@@ -44,9 +40,7 @@ urlpatterns = [
     ),
     path(
         f"{api_prefix}schema/admin/",
-        SpectacularAPIView.as_view(
-            custom_settings={"TAGS": ["admin"]},
-        ),
+        FilteredSpectacularAPIView.as_view(filter_tag="admin"),
         name="schema-admin",
     ),
     path(
