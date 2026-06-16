@@ -18,6 +18,42 @@ urlpatterns = [
     path(
         f"{api_prefix}docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"
     ),
+    path(
+        f"{api_prefix}schema/mobile/",
+        SpectacularAPIView.as_view(
+            custom_settings={"TAGS": ["mobile"]},
+        ),
+        name="schema-mobile",
+    ),
+    path(
+        f"{api_prefix}docs/mobile/",
+        SpectacularSwaggerView.as_view(url_name="schema-mobile"),
+        name="swagger-ui-mobile",
+    ),
+    path(
+        f"{api_prefix}schema/dashboard/",
+        SpectacularAPIView.as_view(
+            custom_settings={"TAGS": ["dashboard"]},
+        ),
+        name="schema-dashboard",
+    ),
+    path(
+        f"{api_prefix}docs/dashboard/",
+        SpectacularSwaggerView.as_view(url_name="schema-dashboard"),
+        name="swagger-ui-dashboard",
+    ),
+    path(
+        f"{api_prefix}schema/admin/",
+        SpectacularAPIView.as_view(
+            custom_settings={"TAGS": ["admin"]},
+        ),
+        name="schema-admin",
+    ),
+    path(
+        f"{api_prefix}docs/admin/",
+        SpectacularSwaggerView.as_view(url_name="schema-admin"),
+        name="swagger-ui-admin",
+    ),
     # Mobile
     path(f"{api_prefix}", include("apps.users.urls")),
     path(f"{api_prefix}", include("apps.hubs.urls")),
