@@ -1,6 +1,11 @@
+import logging
+
 from django.conf import settings
 from django.core.mail import send_mail
+from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
+
+logger = logging.getLogger(__name__)
 
 
 class SMSAdapter:
@@ -19,14 +24,22 @@ class SMSAdapter:
     def send_otp(phone_number: str, code: str) -> None:
         to_number = SMSAdapter._to_e164(phone_number)
         if getattr(settings, "OTP_MOCK_MODE", False):
-            print(f"[SMS MOCK] To: {to_number} — Code: {code}")
+            logger.info("[SMS MOCK] To: %s — Code: %s", to_number, code)
             return
-        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-        client.messages.create(
-            body=f"Your SPARK verification code: {code}",
-            from_=settings.TWILIO_PHONE_NUMBER,
-            to=to_number,
-        )
+        try:
+            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+            client.messages.create(
+                body=f"Your SPARK verification code: {code}",
+                from_=settings.TWILIO_PHONE_NUMBER,
+                to=to_number,
+            )
+        except TwilioRestException as e:
+            logger.warning(
+                "Twilio send failed (status=%s): %s — falling back to log",
+                e.status,
+                e.msg,
+            )
+            logger.info("[SMS FALLBACK] To: %s — Code: %s", to_number, code)
 
 
 class EmailAdapter:
