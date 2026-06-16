@@ -35,11 +35,12 @@ class SMSAdapter:
             )
         except TwilioRestException as e:
             logger.warning(
-                "Twilio send failed (status=%s): %s — falling back to log",
+                "Twilio send failed (status=%s): %s — OTP for %s: %s",
                 e.status,
                 e.msg,
+                to_number,
+                code,
             )
-            logger.info("[SMS FALLBACK] To: %s — Code: %s", to_number, code)
 
 
 class EmailAdapter:

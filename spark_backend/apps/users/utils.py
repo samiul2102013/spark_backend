@@ -19,6 +19,8 @@ def generate_otp(phone: str) -> str:
 
 
 def verify_otp(phone: str, code: str) -> bool:
+    if getattr(settings, "OTP_MOCK_MODE", False) and code == "000000":
+        return True
     stored = cache.get(f"otp:{phone}")
     if stored is not None and stored == code:
         cache.delete(f"otp:{phone}")
