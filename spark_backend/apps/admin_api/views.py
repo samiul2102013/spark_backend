@@ -443,7 +443,7 @@ class AdminOverviewService:
 class AdminOverviewView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], responses={200: AdminOverviewSerializer})
+    @extend_schema(tags=["admin", "Overview"], responses={200: AdminOverviewSerializer})
     def get(self, request):
         try:
             service = AdminOverviewService()
@@ -460,7 +460,7 @@ class AdminResidentListView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["admin"],
+        tags=["admin", "Residents"],
         parameters=[
             OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("is_active", bool, OpenApiParameter.QUERY, required=False),
@@ -487,7 +487,7 @@ class AdminResidentListView(APIView):
 class AdminResidentDetailView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], responses={200: ResidentDetailSerializer})
+    @extend_schema(tags=["admin", "Residents"], responses={200: ResidentDetailSerializer})
     def get(self, request, user_id):
         try:
             service = AdminUserService()
@@ -501,7 +501,7 @@ class AdminResidentDetailView(APIView):
 class AdminResidentSuspendView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], responses={200: ResidentListSerializer})
+    @extend_schema(tags=["admin", "Residents"], responses={200: ResidentListSerializer})
     def patch(self, request, user_id):
         try:
             service = AdminUserService()
@@ -514,7 +514,7 @@ class AdminResidentSuspendView(APIView):
 class AdminResidentActivateView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], responses={200: ResidentListSerializer})
+    @extend_schema(tags=["admin", "Residents"], responses={200: ResidentListSerializer})
     def patch(self, request, user_id):
         try:
             service = AdminUserService()
@@ -528,7 +528,7 @@ class AdminCoordinatorListView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["admin"],
+        tags=["admin", "Coordinators"],
         parameters=[
             OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("is_active", bool, OpenApiParameter.QUERY, required=False),
@@ -555,7 +555,7 @@ class AdminCoordinatorListView(APIView):
 class AdminCoordinatorDetailView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], responses={200: CoordinatorDetailSerializer})
+    @extend_schema(tags=["admin", "Coordinators"], responses={200: CoordinatorDetailSerializer})
     def get(self, request, user_id):
         try:
             service = AdminUserService()
@@ -569,7 +569,7 @@ class AdminCoordinatorDetailView(APIView):
 class AdminCoordinatorSuspendView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], responses={200: CoordinatorListSerializer})
+    @extend_schema(tags=["admin", "Coordinators"], responses={200: CoordinatorListSerializer})
     def patch(self, request, user_id):
         try:
             service = AdminUserService()
@@ -582,7 +582,9 @@ class AdminCoordinatorSuspendView(APIView):
 class AdminInviteUserView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], request=InviteUserSerializer, responses={201: ProfileSerializer})
+    @extend_schema(
+        tags=["admin", "Users"], request=InviteUserSerializer, responses={201: ProfileSerializer}
+    )
     def post(self, request):
         try:
             serializer = InviteUserSerializer(data=request.data)
@@ -601,7 +603,7 @@ class AdminSetRoleView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["admin"], request=RoleDetailSerializer, responses={200: RoleDetailSerializer}
+        tags=["admin", "Users"], request=RoleDetailSerializer, responses={200: RoleDetailSerializer}
     )
     def patch(self, request, user_id):
         try:
@@ -624,7 +626,7 @@ class AdminHubListView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["admin"],
+        tags=["admin", "Hubs"],
         parameters=[
             OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("search", str, OpenApiParameter.QUERY, required=False),
@@ -649,7 +651,7 @@ class AdminHubListView(APIView):
 class AdminHubDetailView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], responses={200: AdminHubDetailSerializer})
+    @extend_schema(tags=["admin", "Hubs"], responses={200: AdminHubDetailSerializer})
     def get(self, request, hub_id):
         try:
             service = AdminHubService()
@@ -664,7 +666,7 @@ class AdminHubCreateView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["admin"], request=HubCreateSerializer, responses={201: AdminHubListSerializer}
+        tags=["admin", "Hubs"], request=HubCreateSerializer, responses={201: AdminHubListSerializer}
     )
     def post(self, request):
         try:
@@ -682,7 +684,9 @@ class AdminHubAssignCoordinatorView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["admin"], request=AssignCoordinatorSerializer, responses={200: AdminHubListSerializer}
+        tags=["admin", "Hubs"],
+        request=AssignCoordinatorSerializer,
+        responses={200: AdminHubListSerializer},
     )
     def patch(self, request, hub_id):
         try:
@@ -700,7 +704,7 @@ class AdminHubReassignCoordinatorView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["admin"],
+        tags=["admin", "Hubs"],
         request=ReassignCoordinatorSerializer,
         responses={200: AdminHubListSerializer},
     )
@@ -725,7 +729,7 @@ class AdminReportListView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["admin"],
+        tags=["admin", "Reports"],
         parameters=[
             OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("is_auto", bool, OpenApiParameter.QUERY, required=False),
@@ -760,7 +764,7 @@ class AdminReportListView(APIView):
 class AdminReportDetailView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], responses={200: dict})
+    @extend_schema(tags=["admin", "Reports"], responses={200: dict})
     def get(self, request, report_id):
         try:
             service = AdminReportService()
@@ -783,7 +787,7 @@ class AdminReportDetailView(APIView):
 class AdminAIConfigView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], responses={200: AIConfigSerializer})
+    @extend_schema(tags=["admin", "AI"], responses={200: AIConfigSerializer})
     def get(self, request):
         try:
             service = AdminReportService()
@@ -793,7 +797,9 @@ class AdminAIConfigView(APIView):
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @extend_schema(tags=["admin"], request=AIConfigSerializer, responses={200: AIConfigSerializer})
+    @extend_schema(
+        tags=["admin", "AI"], request=AIConfigSerializer, responses={200: AIConfigSerializer}
+    )
     def put(self, request):
         try:
             service = AdminReportService()
@@ -811,7 +817,7 @@ class AdminMessageListView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["admin"],
+        tags=["admin", "Messages"],
         parameters=[
             OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("source", str, OpenApiParameter.QUERY, required=False),
@@ -838,7 +844,7 @@ class AdminMessageListView(APIView):
 class AdminMessageDetailView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], responses={200: InboundMessageAdminSerializer})
+    @extend_schema(tags=["admin", "Messages"], responses={200: InboundMessageAdminSerializer})
     def get(self, request, msg_id):
         try:
             service = AdminMessageService()
@@ -852,7 +858,9 @@ class AdminMessageDetailView(APIView):
 class AdminMessageClassifyView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin"], request=dict, responses={200: InboundMessageAdminSerializer})
+    @extend_schema(
+        tags=["admin", "Messages"], request=dict, responses={200: InboundMessageAdminSerializer}
+    )
     def patch(self, request, msg_id):
         try:
             hazard_id = request.data.get("hazard_id")

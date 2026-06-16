@@ -27,7 +27,7 @@ from .services import AuthService
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile"], request=RegisterSerializer, responses={201: None})
+    @extend_schema(tags=["mobile", "Auth"], request=RegisterSerializer, responses={201: None})
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if not serializer.is_valid():
@@ -43,7 +43,7 @@ class RegisterView(APIView):
 class OTPSendView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile"], request=OTPSendSerializer, responses={200: None})
+    @extend_schema(tags=["mobile", "Auth"], request=OTPSendSerializer, responses={200: None})
     def post(self, request):
         serializer = OTPSendSerializer(data=request.data)
         if not serializer.is_valid():
@@ -59,7 +59,7 @@ class OTPSendView(APIView):
 class OTPVerifyView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile"], request=OTPVerifySerializer, responses={200: None})
+    @extend_schema(tags=["mobile", "Auth"], request=OTPVerifySerializer, responses={200: None})
     def post(self, request):
         serializer = OTPVerifySerializer(data=request.data)
         if not serializer.is_valid():
@@ -75,7 +75,7 @@ class OTPVerifyView(APIView):
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile"], request=LoginSerializer, responses={200: None})
+    @extend_schema(tags=["mobile", "Auth"], request=LoginSerializer, responses={200: None})
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if not serializer.is_valid():
@@ -91,7 +91,7 @@ class LoginView(APIView):
 class LogoutView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile"], request=LogoutSerializer, responses={200: None})
+    @extend_schema(tags=["mobile", "Auth"], request=LogoutSerializer, responses={200: None})
     def post(self, request):
         serializer = LogoutSerializer(data=request.data)
         if not serializer.is_valid():
@@ -106,7 +106,9 @@ class LogoutView(APIView):
 class BiometricRegisterView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], request=BiometricRegisterSerializer, responses={200: None})
+    @extend_schema(
+        tags=["mobile", "Auth"], request=BiometricRegisterSerializer, responses={200: None}
+    )
     def post(self, request):
         serializer = BiometricRegisterSerializer(data=request.data)
         if not serializer.is_valid():
@@ -122,7 +124,7 @@ class BiometricRegisterView(APIView):
 class BiometricLoginView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile"], request=BiometricLoginSerializer, responses={200: None})
+    @extend_schema(tags=["mobile", "Auth"], request=BiometricLoginSerializer, responses={200: None})
     def post(self, request):
         serializer = BiometricLoginSerializer(data=request.data)
         if not serializer.is_valid():
@@ -138,7 +140,7 @@ class BiometricLoginView(APIView):
 class OfflineTokenView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], responses={200: None})
+    @extend_schema(tags=["mobile", "Auth"], responses={200: None})
     def post(self, request):
         try:
             service = AuthService()
@@ -151,7 +153,7 @@ class OfflineTokenView(APIView):
 class InviteValidateView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile"], responses={200: None})
+    @extend_schema(tags=["mobile", "Invites"], responses={200: None})
     def post(self, request, token):
         try:
             service = AuthService()
@@ -164,7 +166,9 @@ class InviteValidateView(APIView):
 class InviteAcceptView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile"], request=AcceptInviteSerializer, responses={200: None})
+    @extend_schema(
+        tags=["mobile", "Invites"], request=AcceptInviteSerializer, responses={200: None}
+    )
     def post(self, request):
         serializer = AcceptInviteSerializer(data=request.data)
         if not serializer.is_valid():
@@ -180,7 +184,7 @@ class InviteAcceptView(APIView):
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile"], request=ForgotPasswordSerializer, responses={200: None})
+    @extend_schema(tags=["mobile", "Auth"], request=ForgotPasswordSerializer, responses={200: None})
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)
         if not serializer.is_valid():
@@ -196,7 +200,7 @@ class ForgotPasswordView(APIView):
 class ResetPasswordView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile"], request=ResetPasswordSerializer, responses={200: None})
+    @extend_schema(tags=["mobile", "Auth"], request=ResetPasswordSerializer, responses={200: None})
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         if not serializer.is_valid():
@@ -212,12 +216,14 @@ class ResetPasswordView(APIView):
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], responses={200: ProfileSerializer})
+    @extend_schema(tags=["mobile", "Profile"], responses={200: ProfileSerializer})
     def get(self, request):
         serializer = ProfileSerializer(request.user)
         return success_response(serializer.data)
 
-    @extend_schema(tags=["mobile"], request=ProfileSerializer, responses={200: ProfileSerializer})
+    @extend_schema(
+        tags=["mobile", "Profile"], request=ProfileSerializer, responses={200: ProfileSerializer}
+    )
     def put(self, request):
         serializer = ProfileSerializer(request.user, data=request.data, partial=True)
         if not serializer.is_valid():
@@ -233,7 +239,9 @@ class ProfileView(APIView):
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], request=ChangePasswordSerializer, responses={200: None})
+    @extend_schema(
+        tags=["mobile", "Profile"], request=ChangePasswordSerializer, responses={200: None}
+    )
     def put(self, request):
         serializer = ChangePasswordSerializer(data=request.data)
         if not serializer.is_valid():

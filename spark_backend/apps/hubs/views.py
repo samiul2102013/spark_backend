@@ -20,7 +20,7 @@ class HubListView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile"],
+        tags=["mobile", "Hubs"],
         parameters=[
             OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False),
         ],
@@ -37,7 +37,7 @@ class HubListView(APIView):
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @extend_schema(tags=["mobile"], request=HubSerializer, responses={201: HubSerializer})
+    @extend_schema(tags=["mobile", "Hubs"], request=HubSerializer, responses={201: HubSerializer})
     def post(self, request):
         try:
             self.permission_classes = [IsAuthenticated, IsAdmin]
@@ -55,7 +55,7 @@ class HubListView(APIView):
 class HubDetailView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile"], responses={200: HubSerializer})
+    @extend_schema(tags=["mobile", "Hubs"], responses={200: HubSerializer})
     def get(self, request, hub_id):
         try:
             service = HubService()
@@ -64,7 +64,7 @@ class HubDetailView(APIView):
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @extend_schema(tags=["mobile"], request=HubSerializer, responses={200: HubSerializer})
+    @extend_schema(tags=["mobile", "Hubs"], request=HubSerializer, responses={200: HubSerializer})
     def put(self, request, hub_id):
         try:
             self.permission_classes = [IsAuthenticated, IsAdmin]
@@ -78,7 +78,7 @@ class HubDetailView(APIView):
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @extend_schema(tags=["mobile"], responses={204: None})
+    @extend_schema(tags=["mobile", "Hubs"], responses={204: None})
     def delete(self, request, hub_id):
         try:
             self.permission_classes = [IsAuthenticated, IsAdmin]
@@ -130,7 +130,7 @@ class HubCheckinsView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrCoordinator]
 
     @extend_schema(
-        tags=["mobile"],
+        tags=["mobile", "Hubs"],
         parameters=[
             OpenApiParameter("date", str, OpenApiParameter.QUERY, required=False),
         ],
@@ -151,7 +151,7 @@ class HubCheckinsView(APIView):
 class HubBroadcastsView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], responses={200: dict})
+    @extend_schema(tags=["mobile", "Hubs"], responses={200: dict})
     def get(self, request, hub_id):
         try:
             service = HubService()
@@ -167,7 +167,7 @@ class HubBroadcastsView(APIView):
 class HubResourcesView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], responses={200: dict})
+    @extend_schema(tags=["mobile", "Hubs"], responses={200: dict})
     def get(self, request, hub_id):
         try:
             service = HubService()

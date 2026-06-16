@@ -21,7 +21,7 @@ from .services import DashboardService
 class DashboardOverviewView(APIView):
     permission_classes = [IsAuthenticated, IsDashboardUser]
 
-    @extend_schema(tags=["dashboard"], responses={200: OverviewSerializer})
+    @extend_schema(tags=["dashboard", "Overview"], responses={200: OverviewSerializer})
     def get(self, request):
         try:
             service = DashboardService()
@@ -35,7 +35,7 @@ class DashboardMapView(APIView):
     permission_classes = [IsAuthenticated, IsDashboardUser]
 
     @extend_schema(
-        tags=["dashboard"],
+        tags=["dashboard", "Map"],
         parameters=[
             OpenApiParameter("lat_min", float, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("lat_max", float, OpenApiParameter.QUERY, required=False),
@@ -70,7 +70,7 @@ class DashboardReportsView(APIView):
     permission_classes = [IsAuthenticated, IsDashboardUser]
 
     @extend_schema(
-        tags=["dashboard"],
+        tags=["dashboard", "Reports"],
         parameters=[
             OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
         ],
@@ -92,7 +92,7 @@ class DashboardAlertsView(APIView):
     permission_classes = [IsAuthenticated, IsDashboardUser]
 
     @extend_schema(
-        tags=["dashboard"],
+        tags=["dashboard", "Alerts"],
         parameters=[
             OpenApiParameter("severity", str, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False),
@@ -119,7 +119,10 @@ class DashboardAlertsView(APIView):
 class DashboardInfrastructureView(APIView):
     permission_classes = [IsAuthenticated, IsDashboardUser]
 
-    @extend_schema(tags=["dashboard"], responses={200: InfrastructureHubSerializer(many=True)})
+    @extend_schema(
+        tags=["dashboard", "Infrastructure"],
+        responses={200: InfrastructureHubSerializer(many=True)},
+    )
     def get(self, request):
         try:
             service = DashboardService()
@@ -135,7 +138,9 @@ class DashboardInfrastructureView(APIView):
 class DashboardInfrastructureDetailView(APIView):
     permission_classes = [IsAuthenticated, IsDashboardUser]
 
-    @extend_schema(tags=["dashboard"], responses={200: InfrastructureHubSerializer})
+    @extend_schema(
+        tags=["dashboard", "Infrastructure"], responses={200: InfrastructureHubSerializer}
+    )
     def get(self, request, hub_id):
         try:
             service = DashboardService()

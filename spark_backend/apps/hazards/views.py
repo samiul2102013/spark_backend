@@ -14,7 +14,7 @@ from .services import HazardService
 class HazardListView(APIView):
 
     @extend_schema(
-        tags=["mobile"],
+        tags=["mobile", "Hazards"],
         parameters=[
             OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("category", str, OpenApiParameter.QUERY, required=False),
@@ -41,7 +41,9 @@ class HazardListView(APIView):
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @extend_schema(tags=["mobile"], request=HazardSerializer, responses={201: HazardSerializer})
+    @extend_schema(
+        tags=["mobile", "Hazards"], request=HazardSerializer, responses={201: HazardSerializer}
+    )
     def post(self, request):
         try:
             self.permission_classes = [IsAuthenticated, IsResidentOrCoordinator]
@@ -59,7 +61,7 @@ class HazardListView(APIView):
 class HazardDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], responses={200: HazardSerializer})
+    @extend_schema(tags=["mobile", "Hazards"], responses={200: HazardSerializer})
     def get(self, request, hazard_id):
         try:
             service = HazardService()
@@ -82,7 +84,7 @@ class HazardDetailView(APIView):
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @extend_schema(tags=["mobile"], responses={204: None})
+    @extend_schema(tags=["mobile", "Hazards"], responses={204: None})
     def delete(self, request, hazard_id):
         try:
             self.permission_classes = [IsAuthenticated, IsAdmin]
@@ -97,7 +99,7 @@ class HazardDetailView(APIView):
 class HazardClearView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrCoordinator]
 
-    @extend_schema(tags=["mobile"], responses={200: HazardSerializer})
+    @extend_schema(tags=["mobile", "Hazards"], responses={200: HazardSerializer})
     def patch(self, request, hazard_id):
         try:
             service = HazardService()
@@ -110,7 +112,7 @@ class HazardClearView(APIView):
 class HazardCommentListView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], responses={200: CommentSerializer(many=True)})
+    @extend_schema(tags=["mobile", "Hazards"], responses={200: CommentSerializer(many=True)})
     def get(self, request, hazard_id):
         try:
             service = HazardService()
@@ -122,7 +124,9 @@ class HazardCommentListView(APIView):
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @extend_schema(tags=["mobile"], request=CommentSerializer, responses={201: CommentSerializer})
+    @extend_schema(
+        tags=["mobile", "Hazards"], request=CommentSerializer, responses={201: CommentSerializer}
+    )
     def post(self, request, hazard_id):
         try:
             serializer = CommentSerializer(data=request.data)

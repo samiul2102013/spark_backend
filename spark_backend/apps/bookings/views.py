@@ -16,7 +16,7 @@ class BookingListView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile"],
+        tags=["mobile", "Bookings"],
         parameters=[
             OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
@@ -40,7 +40,9 @@ class BookingListView(APIView):
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @extend_schema(
-        tags=["mobile"], request=BookingCreateSerializer, responses={201: BookingSerializer}
+        tags=["mobile", "Bookings"],
+        request=BookingCreateSerializer,
+        responses={201: BookingSerializer},
     )
     def post(self, request):
         try:
@@ -74,7 +76,7 @@ class BookingDetailView(APIView):
 class BookingCancelView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], responses={200: BookingSerializer})
+    @extend_schema(tags=["mobile", "Bookings"], responses={200: BookingSerializer})
     def patch(self, request, booking_id):
         try:
             service = BookingService()
@@ -88,7 +90,7 @@ class HubSlotsView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile"],
+        tags=["mobile", "Bookings"],
         parameters=[
             OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=True),
             OpenApiParameter("date", str, OpenApiParameter.QUERY, required=True),

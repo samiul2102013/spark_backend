@@ -21,7 +21,9 @@ class CheckInView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile"], request=CheckInCreateSerializer, responses={201: CheckInSerializer}
+        tags=["mobile", "Check-Ins"],
+        request=CheckInCreateSerializer,
+        responses={201: CheckInSerializer},
     )
     def post(self, request):
         try:
@@ -39,7 +41,7 @@ class CheckInHistoryView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile"],
+        tags=["mobile", "Check-Ins"],
         parameters=[
             OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False),
@@ -67,7 +69,7 @@ class CheckInHistoryView(APIView):
 class CheckInLatestView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], responses={200: CheckInSerializer})
+    @extend_schema(tags=["mobile", "Check-Ins"], responses={200: CheckInSerializer})
     def get(self, request):
         try:
             service = CheckInService()
@@ -83,7 +85,7 @@ class BroadcastListView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile"],
+        tags=["mobile", "Broadcasts"],
         parameters=[
             OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
         ],
@@ -105,7 +107,9 @@ class BroadcastCreateView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrCoordinator]
 
     @extend_schema(
-        tags=["mobile"], request=BroadcastCreateSerializer, responses={201: BroadcastSerializer}
+        tags=["mobile", "Broadcasts"],
+        request=BroadcastCreateSerializer,
+        responses={201: BroadcastSerializer},
     )
     def post(self, request):
         try:
@@ -141,7 +145,7 @@ class NotificationListView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile"],
+        tags=["mobile", "Notifications"],
         parameters=[
             OpenApiParameter("unread_only", bool, OpenApiParameter.QUERY, required=False),
         ],
@@ -163,7 +167,7 @@ class NotificationListView(APIView):
 class NotificationReadView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], responses={200: NotificationSerializer})
+    @extend_schema(tags=["mobile", "Notifications"], responses={200: NotificationSerializer})
     def patch(self, request, notification_id):
         try:
             service = NotificationService()
@@ -176,7 +180,7 @@ class NotificationReadView(APIView):
 class NotificationReadAllView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], responses={200: dict})
+    @extend_schema(tags=["mobile", "Notifications"], responses={200: dict})
     def post(self, request):
         try:
             service = NotificationService()
