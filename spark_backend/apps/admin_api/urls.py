@@ -10,17 +10,17 @@ urlpatterns = [
         "admin/residents/", admin_views.AdminResidentListView.as_view(), name="admin-resident-list"
     ),
     path(
-        "admin/residents/<int:user_id>/",
+        "admin/residents/<str:user_id>/",
         admin_views.AdminResidentDetailView.as_view(),
         name="admin-resident-detail",
     ),
     path(
-        "admin/residents/<int:user_id>/suspend/",
+        "admin/residents/<str:user_id>/suspend/",
         admin_views.AdminResidentSuspendView.as_view(),
         name="admin-resident-suspend",
     ),
     path(
-        "admin/residents/<int:user_id>/activate/",
+        "admin/residents/<str:user_id>/activate/",
         admin_views.AdminResidentActivateView.as_view(),
         name="admin-resident-activate",
     ),
@@ -31,12 +31,12 @@ urlpatterns = [
         name="admin-coordinator-list",
     ),
     path(
-        "admin/coordinators/<int:user_id>/",
+        "admin/coordinators/<str:user_id>/",
         admin_views.AdminCoordinatorDetailView.as_view(),
         name="admin-coordinator-detail",
     ),
     path(
-        "admin/coordinators/<int:user_id>/suspend/",
+        "admin/coordinators/<str:user_id>/suspend/",
         admin_views.AdminCoordinatorSuspendView.as_view(),
         name="admin-coordinator-suspend",
     ),
@@ -45,7 +45,7 @@ urlpatterns = [
         "admin/users/invite/", admin_views.AdminInviteUserView.as_view(), name="admin-users-invite"
     ),
     path(
-        "admin/users/<int:user_id>/role/",
+        "admin/users/<str:user_id>/role/",
         admin_views.AdminSetRoleView.as_view(),
         name="admin-users-set-role",
     ),
