@@ -298,7 +298,7 @@ class AdminUserService:
             user.is_active = True
             user.save()
             return user
-        
+
         user = User.objects.create_user(
             phone_number=phone,
             full_name=data["full_name"],
