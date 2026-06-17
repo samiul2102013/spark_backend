@@ -290,8 +290,15 @@ class AdminUserService:
 
     def invite_user(self, data):
         phone = data.get("phone_number")
-        if User.objects.filter(phone_number=phone).exists():
-            raise ValueError("Phone number already registered.")
+        user = User.objects.filter(phone_number=phone).first()
+        if user:
+            user.full_name = data.get("full_name", user.full_name)
+            user.role = data.get("role", user.role)
+            user.hub_id = data.get("hub_id", user.hub_id)
+            user.is_active = True
+            user.save()
+            return user
+        
         user = User.objects.create_user(
             phone_number=phone,
             full_name=data["full_name"],
