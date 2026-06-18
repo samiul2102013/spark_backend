@@ -20,6 +20,7 @@ from .serializers import (
     ProfileSerializer,
     RegisterSerializer,
     ResetPasswordSerializer,
+    SetPasswordSerializer,
 )
 from .services import AuthService
 
@@ -253,6 +254,22 @@ class ChangePasswordView(APIView):
                 serializer.validated_data["old_password"],
                 serializer.validated_data["new_password"],
             )
+            return success_response(result)
+        except Exception as e:
+            return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SetPasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(tags=["mobile", "Profile"], request=SetPasswordSerializer, responses={200: None})
+    def post(self, request):
+        serializer = SetPasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+        try:
+            service = AuthService()
+            result = service.set_password(request.user, serializer.validated_data["new_password"])
             return success_response(result)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)

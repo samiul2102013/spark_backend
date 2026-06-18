@@ -11,6 +11,7 @@ urlpatterns = [
     path("auth/login/", views.LoginView.as_view(), name="auth-login"),
     path("auth/logout/", views.LogoutView.as_view(), name="auth-logout"),
     path("auth/refresh/", views.BlacklistCheckTokenRefreshView.as_view(), name="auth-refresh"),
+    path("auth/set-password/", views.SetPasswordView.as_view(), name="auth-set-password"),
     # Biometric
     path(
         "auth/biometric/register/",

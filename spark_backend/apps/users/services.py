@@ -196,9 +196,18 @@ class AuthService:
         user.save()
         return user
 
+    def set_password(self, user: User, new_password: str) -> dict:
+        if user.has_usable_password():
+            raise AuthError("You already have a password. Use change password instead.")
+        user.set_password(new_password)
+        user.save(update_fields=["password"])
+        return {"message": "Password set successfully."}
+
     def change_password(self, user: User, old_password: str, new_password: str) -> dict:
+        if not user.has_usable_password():
+            raise AuthError("You don't have a password. Use set password first.")
         if not user.check_password(old_password):
-            raise AuthError("Current password is incorrect.")
+            raise AuthError("Your given old password is incorrect.")
         user.set_password(new_password)
         user.save(update_fields=["password"])
         return {"message": "Password changed."}
