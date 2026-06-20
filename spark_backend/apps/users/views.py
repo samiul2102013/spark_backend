@@ -1,4 +1,4 @@
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
@@ -28,7 +28,27 @@ from .services import AuthService
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile", "Auth"], request=RegisterSerializer, responses={201: None})
+    @extend_schema(
+        tags=["mobile", "Auth"],
+        summary="Register a new user",
+        description="Create a new resident account via OTP registration.",
+        request=RegisterSerializer,
+        responses={201: None},
+        examples=[
+            OpenApiExample(
+                "Register Example",
+                value={
+                    "phone": "01856669533",
+                    "full_name": "John Doe",
+                    "household_size": 4,
+                    "medical_needs": "None",
+                    "latitude": 18.1096,
+                    "longitude": -77.2975,
+                },
+                request_only=True,
+            ),
+        ],
+    )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if not serializer.is_valid():
@@ -44,7 +64,20 @@ class RegisterView(APIView):
 class OTPSendView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile", "Auth"], request=OTPSendSerializer, responses={200: None})
+    @extend_schema(
+        tags=["mobile", "Auth"],
+        summary="Send OTP code",
+        description="Send a 6-digit OTP code to the given phone number for verification.",
+        request=OTPSendSerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Send OTP Example",
+                value={"phone": "01856669533"},
+                request_only=True,
+            ),
+        ],
+    )
     def post(self, request):
         serializer = OTPSendSerializer(data=request.data)
         if not serializer.is_valid():
@@ -60,7 +93,20 @@ class OTPSendView(APIView):
 class OTPVerifyView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile", "Auth"], request=OTPVerifySerializer, responses={200: None})
+    @extend_schema(
+        tags=["mobile", "Auth"],
+        summary="Verify OTP code",
+        description="Verify the 6-digit OTP code. Returns access and refresh tokens on success.",
+        request=OTPVerifySerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Verify OTP Example",
+                value={"phone": "01856669533", "code": "123456"},
+                request_only=True,
+            ),
+        ],
+    )
     def post(self, request):
         serializer = OTPVerifySerializer(data=request.data)
         if not serializer.is_valid():
@@ -76,7 +122,20 @@ class OTPVerifyView(APIView):
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile", "Auth"], request=LoginSerializer, responses={200: None})
+    @extend_schema(
+        tags=["mobile", "Auth"],
+        summary="Login with credentials",
+        description="Authenticate with email/username and password. Returns access and refresh JWT tokens.",
+        request=LoginSerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Login Example",
+                value={"username": "john@example.com", "password": "password123"},
+                request_only=True,
+            ),
+        ],
+    )
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if not serializer.is_valid():
@@ -92,7 +151,20 @@ class LoginView(APIView):
 class LogoutView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile", "Auth"], request=LogoutSerializer, responses={200: None})
+    @extend_schema(
+        tags=["mobile", "Auth"],
+        summary="Logout",
+        description="Blacklist the refresh token to invalidate the session.",
+        request=LogoutSerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Logout Example",
+                value={"refresh": "eyJhbGciOiJIUzI1NiJ9..."},
+                request_only=True,
+            ),
+        ],
+    )
     def post(self, request):
         serializer = LogoutSerializer(data=request.data)
         if not serializer.is_valid():
@@ -108,7 +180,18 @@ class BiometricRegisterView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile", "Auth"], request=BiometricRegisterSerializer, responses={200: None}
+        tags=["mobile", "Auth"],
+        summary="Register biometric key",
+        description="Register a biometric key for the authenticated user.",
+        request=BiometricRegisterSerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Biometric Register Example",
+                value={"key": "device-biometric-key-here"},
+                request_only=True,
+            ),
+        ],
     )
     def post(self, request):
         serializer = BiometricRegisterSerializer(data=request.data)
@@ -125,7 +208,20 @@ class BiometricRegisterView(APIView):
 class BiometricLoginView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile", "Auth"], request=BiometricLoginSerializer, responses={200: None})
+    @extend_schema(
+        tags=["mobile", "Auth"],
+        summary="Biometric login",
+        description="Login using a biometric key instead of password.",
+        request=BiometricLoginSerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Biometric Login Example",
+                value={"key": "device-biometric-key-here"},
+                request_only=True,
+            ),
+        ],
+    )
     def post(self, request):
         serializer = BiometricLoginSerializer(data=request.data)
         if not serializer.is_valid():
@@ -141,7 +237,12 @@ class BiometricLoginView(APIView):
 class OfflineTokenView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile", "Auth"], responses={200: None})
+    @extend_schema(
+        tags=["mobile", "Auth"],
+        summary="Issue offline token",
+        description="Generate an offline token for the authenticated user to use when connectivity is limited.",
+        responses={200: None},
+    )
     def post(self, request):
         try:
             service = AuthService()
@@ -154,7 +255,12 @@ class OfflineTokenView(APIView):
 class InviteValidateView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile", "Invites"], responses={200: None})
+    @extend_schema(
+        tags=["mobile", "Invites"],
+        summary="Validate invite token",
+        description="Check if an invite token is valid and return invite details.",
+        responses={200: None},
+    )
     def post(self, request, token):
         try:
             service = AuthService()
@@ -168,7 +274,22 @@ class InviteAcceptView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "Invites"], request=AcceptInviteSerializer, responses={200: None}
+        tags=["mobile", "Invites"],
+        summary="Accept invite",
+        description="Accept a government/coordinator invite by setting a password.",
+        request=AcceptInviteSerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Accept Invite Example",
+                value={
+                    "token": "invite-token-here",
+                    "password": "securePassword123",
+                    "confirm_password": "securePassword123",
+                },
+                request_only=True,
+            ),
+        ],
     )
     def post(self, request):
         serializer = AcceptInviteSerializer(data=request.data)
@@ -185,7 +306,20 @@ class InviteAcceptView(APIView):
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile", "Auth"], request=ForgotPasswordSerializer, responses={200: None})
+    @extend_schema(
+        tags=["mobile", "Auth"],
+        summary="Forgot password",
+        description="Request a password reset code. Sends reset code to the user's phone or email.",
+        request=ForgotPasswordSerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Forgot Password Example",
+                value={"identifier": "01856669533"},
+                request_only=True,
+            ),
+        ],
+    )
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)
         if not serializer.is_valid():
@@ -201,7 +335,25 @@ class ForgotPasswordView(APIView):
 class ResetPasswordView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile", "Auth"], request=ResetPasswordSerializer, responses={200: None})
+    @extend_schema(
+        tags=["mobile", "Auth"],
+        summary="Reset password",
+        description="Reset password using the code received via forgot-password.",
+        request=ResetPasswordSerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Reset Password Example",
+                value={
+                    "identifier": "01856669533",
+                    "code": "123456",
+                    "new_password": "newSecurePass123",
+                    "confirm_password": "newSecurePass123",
+                },
+                request_only=True,
+            ),
+        ],
+    )
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         if not serializer.is_valid():
@@ -217,13 +369,29 @@ class ResetPasswordView(APIView):
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile", "Profile"], responses={200: ProfileSerializer})
+    @extend_schema(
+        tags=["mobile", "Profile"],
+        summary="Get profile",
+        description="Retrieve the authenticated user's profile information.",
+        responses={200: ProfileSerializer},
+    )
     def get(self, request):
         serializer = ProfileSerializer(request.user)
         return success_response(serializer.data)
 
     @extend_schema(
-        tags=["mobile", "Profile"], request=ProfileSerializer, responses={200: ProfileSerializer}
+        tags=["mobile", "Profile"],
+        summary="Update profile",
+        description="Partially update the authenticated user's profile fields.",
+        request=ProfileSerializer,
+        responses={200: ProfileSerializer},
+        examples=[
+            OpenApiExample(
+                "Update Profile Example",
+                value={"full_name": "Jane Doe", "household_size": 3, "medical_needs": "Asthma"},
+                request_only=True,
+            ),
+        ],
     )
     def put(self, request):
         serializer = ProfileSerializer(request.user, data=request.data, partial=True)
@@ -241,7 +409,22 @@ class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile", "Profile"], request=ChangePasswordSerializer, responses={200: None}
+        tags=["mobile", "Profile"],
+        summary="Change password",
+        description="Change the authenticated user's password by providing the old password.",
+        request=ChangePasswordSerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Change Password Example",
+                value={
+                    "old_password": "currentPass123",
+                    "new_password": "newSecurePass456",
+                    "confirm_password": "newSecurePass456",
+                },
+                request_only=True,
+            ),
+        ],
     )
     def put(self, request):
         serializer = ChangePasswordSerializer(data=request.data)
@@ -262,7 +445,20 @@ class ChangePasswordView(APIView):
 class SetPasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile", "Profile"], request=SetPasswordSerializer, responses={200: None})
+    @extend_schema(
+        tags=["mobile", "Profile"],
+        summary="Set password",
+        description="Set a new password for the authenticated user (no old password required).",
+        request=SetPasswordSerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Set Password Example",
+                value={"new_password": "newSecurePass456", "confirm_password": "newSecurePass456"},
+                request_only=True,
+            ),
+        ],
+    )
     def post(self, request):
         serializer = SetPasswordSerializer(data=request.data)
         if not serializer.is_valid():

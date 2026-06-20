@@ -1,5 +1,5 @@
 from django.db.models import Q
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -14,6 +14,10 @@ from apps.users.permissions import IsAdmin
 from apps.users.serializers import ProfileSerializer
 from core.pagination import StandardPagination
 from core.responses import created_response, error_response, success_response
+
+HUB_STATUSES = ["open", "closed", "low_battery", "critical"]
+MESSAGE_STATUSES = ["pending", "classified", "unclassified"]
+MESSAGE_SOURCES = ["whatsapp", "sms"]
 
 # ─── Serializers ─────────────────────────────────────────────────────
 
@@ -450,7 +454,12 @@ class AdminOverviewService:
 class AdminOverviewView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin", "Overview"], responses={200: AdminOverviewSerializer})
+    @extend_schema(
+        tags=["admin", "Overview"],
+        summary="Get admin overview",
+        description="Retrieve aggregate platform statistics for the admin dashboard.",
+        responses={200: AdminOverviewSerializer},
+    )
     def get(self, request):
         try:
             service = AdminOverviewService()
@@ -468,10 +477,14 @@ class AdminResidentListView(APIView):
 
     @extend_schema(
         tags=["admin", "Residents"],
+        summary="List residents",
+        description="Retrieve paginated list of all resident users with optional filters.",
         parameters=[
-            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("is_active", bool, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("search", str, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False, description="Filter by hub ID"),
+            OpenApiParameter("is_active", bool, OpenApiParameter.QUERY, required=False, description="Filter by active status"),
+            OpenApiParameter("search", str, OpenApiParameter.QUERY, required=False, description="Search by name, phone, or email"),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
         ],
         responses={200: ResidentListSerializer(many=True)},
     )
@@ -494,7 +507,12 @@ class AdminResidentListView(APIView):
 class AdminResidentDetailView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin", "Residents"], responses={200: ResidentDetailSerializer})
+    @extend_schema(
+        tags=["admin", "Residents"],
+        summary="Get resident details",
+        description="Retrieve full details of a specific resident by user ID (phone number).",
+        responses={200: ResidentDetailSerializer},
+    )
     def get(self, request, user_id):
         try:
             service = AdminUserService()
@@ -508,7 +526,12 @@ class AdminResidentDetailView(APIView):
 class AdminResidentSuspendView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin", "Residents"], responses={200: ResidentListSerializer})
+    @extend_schema(
+        tags=["admin", "Residents"],
+        summary="Suspend resident",
+        description="Deactivate a resident account by ID.",
+        responses={200: ResidentListSerializer},
+    )
     def patch(self, request, user_id):
         try:
             service = AdminUserService()
@@ -521,7 +544,12 @@ class AdminResidentSuspendView(APIView):
 class AdminResidentActivateView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin", "Residents"], responses={200: ResidentListSerializer})
+    @extend_schema(
+        tags=["admin", "Residents"],
+        summary="Activate resident",
+        description="Reactivate a suspended resident account by ID.",
+        responses={200: ResidentListSerializer},
+    )
     def patch(self, request, user_id):
         try:
             service = AdminUserService()
@@ -536,10 +564,14 @@ class AdminCoordinatorListView(APIView):
 
     @extend_schema(
         tags=["admin", "Coordinators"],
+        summary="List coordinators",
+        description="Retrieve paginated list of all coordinator users with optional filters.",
         parameters=[
-            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("is_active", bool, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("search", str, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False, description="Filter by hub ID"),
+            OpenApiParameter("is_active", bool, OpenApiParameter.QUERY, required=False, description="Filter by active status"),
+            OpenApiParameter("search", str, OpenApiParameter.QUERY, required=False, description="Search by name, phone, or email"),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
         ],
         responses={200: CoordinatorListSerializer(many=True)},
     )
@@ -562,7 +594,12 @@ class AdminCoordinatorListView(APIView):
 class AdminCoordinatorDetailView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin", "Coordinators"], responses={200: CoordinatorDetailSerializer})
+    @extend_schema(
+        tags=["admin", "Coordinators"],
+        summary="Get coordinator details",
+        description="Retrieve full details of a specific coordinator by user ID (phone number).",
+        responses={200: CoordinatorDetailSerializer},
+    )
     def get(self, request, user_id):
         try:
             service = AdminUserService()
@@ -576,7 +613,12 @@ class AdminCoordinatorDetailView(APIView):
 class AdminCoordinatorSuspendView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin", "Coordinators"], responses={200: CoordinatorListSerializer})
+    @extend_schema(
+        tags=["admin", "Coordinators"],
+        summary="Suspend coordinator",
+        description="Deactivate a coordinator account by ID.",
+        responses={200: CoordinatorListSerializer},
+    )
     def patch(self, request, user_id):
         try:
             service = AdminUserService()
@@ -590,7 +632,23 @@ class AdminInviteUserView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["admin", "Users"], request=InviteUserSerializer, responses={201: ProfileSerializer}
+        tags=["admin", "Users"],
+        summary="Invite user",
+        description="Invite a new user (resident, coordinator, or government) by phone number.",
+        request=InviteUserSerializer,
+        responses={201: ProfileSerializer},
+        examples=[
+            OpenApiExample(
+                "Invite User Example",
+                value={
+                    "phone_number": "01856669533",
+                    "full_name": "John Doe",
+                    "role": "resident",
+                    "hub_id": 1,
+                },
+                request_only=True,
+            ),
+        ],
     )
     def post(self, request):
         try:
@@ -610,7 +668,18 @@ class AdminSetRoleView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["admin", "Users"], request=RoleDetailSerializer, responses={200: RoleDetailSerializer}
+        tags=["admin", "Users"],
+        summary="Set user role",
+        description="Change a user's role (resident, coordinator, government, admin).",
+        request=RoleDetailSerializer,
+        responses={200: RoleDetailSerializer},
+        examples=[
+            OpenApiExample(
+                "Set Role Example",
+                value={"role": "coordinator"},
+                request_only=True,
+            ),
+        ],
     )
     def patch(self, request, user_id):
         try:
@@ -634,9 +703,13 @@ class AdminHubListView(APIView):
 
     @extend_schema(
         tags=["admin", "Hubs"],
+        summary="List hubs",
+        description="Retrieve paginated list of all hubs for admin management.",
         parameters=[
-            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("search", str, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False, enum=HUB_STATUSES, description="Filter by hub status"),
+            OpenApiParameter("search", str, OpenApiParameter.QUERY, required=False, description="Search by name or address"),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
         ],
         responses={200: AdminHubListSerializer(many=True)},
     )
@@ -658,7 +731,12 @@ class AdminHubListView(APIView):
 class AdminHubDetailView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin", "Hubs"], responses={200: AdminHubDetailSerializer})
+    @extend_schema(
+        tags=["admin", "Hubs"],
+        summary="Get hub details",
+        description="Retrieve full details of a specific hub for admin management.",
+        responses={200: AdminHubDetailSerializer},
+    )
     def get(self, request, hub_id):
         try:
             service = AdminHubService()
@@ -673,7 +751,25 @@ class AdminHubCreateView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["admin", "Hubs"], request=HubCreateSerializer, responses={201: AdminHubListSerializer}
+        tags=["admin", "Hubs"],
+        summary="Create hub",
+        description="Create a new hub with location and capacity info.",
+        request=HubCreateSerializer,
+        responses={201: AdminHubListSerializer},
+        examples=[
+            OpenApiExample(
+                "Create Hub Example",
+                value={
+                    "name": "Port Antonio Hub",
+                    "address": "10 Harbour Street, Port Antonio",
+                    "latitude": 18.1757,
+                    "longitude": -76.4503,
+                    "max_concurrent_bookings": 10,
+                    "coordinator_id": "01856669533",
+                },
+                request_only=True,
+            ),
+        ],
     )
     def post(self, request):
         try:
@@ -692,8 +788,17 @@ class AdminHubAssignCoordinatorView(APIView):
 
     @extend_schema(
         tags=["admin", "Hubs"],
+        summary="Assign coordinator",
+        description="Assign a coordinator to a hub by coordinator phone number.",
         request=AssignCoordinatorSerializer,
         responses={200: AdminHubListSerializer},
+        examples=[
+            OpenApiExample(
+                "Assign Coordinator Example",
+                value={"coordinator_id": "01856669533"},
+                request_only=True,
+            ),
+        ],
     )
     def patch(self, request, hub_id):
         try:
@@ -712,8 +817,17 @@ class AdminHubReassignCoordinatorView(APIView):
 
     @extend_schema(
         tags=["admin", "Hubs"],
+        summary="Reassign coordinator",
+        description="Replace the coordinator for a hub with a different coordinator by phone number.",
         request=ReassignCoordinatorSerializer,
         responses={200: AdminHubListSerializer},
+        examples=[
+            OpenApiExample(
+                "Reassign Coordinator Example",
+                value={"new_coordinator_id": "01856669534"},
+                request_only=True,
+            ),
+        ],
     )
     def patch(self, request, hub_id):
         try:
@@ -737,9 +851,13 @@ class AdminReportListView(APIView):
 
     @extend_schema(
         tags=["admin", "Reports"],
+        summary="List reports",
+        description="Retrieve paginated list of AI-generated situation reports.",
         parameters=[
-            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("is_auto", bool, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False, description="Filter by hub ID"),
+            OpenApiParameter("is_auto", bool, OpenApiParameter.QUERY, required=False, description="Filter by auto-generated only"),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
         ],
         responses={200: dict},
     )
@@ -771,7 +889,12 @@ class AdminReportListView(APIView):
 class AdminReportDetailView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin", "Reports"], responses={200: dict})
+    @extend_schema(
+        tags=["admin", "Reports"],
+        summary="Get report details",
+        description="Retrieve full details of a specific situation report.",
+        responses={200: dict},
+    )
     def get(self, request, report_id):
         try:
             service = AdminReportService()
@@ -794,7 +917,12 @@ class AdminReportDetailView(APIView):
 class AdminAIConfigView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin", "AI"], responses={200: AIConfigSerializer})
+    @extend_schema(
+        tags=["admin", "AI"],
+        summary="Get AI config",
+        description="Retrieve the current AI configuration settings.",
+        responses={200: AIConfigSerializer},
+    )
     def get(self, request):
         try:
             service = AdminReportService()
@@ -805,7 +933,11 @@ class AdminAIConfigView(APIView):
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @extend_schema(
-        tags=["admin", "AI"], request=AIConfigSerializer, responses={200: AIConfigSerializer}
+        tags=["admin", "AI"],
+        summary="Update AI config",
+        description="Update AI configuration settings.",
+        request=AIConfigSerializer,
+        responses={200: AIConfigSerializer},
     )
     def put(self, request):
         try:
@@ -825,10 +957,14 @@ class AdminMessageListView(APIView):
 
     @extend_schema(
         tags=["admin", "Messages"],
+        summary="List messages",
+        description="Retrieve paginated list of inbound messages (WhatsApp/SMS) with optional filters.",
         parameters=[
-            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("source", str, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("search", str, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False, enum=MESSAGE_STATUSES, description="Filter by message status"),
+            OpenApiParameter("source", str, OpenApiParameter.QUERY, required=False, enum=MESSAGE_SOURCES, description="Filter by message source"),
+            OpenApiParameter("search", str, OpenApiParameter.QUERY, required=False, description="Search by sender number or message body"),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
         ],
         responses={200: InboundMessageAdminSerializer(many=True)},
     )
@@ -851,7 +987,12 @@ class AdminMessageListView(APIView):
 class AdminMessageDetailView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
-    @extend_schema(tags=["admin", "Messages"], responses={200: InboundMessageAdminSerializer})
+    @extend_schema(
+        tags=["admin", "Messages"],
+        summary="Get message details",
+        description="Retrieve full details of a specific inbound message.",
+        responses={200: InboundMessageAdminSerializer},
+    )
     def get(self, request, msg_id):
         try:
             service = AdminMessageService()
@@ -866,7 +1007,18 @@ class AdminMessageClassifyView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["admin", "Messages"], request=dict, responses={200: InboundMessageAdminSerializer}
+        tags=["admin", "Messages"],
+        summary="Classify message",
+        description="Link an inbound message to a hazard for classification.",
+        request=dict,
+        responses={200: InboundMessageAdminSerializer},
+        examples=[
+            OpenApiExample(
+                "Classify Message Example",
+                value={"hazard_id": 1},
+                request_only=True,
+            ),
+        ],
     )
     def patch(self, request, msg_id):
         try:

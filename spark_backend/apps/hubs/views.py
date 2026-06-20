@@ -1,4 +1,4 @@
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
@@ -15,14 +15,20 @@ from .serializers import (
 )
 from .services import HubService
 
+HUB_STATUSES = ["open", "closed", "low_battery", "critical"]
+
 
 class HubListView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
         tags=["mobile", "Hubs"],
+        summary="List hubs",
+        description="Retrieve a paginated list of all hubs with optional status filter.",
         parameters=[
-            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False, enum=HUB_STATUSES, description="Filter by hub status"),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
         ],
         responses={200: HubListSerializer(many=True)},
     )
@@ -37,7 +43,27 @@ class HubListView(APIView):
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @extend_schema(tags=["mobile", "Hubs"], request=HubSerializer, responses={201: HubSerializer})
+    @extend_schema(
+        tags=["mobile", "Hubs"],
+        summary="Create a hub",
+        description="Create a new hub. Admin only.",
+        request=HubSerializer,
+        responses={201: HubSerializer},
+        examples=[
+            OpenApiExample(
+                "Create Hub Example",
+                value={
+                    "name": "Kingston Central Hub",
+                    "address": "123 Main Street, Kingston",
+                    "latitude": 18.1096,
+                    "longitude": -77.2975,
+                    "status": "open",
+                    "max_concurrent_bookings": 5,
+                },
+                request_only=True,
+            ),
+        ],
+    )
     def post(self, request):
         try:
             self.permission_classes = [IsAuthenticated, IsAdmin]
@@ -55,7 +81,12 @@ class HubListView(APIView):
 class HubDetailView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(tags=["mobile", "Hubs"], responses={200: HubSerializer})
+    @extend_schema(
+        tags=["mobile", "Hubs"],
+        summary="Get hub details",
+        description="Retrieve full details of a specific hub by ID.",
+        responses={200: HubSerializer},
+    )
     def get(self, request, hub_id):
         try:
             service = HubService()
@@ -64,7 +95,20 @@ class HubDetailView(APIView):
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @extend_schema(tags=["mobile", "Hubs"], request=HubSerializer, responses={200: HubSerializer})
+    @extend_schema(
+        tags=["mobile", "Hubs"],
+        summary="Update hub",
+        description="Partially update a hub's information. Admin only.",
+        request=HubSerializer,
+        responses={200: HubSerializer},
+        examples=[
+            OpenApiExample(
+                "Update Hub Example",
+                value={"status": "low_battery", "battery_percentage": 15},
+                request_only=True,
+            ),
+        ],
+    )
     def put(self, request, hub_id):
         try:
             self.permission_classes = [IsAuthenticated, IsAdmin]
@@ -78,7 +122,12 @@ class HubDetailView(APIView):
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @extend_schema(tags=["mobile", "Hubs"], responses={204: None})
+    @extend_schema(
+        tags=["mobile", "Hubs"],
+        summary="Delete hub",
+        description="Delete a hub. Admin only.",
+        responses={204: None},
+    )
     def delete(self, request, hub_id):
         try:
             self.permission_classes = [IsAuthenticated, IsAdmin]
@@ -93,7 +142,20 @@ class HubDetailView(APIView):
 class HubStatusView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrCoordinator]
 
-    @extend_schema(tags=["mobile"], request=HubStatusSerializer, responses={200: HubSerializer})
+    @extend_schema(
+        tags=["mobile", "Hubs"],
+        summary="Update hub status",
+        description="Update the operational status and metrics for a hub (battery, solar).",
+        request=HubStatusSerializer,
+        responses={200: HubSerializer},
+        examples=[
+            OpenApiExample(
+                "Update Hub Status Example",
+                value={"status": "low_battery", "battery_percentage": 20, "solar_input_w": 500},
+                request_only=True,
+            ),
+        ],
+    )
     def patch(self, request, hub_id):
         try:
             serializer = HubStatusSerializer(data=request.data)
@@ -112,7 +174,18 @@ class HubCoordinatorView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
-        tags=["mobile"], request=HubCoordinatorSerializer, responses={200: HubSerializer}
+        tags=["mobile", "Hubs"],
+        summary="Assign coordinator",
+        description="Assign a coordinator user to a hub by phone number. Admin only.",
+        request=HubCoordinatorSerializer,
+        responses={200: HubSerializer},
+        examples=[
+            OpenApiExample(
+                "Assign Coordinator Example",
+                value={"coordinator_id": "01856669533"},
+                request_only=True,
+            ),
+        ],
     )
     def patch(self, request, hub_id):
         try:
@@ -131,8 +204,10 @@ class HubCheckinsView(APIView):
 
     @extend_schema(
         tags=["mobile", "Hubs"],
+        summary="List hub check-ins",
+        description="Retrieve all check-ins for a specific hub, optionally filtered by date.",
         parameters=[
-            OpenApiParameter("date", str, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("date", str, OpenApiParameter.QUERY, required=False, description="Filter by date (YYYY-MM-DD)"),
         ],
         responses={200: dict},
     )
@@ -151,7 +226,12 @@ class HubCheckinsView(APIView):
 class HubBroadcastsView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile", "Hubs"], responses={200: dict})
+    @extend_schema(
+        tags=["mobile", "Hubs"],
+        summary="List hub broadcasts",
+        description="Retrieve all broadcasts for a specific hub.",
+        responses={200: dict},
+    )
     def get(self, request, hub_id):
         try:
             service = HubService()
@@ -167,7 +247,12 @@ class HubBroadcastsView(APIView):
 class HubResourcesView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile", "Hubs"], responses={200: dict})
+    @extend_schema(
+        tags=["mobile", "Hubs"],
+        summary="List hub resources",
+        description="Retrieve resource availability for a specific hub.",
+        responses={200: dict},
+    )
     def get(self, request, hub_id):
         try:
             service = HubService()

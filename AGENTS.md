@@ -1,25 +1,45 @@
 # AGENTS.md — ChargeSafe
 
-This file helps OpenCode agents avoid mistakes in this repo. It is a living document; update it whenever the project introduces new conventions, tooling, or architectural decisions that an agent would not guess from defaults.
+## Stack
+- Python 3.12+, Django 5.0, Django REST Framework, drf-spectacular (OpenAPI)
+- PostgreSQL, Redis, Celery
+- Apps: users, hubs, hazards, bookings, comms, ai, sync, dashboard, admin_api
 
-## Current state
+## Developer commands
+```bash
+# Run dev server
+python spark_backend/manage.py runserver
 
-This repository is empty — no source code, no dependencies, no configuration, no git history.
+# Run tests (all)
+python spark_backend/manage.py test
 
-## What to do when starting work
+# Run tests (single app)
+python spark_backend/manage.py test apps.hazards
 
-1. Initialize the project (pick framework, set up toolchain, create root manifest).
-2. Establish a `package.json` / `Cargo.toml` / equivalent and lockfile.
-3. Configure lint, format, typecheck, and test runners before writing application code.
-4. After the toolchain is in place, update this file with:
-   - exact developer commands
-   - how to run focused verification (single test, single package)
-   - monorepo structure if applicable
-   - any framework or toolchain quirks
-   - test prerequisites and conventions
+# Generate migrations
+python spark_backend/manage.py makemigrations
 
-## Conventions
+# Apply migrations
+python spark_backend/manage.py migrate
 
-- Keep this file short. Prefer executable sources of truth (configs, scripts) over prose.
-- If docs conflict with config, trust the config and update this file.
-- Preserve verified useful guidance; delete fluff and stale claims.
+# Generate OpenAPI schema (full)
+python spark_backend/manage.py spectacular --file schema.yml
+```
+
+## API docs
+- Swagger UI: `GET /api/v1/docs/`
+- Full schema: `GET /api/v1/schema/`
+- Mobile-only: `GET /api/v1/docs/mobile/`
+- Dashboard-only: `GET /api/v1/docs/dashboard/`
+
+## API conventions
+- All endpoints prefixed with `/api/v1/`
+- Auth: Bearer JWT (SimpleJWT, keyed on `phone_number`)
+- Response envelope: `{"status": "success"|"error", "data": ..., "message": ...}`
+- Pagination: page-based (`page`, `limit` params, default 20, max 100)
+- Read-only fields (`hazard` on Comment, `reporter` on Hazard, `author` on Comment) are auto-populated from the request context / URL — do not send in the body.
+
+## Schema documentation
+- Use `@extend_schema` on every view method with `summary`, `description`, `parameters` (with `enum` for choices), `request`, `responses`, and `examples`.
+- Define choice lists as module-level constants (e.g., `HAZARD_CATEGORIES`) and pass them as `enum=` to `OpenApiParameter`.
+- Use `OpenApiExample` to provide concrete request body examples.

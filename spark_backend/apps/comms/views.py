@@ -1,4 +1,4 @@
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -16,14 +16,35 @@ from .serializers import (
 )
 from .services import BroadcastService, CheckInService, NotificationService
 
+CHECKIN_STATUSES = ["safe", "need_assistance"]
+BROADCAST_PRIORITIES = ["info", "warning", "urgent"]
+
 
 class CheckInView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
         tags=["mobile", "Check-Ins"],
+        summary="Create check-in",
+        description="Submit a safety check-in at a hub. The user is auto-set to the authenticated user.",
         request=CheckInCreateSerializer,
         responses={201: CheckInSerializer},
+        examples=[
+            OpenApiExample(
+                "Check-In Example",
+                value={
+                    "hub": 1,
+                    "status": "safe",
+                    "people_count": 3,
+                    "road_access": "open",
+                    "medical_notes": "No issues",
+                    "latitude": 18.1096,
+                    "longitude": -77.2975,
+                    "client_uuid": "uuid-string-here",
+                },
+                request_only=True,
+            ),
+        ],
     )
     def post(self, request):
         try:
@@ -42,10 +63,14 @@ class CheckInHistoryView(APIView):
 
     @extend_schema(
         tags=["mobile", "Check-Ins"],
+        summary="List check-in history",
+        description="Retrieve paginated check-in history for the authenticated user, with optional filters.",
         parameters=[
-            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("date", str, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False, description="Filter by hub ID"),
+            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False, enum=CHECKIN_STATUSES, description="Filter by status"),
+            OpenApiParameter("date", str, OpenApiParameter.QUERY, required=False, description="Filter by date (YYYY-MM-DD)"),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
         ],
         responses={200: CheckInSerializer(many=True)},
     )
@@ -69,7 +94,12 @@ class CheckInHistoryView(APIView):
 class CheckInLatestView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile", "Check-Ins"], responses={200: CheckInSerializer})
+    @extend_schema(
+        tags=["mobile", "Check-Ins"],
+        summary="Get latest check-in",
+        description="Retrieve the most recent check-in for the authenticated user. Returns a single object, not paginated.",
+        responses={200: CheckInSerializer},
+    )
     def get(self, request):
         try:
             service = CheckInService()
@@ -86,8 +116,12 @@ class BroadcastListView(APIView):
 
     @extend_schema(
         tags=["mobile", "Broadcasts"],
+        summary="List broadcasts",
+        description="Retrieve paginated list of broadcasts, optionally filtered by hub.",
         parameters=[
-            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False, description="Filter by hub ID"),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
         ],
         responses={200: BroadcastSerializer(many=True)},
     )
@@ -108,8 +142,22 @@ class BroadcastCreateView(APIView):
 
     @extend_schema(
         tags=["mobile", "Broadcasts"],
+        summary="Create broadcast",
+        description="Create a new broadcast for a hub. The sender is auto-set to the authenticated user.",
         request=BroadcastCreateSerializer,
         responses={201: BroadcastSerializer},
+        examples=[
+            OpenApiExample(
+                "Create Broadcast Example",
+                value={
+                    "hub": 1,
+                    "subject": "Weather Advisory",
+                    "body": "Heavy rainfall expected. Stay indoors.",
+                    "priority": "warning",
+                },
+                request_only=True,
+            ),
+        ],
     )
     def post(self, request):
         try:
@@ -131,7 +179,12 @@ class BroadcastCreateView(APIView):
 class BroadcastReadView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], responses={200: dict})
+    @extend_schema(
+        tags=["mobile", "Broadcasts"],
+        summary="Mark broadcast as read",
+        description="Mark a specific broadcast as read by the authenticated user.",
+        responses={200: dict},
+    )
     def post(self, request, broadcast_id):
         try:
             service = BroadcastService()
@@ -146,8 +199,12 @@ class NotificationListView(APIView):
 
     @extend_schema(
         tags=["mobile", "Notifications"],
+        summary="List notifications",
+        description="Retrieve paginated list of notifications for the authenticated user.",
         parameters=[
-            OpenApiParameter("unread_only", bool, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("unread_only", bool, OpenApiParameter.QUERY, required=False, description="Filter to only unread notifications"),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
         ],
         responses={200: NotificationSerializer(many=True)},
     )
@@ -167,7 +224,12 @@ class NotificationListView(APIView):
 class NotificationReadView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile", "Notifications"], responses={200: NotificationSerializer})
+    @extend_schema(
+        tags=["mobile", "Notifications"],
+        summary="Mark notification as read",
+        description="Mark a specific notification as read by ID.",
+        responses={200: NotificationSerializer},
+    )
     def patch(self, request, notification_id):
         try:
             service = NotificationService()
@@ -180,7 +242,12 @@ class NotificationReadView(APIView):
 class NotificationReadAllView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile", "Notifications"], responses={200: dict})
+    @extend_schema(
+        tags=["mobile", "Notifications"],
+        summary="Mark all notifications as read",
+        description="Mark all notifications for the authenticated user as read.",
+        responses={200: dict},
+    )
     def post(self, request):
         try:
             service = NotificationService()

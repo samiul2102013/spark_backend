@@ -9,11 +9,12 @@
 | `{{phone}}` | `01856669532` |
 | `{{hub_id}}` | From create hub response → `data.id` |
 | `{{message_id}}` | From list messages response → `data.results[0].id` |
+| `{{hazard_id}}` | From create hazard → `data.id` |
 
 ---
 
 ### 1. Login as Admin
-**PATCH** `{{base_url}}/auth/login/`
+**POST** `{{base_url}}/auth/login/`
 ```json
 {"username": "admin@spark.gov", "password": "your-admin-password"}
 ```
@@ -50,7 +51,7 @@ Header: `Authorization: Bearer {{access_token}}`
 ---
 
 ### 5. List Residents
-**GET** `{{base_url}}/admin/residents/`
+**GET** `{{base_url}}/admin/residents/?page=1&limit=20`
 Header: `Authorization: Bearer {{access_token}}`
 
 ---
@@ -62,7 +63,7 @@ Header: `Authorization: Bearer {{access_token}}`
 ---
 
 ### 7. List Coordinators
-**GET** `{{base_url}}/admin/coordinators/`
+**GET** `{{base_url}}/admin/coordinators/?page=1&limit=20`
 Header: `Authorization: Bearer {{access_token}}`
 
 ---
@@ -86,16 +87,17 @@ Header: `Authorization: Bearer {{access_token}}`
 ---
 
 ### 10. Create Broadcast
-**POST** `{{base_url}}/broadcasts/`
+**POST** `{{base_url}}/broadcasts/create/`
 Header: `Authorization: Bearer {{access_token}}`
 ```json
-{"hub": {{hub_id}}, "subject": "Emergency Alert", "body": "Storm approaching", "priority": "alert"}
+{"hub": {{hub_id}}, "subject": "Emergency Alert", "body": "Storm approaching", "priority": "urgent"}
 ```
+> Priority values: `info`, `warning`, `urgent`
 
 ---
 
 ### 11. List Inbound Messages
-**GET** `{{base_url}}/admin/messages/`
+**GET** `{{base_url}}/admin/messages/?page=1&limit=20`
 Header: `Authorization: Bearer {{access_token}}`
 
 ---
@@ -110,7 +112,7 @@ Header: `Authorization: Bearer {{access_token}}`
 **PATCH** `{{base_url}}/admin/messages/{{message_id}}/classify/`
 Header: `Authorization: Bearer {{access_token}}`
 ```json
-{"classified_hazard": {{hazard_id}}}
+{"hazard_id": {{hazard_id}}}
 ```
 
 ---

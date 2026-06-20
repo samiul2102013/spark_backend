@@ -11,6 +11,7 @@
 | `{{hub_id}}` | From hubs list → `data.results[0].id` |
 | `{{hazard_id}}` | From create hazard → `data.id` |
 | `{{booking_id}}` | From create booking → `data.id` |
+| `{{notification_id}}` | From notifications list → `data.results[0].id` |
 
 ---
 
@@ -51,7 +52,7 @@ Header: `Authorization: Bearer {{access_token}}`
 **PUT** `{{base_url}}/users/change-password/`
 Header: `Authorization: Bearer {{access_token}}`
 ```json
-{"old_password": "...", "new_password": "newpass123"}
+{"old_password": "oldpass123", "new_password": "newpass123", "confirm_password": "newpass123"}
 ```
 
 ---
@@ -61,7 +62,7 @@ Header: `Authorization: Bearer {{access_token}}`
 ### 6. Login (email/password)
 **POST** `{{base_url}}/auth/login/`
 ```json
-{"username": "{{phone}}", "password": "..."}
+{"username": "{{phone}}", "password": "your-password"}
 ```
 
 ### 7. Refresh Token
@@ -85,7 +86,7 @@ Header: `Authorization: Bearer {{access_token}}`
 ### 10. Reset Password
 **POST** `{{base_url}}/auth/reset-password/`
 ```json
-{"identifier": "{{phone}}", "code": "000000", "new_password": "newpass123"}
+{"identifier": "{{phone}}", "code": "000000", "new_password": "newpass123", "confirm_password": "newpass123"}
 ```
 
 ---
@@ -93,7 +94,7 @@ Header: `Authorization: Bearer {{access_token}}`
 ## Hubs Table
 
 ### 11. List Hubs
-**GET** `{{base_url}}/hubs/`
+**GET** `{{base_url}}/hubs/?page=1&limit=20`
 Header: `Authorization: Bearer {{access_token}}`
 → Extract `data.results[0].id` as `{{hub_id}}`
 
@@ -106,8 +107,9 @@ Header: `Authorization: Bearer {{access_token}}`
 Header: `Authorization: Bearer {{access_token}}`
 
 ### 14. Hub Check-ins
-**GET** `{{base_url}}/hubs/{{hub_id}}/checkins/`
+**GET** `{{base_url}}/hubs/{{hub_id}}/checkins/?date=2026-06-20`
 Header: `Authorization: Bearer {{access_token}}`
+> `date` param is optional (YYYY-MM-DD format)
 
 ### 15. Hub Broadcasts
 **GET** `{{base_url}}/hubs/{{hub_id}}/broadcasts/`
@@ -118,15 +120,19 @@ Header: `Authorization: Bearer {{access_token}}`
 ## Hazards Table
 
 ### 16. List Hazards
-**GET** `{{base_url}}/hazards/`
+**GET** `{{base_url}}/hazards/?status=active&category=flooding&page=1&limit=20`
 Header: `Authorization: Bearer {{access_token}}`
+> Available filters: `status` (active/cleared), `category` (flooding/fallen_tree/blocked_road/utility_pole/medical/fire/collapsed_building/power_line_down/landslide/other), `hub_id` (int), `period` (pre/post)
 
 ### 17. Report Hazard
 **POST** `{{base_url}}/hazards/`
 Header: `Authorization: Bearer {{access_token}}`
 ```json
-{"category": "flood", "description": "Water rising on Main Street", "latitude": 23.81, "longitude": 90.41, "severity": 3, "period": "post"}
+{"category": "flooding", "description": "Water rising on Main Street", "latitude": 23.81, "longitude": 90.41, "severity": 3, "period": "post"}
 ```
+> Category values: `flooding`, `fallen_tree`, `blocked_road`, `utility_pole`, `medical`, `fire`, `collapsed_building`, `power_line_down`, `landslide`, `other`
+> Severity values: `1` (Low), `2` (Medium), `3` (High)
+> Period values: `pre`, `post`
 → Extract `data.id` as `{{hazard_id}}`
 
 ### 18. Hazard Detail
@@ -134,7 +140,7 @@ Header: `Authorization: Bearer {{access_token}}`
 Header: `Authorization: Bearer {{access_token}}`
 
 ### 19. Clear Hazard
-**POST** `{{base_url}}/hazards/{{hazard_id}}/clear/`
+**PATCH** `{{base_url}}/hazards/{{hazard_id}}/clear/`
 Header: `Authorization: Bearer {{access_token}}`
 
 ### 20. Delete Hazard
@@ -146,7 +152,7 @@ Header: `Authorization: Bearer {{access_token}}`
 ## Comments Table
 
 ### 21. List Comments
-**GET** `{{base_url}}/hazards/{{hazard_id}}/comments/`
+**GET** `{{base_url}}/hazards/{{hazard_id}}/comments/?page=1&limit=20`
 Header: `Authorization: Bearer {{access_token}}`
 
 ### 22. Add Comment
@@ -155,6 +161,7 @@ Header: `Authorization: Bearer {{access_token}}`
 ```json
 {"body": "Water level increasing rapidly"}
 ```
+> Do not send `hazard` or `author` — they are auto-populated from the URL and auth context.
 
 ---
 
@@ -164,12 +171,15 @@ Header: `Authorization: Bearer {{access_token}}`
 **POST** `{{base_url}}/checkins/`
 Header: `Authorization: Bearer {{access_token}}`
 ```json
-{"hub": {{hub_id}}, "people_count": 4, "status": "safe", "road_access": "clear"}
+{"hub": {{hub_id}}, "people_count": 4, "status": "safe", "road_access": "open"}
 ```
+> Status values: `safe`, `need_assistance`
+> Road access values: `open`, `blocked`, `unknown`
 
 ### 24. Check-in History
-**GET** `{{base_url}}/checkins/history/`
+**GET** `{{base_url}}/checkins/history/?page=1&limit=20`
 Header: `Authorization: Bearer {{access_token}}`
+> Optional filters: `hub_id`, `status` (safe/need_assistance), `date` (YYYY-MM-DD)
 
 ### 25. Latest Check-in
 **GET** `{{base_url}}/checkins/latest/`
@@ -180,20 +190,22 @@ Header: `Authorization: Bearer {{access_token}}`
 ## Bookings Table
 
 ### 26. Available Slots
-**GET** `{{base_url}}/bookings/slots/?hub_id={{hub_id}}`
+**GET** `{{base_url}}/bookings/slots/?hub_id={{hub_id}}&date=2026-06-20`
 Header: `Authorization: Bearer {{access_token}}`
+> Both `hub_id` and `date` (YYYY-MM-DD) are required.
 
 ### 27. Create Booking
 **POST** `{{base_url}}/bookings/`
 Header: `Authorization: Bearer {{access_token}}`
 ```json
-{"hub": {{hub_id}}, "start_time": "2026-06-17T10:00:00Z", "end_time": "2026-06-17T12:00:00Z", "people_count": 2}
+{"hub": {{hub_id}}, "start_time": "2026-06-20T10:00:00-05:00", "end_time": "2026-06-20T12:00:00-05:00", "people_count": 2}
 ```
 → Extract `data.id` as `{{booking_id}}`
 
 ### 28. My Bookings
-**GET** `{{base_url}}/bookings/`
+**GET** `{{base_url}}/bookings/?status=active&page=1&limit=20`
 Header: `Authorization: Bearer {{access_token}}`
+> Optional filters: `status` (active/cancelled/completed), `hub_id`
 
 ### 29. Cancel Booking
 **PATCH** `{{base_url}}/bookings/{{booking_id}}/cancel/`
@@ -204,7 +216,7 @@ Header: `Authorization: Bearer {{access_token}}`
 ## Broadcasts Table
 
 ### 30. List Broadcasts
-**GET** `{{base_url}}/broadcasts/`
+**GET** `{{base_url}}/broadcasts/?hub_id={{hub_id}}&page=1&limit=20`
 Header: `Authorization: Bearer {{access_token}}`
 
 ---
@@ -212,11 +224,12 @@ Header: `Authorization: Bearer {{access_token}}`
 ## Notifications Table
 
 ### 31. List Notifications
-**GET** `{{base_url}}/notifications/`
+**GET** `{{base_url}}/notifications/?unread_only=true&page=1&limit=20`
 Header: `Authorization: Bearer {{access_token}}`
+> `unread_only` accepts `true`/`1` to filter unread only.
 
 ### 32. Mark Read
-**PATCH** `{{base_url}}/notifications/{notification_id}/read/`
+**PATCH** `{{base_url}}/notifications/{{notification_id}}/read/`
 Header: `Authorization: Bearer {{access_token}}`
 
 ### 33. Mark All Read

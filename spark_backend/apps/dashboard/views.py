@@ -1,4 +1,4 @@
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -17,11 +17,19 @@ from .serializers import (
 )
 from .services import DashboardService
 
+HAZARD_SEVERITIES = [1, 2, 3]
+HAZARD_STATUSES = ["active", "cleared"]
+
 
 class DashboardOverviewView(APIView):
     permission_classes = [IsAuthenticated, IsDashboardUser]
 
-    @extend_schema(tags=["dashboard", "Overview"], responses={200: OverviewSerializer})
+    @extend_schema(
+        tags=["dashboard", "Overview"],
+        summary="Get dashboard overview",
+        description="Retrieve aggregate statistics for hubs, hazards, bookings, and check-ins.",
+        responses={200: OverviewSerializer},
+    )
     def get(self, request):
         try:
             service = DashboardService()
@@ -36,11 +44,13 @@ class DashboardMapView(APIView):
 
     @extend_schema(
         tags=["dashboard", "Map"],
+        summary="Get map data",
+        description="Retrieve hubs and hazards data for map display, optionally filtered by bounding box coordinates.",
         parameters=[
-            OpenApiParameter("lat_min", float, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("lat_max", float, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("lng_min", float, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("lng_max", float, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("lat_min", float, OpenApiParameter.QUERY, required=False, description="Minimum latitude for bounding box"),
+            OpenApiParameter("lat_max", float, OpenApiParameter.QUERY, required=False, description="Maximum latitude for bounding box"),
+            OpenApiParameter("lng_min", float, OpenApiParameter.QUERY, required=False, description="Minimum longitude for bounding box"),
+            OpenApiParameter("lng_max", float, OpenApiParameter.QUERY, required=False, description="Maximum longitude for bounding box"),
         ],
         responses={200: dict},
     )
@@ -71,8 +81,12 @@ class DashboardReportsView(APIView):
 
     @extend_schema(
         tags=["dashboard", "Reports"],
+        summary="List situation reports",
+        description="Retrieve paginated list of AI-generated situation reports, optionally filtered by hub.",
         parameters=[
-            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False, description="Filter by hub ID"),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
         ],
         responses={200: SituationReportSerializer(many=True)},
     )
@@ -93,10 +107,14 @@ class DashboardAlertsView(APIView):
 
     @extend_schema(
         tags=["dashboard", "Alerts"],
+        summary="List alerts",
+        description="Retrieve paginated list of active hazard alerts for the dashboard.",
         parameters=[
-            OpenApiParameter("severity", str, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("severity", int, OpenApiParameter.QUERY, required=False, enum=HAZARD_SEVERITIES, description="Filter by severity (1=Low, 2=Medium, 3=High)"),
+            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False, enum=HAZARD_STATUSES, description="Filter by status"),
+            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False, description="Filter by hub ID"),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
         ],
         responses={200: AlertSerializer(many=True)},
     )
@@ -121,6 +139,12 @@ class DashboardInfrastructureView(APIView):
 
     @extend_schema(
         tags=["dashboard", "Infrastructure"],
+        summary="List infrastructure",
+        description="Retrieve paginated list of all infrastructure hubs with live metrics.",
+        parameters=[
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
+        ],
         responses={200: InfrastructureHubSerializer(many=True)},
     )
     def get(self, request):
@@ -139,7 +163,10 @@ class DashboardInfrastructureDetailView(APIView):
     permission_classes = [IsAuthenticated, IsDashboardUser]
 
     @extend_schema(
-        tags=["dashboard", "Infrastructure"], responses={200: InfrastructureHubSerializer}
+        tags=["dashboard", "Infrastructure"],
+        summary="Get infrastructure details",
+        description="Retrieve detailed infrastructure data for a specific hub.",
+        responses={200: InfrastructureHubSerializer},
     )
     def get(self, request, hub_id):
         try:

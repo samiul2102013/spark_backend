@@ -44,7 +44,7 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ["id", "hazard", "author", "author_name", "body", "photo", "created_at"]
-        read_only_fields = ["id", "created_at", "author"]
+        read_only_fields = ["id", "hazard", "created_at", "author"]
 
     def get_author_name(self, obj):
         return obj.author.full_name if obj.author else None

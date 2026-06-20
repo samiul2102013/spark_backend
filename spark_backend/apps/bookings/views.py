@@ -1,4 +1,4 @@
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -11,15 +11,21 @@ from core.responses import created_response, error_response, success_response
 from .serializers import BookingCreateSerializer, BookingSerializer
 from .services import BookingService
 
+BOOKING_STATUSES = ["active", "cancelled", "completed"]
+
 
 class BookingListView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
         tags=["mobile", "Bookings"],
+        summary="List bookings",
+        description="Retrieve a paginated list of bookings. Regular users see their own; admins see all.",
         parameters=[
-            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False, enum=BOOKING_STATUSES, description="Filter by booking status"),
+            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False, description="Filter by hub ID"),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
         ],
         responses={200: BookingSerializer(many=True)},
     )
@@ -41,8 +47,23 @@ class BookingListView(APIView):
 
     @extend_schema(
         tags=["mobile", "Bookings"],
+        summary="Create booking",
+        description="Create a new booking at a hub. The user is auto-set to the authenticated user.",
         request=BookingCreateSerializer,
         responses={201: BookingSerializer},
+        examples=[
+            OpenApiExample(
+                "Create Booking Example",
+                value={
+                    "hub": 1,
+                    "start_time": "2026-06-20T10:00:00-05:00",
+                    "end_time": "2026-06-20T12:00:00-05:00",
+                    "people_count": 2,
+                    "client_uuid": "uuid-string-here",
+                },
+                request_only=True,
+            ),
+        ],
     )
     def post(self, request):
         try:
@@ -63,7 +84,12 @@ class BookingListView(APIView):
 class BookingDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile"], responses={200: BookingSerializer})
+    @extend_schema(
+        tags=["mobile", "Bookings"],
+        summary="Get booking details",
+        description="Retrieve full details of a specific booking by ID.",
+        responses={200: BookingSerializer},
+    )
     def get(self, request, booking_id):
         try:
             service = BookingService()
@@ -76,7 +102,12 @@ class BookingDetailView(APIView):
 class BookingCancelView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(tags=["mobile", "Bookings"], responses={200: BookingSerializer})
+    @extend_schema(
+        tags=["mobile", "Bookings"],
+        summary="Cancel booking",
+        description="Cancel an existing booking by ID.",
+        responses={200: BookingSerializer},
+    )
     def patch(self, request, booking_id):
         try:
             service = BookingService()
@@ -91,9 +122,11 @@ class HubSlotsView(APIView):
 
     @extend_schema(
         tags=["mobile", "Bookings"],
+        summary="Get available slots",
+        description="Retrieve available booking time slots for a hub on a specific date.",
         parameters=[
-            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=True),
-            OpenApiParameter("date", str, OpenApiParameter.QUERY, required=True),
+            OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=True, description="Hub ID"),
+            OpenApiParameter("date", str, OpenApiParameter.QUERY, required=True, description="Date in YYYY-MM-DD format"),
         ],
         responses={200: dict},
     )

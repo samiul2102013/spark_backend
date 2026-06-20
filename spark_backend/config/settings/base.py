@@ -140,6 +140,29 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "SPARK API",
     "DESCRIPTION": "Disaster communication and energy resilience platform",
     "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": "/api/v1/",
+    "COMPONENT_SPLIT_REQUEST": True,
+    "ENUM_NAME_OVERRIDES": {
+        "CategoryEnum": [
+            "flooding", "fallen_tree", "blocked_road", "utility_pole",
+            "medical", "fire", "collapsed_building", "power_line_down",
+            "landslide", "other",
+        ],
+        "HazardStatusEnum": ["active", "cleared"],
+        "PeriodEnum": ["pre", "post"],
+        "SeverityEnum": [1, 2, 3],
+        "SourceEnum": ["app", "whatsapp", "sms", "ai"],
+        "HubStatusEnum": ["open", "closed", "low_battery", "critical"],
+        "BookingStatusEnum": ["active", "cancelled", "completed"],
+        "CheckInStatusEnum": ["safe", "need_assistance"],
+        "RoadAccessEnum": ["open", "blocked", "unknown"],
+        "BroadcastPriorityEnum": ["info", "warning", "urgent"],
+        "NotificationTypeEnum": ["broadcast", "alert", "booking", "hub_status"],
+        "MessageStatusEnum": ["pending", "classified", "unclassified"],
+        "MessageSourceEnum": ["whatsapp", "sms"],
+        "UserRoleEnum": ["resident", "coordinator", "government", "admin"],
+    },
 }
 
 CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")
