@@ -11,7 +11,8 @@ from apps.hazards.models import Hazard
 from apps.hubs.models import Hub
 from apps.users.models import User
 from apps.users.permissions import IsAdmin
-from apps.users.serializers import ProfileSerializer
+from apps.users.serializers import InviteGovernmentSerializer, ProfileSerializer
+from apps.users.services import AuthService
 from core.pagination import StandardPagination
 from core.responses import created_response, error_response, success_response
 
@@ -662,6 +663,38 @@ class AdminInviteUserView(APIView):
             return error_response(str(e), http_status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class AdminInviteByEmailView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    @extend_schema(
+        tags=["admin", "dashboard", "Users"],
+        summary="Invite government user by email",
+        description="Send an invitation email to a government user. Creates the user account and emails an invite link.",
+        request=InviteGovernmentSerializer,
+        responses={201: None},
+        examples=[
+            OpenApiExample(
+                "Invite Government Example",
+                value={
+                    "email": "gov.official@example.com",
+                    "full_name": "Jane Doe",
+                },
+                request_only=True,
+            ),
+        ],
+    )
+    def post(self, request):
+        serializer = InviteGovernmentSerializer(data=request.data)
+        if not serializer.is_valid():
+            return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+        try:
+            service = AuthService()
+            result = service.invite_government(**serializer.validated_data)
+            return created_response(result)
+        except Exception as e:
+            return error_response(str(e), http_status=status.HTTP_400_BAD_REQUEST)
 
 
 class AdminSetRoleView(APIView):

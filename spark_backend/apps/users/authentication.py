@@ -4,11 +4,17 @@ from rest_framework_simplejwt.authentication import JWTAuthentication as BaseJWT
 def authenticate(username: str, password: str):
     from django.contrib.auth import get_user_model
 
-    user_model = get_user_model()
+    User = get_user_model()
     try:
-        user = user_model.objects.get(username=username)
-    except user_model.DoesNotExist:
-        return None
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        try:
+            if "@" in username:
+                user = User.objects.get(email=username)
+            else:
+                return None
+        except User.DoesNotExist:
+            return None
     if user.check_password(password):
         return user
     return None

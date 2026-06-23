@@ -45,6 +45,11 @@ urlpatterns = [
         "admin/users/invite/", admin_views.AdminInviteUserView.as_view(), name="admin-users-invite"
     ),
     path(
+        "admin/users/invite-by-email/",
+        admin_views.AdminInviteByEmailView.as_view(),
+        name="admin-users-invite-by-email",
+    ),
+    path(
         "admin/users/<str:user_id>/role/",
         admin_views.AdminSetRoleView.as_view(),
         name="admin-users-set-role",

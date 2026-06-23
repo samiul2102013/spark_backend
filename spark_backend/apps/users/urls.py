@@ -28,6 +28,11 @@ urlpatterns = [
     ),
     # Password Reset
     path("auth/forgot-password/", views.ForgotPasswordView.as_view(), name="auth-forgot-password"),
+    path(
+        "auth/verify-reset-otp/",
+        views.VerifyResetOTPView.as_view(),
+        name="auth-verify-reset-otp",
+    ),
     path("auth/reset-password/", views.ResetPasswordView.as_view(), name="auth-reset-password"),
     # Profile
     path("users/profile/", views.ProfileView.as_view(), name="users-profile"),

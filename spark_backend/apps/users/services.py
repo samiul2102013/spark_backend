@@ -112,22 +112,26 @@ class AuthService:
 
     # ── Government Invite ──────────────────────────────────────────
 
+    def _generate_password(self) -> str:
+        return secrets.token_urlsafe(12)
+
     def invite_government(self, email: str, full_name: str) -> dict:
         if User.objects.filter(email=email).exists():
             raise AuthError("Email already registered.")
+
+        password = self._generate_password()
 
         user = User.objects.create_user(
             full_name=full_name,
             email=email,
             role="government",
             is_active=True,
-            is_invite_accepted=False,
+            is_invite_accepted=True,
         )
-        token = secrets.token_urlsafe(32)
-        cache.set(f"invite:{token}", str(user.pk), timeout=48 * 3600)
+        user.set_password(password)
+        user.save(update_fields=["password"])
 
-        invite_url = f"{settings.FRONTEND_URL}/invite/{token}"
-        EmailAdapter.send_invite(email, invite_url)
+        EmailAdapter.send_invite(email, password)
         return {"message": "Invitation sent.", "email": email}
 
     def validate_invite(self, token: str) -> dict:
@@ -172,7 +176,7 @@ class AuthService:
             SMSAdapter.send_otp(user.phone_number, code)
         return {"message": "Reset code sent."}
 
-    def reset_password(self, identifier: str, code: str, new_password: str) -> dict:
+    def verify_reset_otp(self, identifier: str, code: str) -> dict:
         if not verify_otp(identifier, code):
             raise AuthError("Invalid or expired code.")
         try:
@@ -182,6 +186,12 @@ class AuthService:
                 user = User.objects.get(phone_number=identifier)
         except User.DoesNotExist:
             raise AuthError("User not found.")
+        return {
+            "message": "OTP verified.",
+            "access": str(RefreshToken.for_user(user).access_token),
+        }
+
+    def reset_password(self, user: User, new_password: str) -> dict:
         user.set_password(new_password)
         user.save(update_fields=["password"])
         return {"message": "Password reset successfully."}

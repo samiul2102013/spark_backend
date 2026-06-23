@@ -21,6 +21,7 @@ from .serializers import (
     RegisterSerializer,
     ResetPasswordSerializer,
     SetPasswordSerializer,
+    VerifyResetOTPSerializer,
 )
 from .services import AuthService
 
@@ -123,7 +124,7 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "Auth"],
+        tags=["mobile", "dashboard", "Auth"],
         summary="Login with credentials",
         description="Authenticate with email/username and password. Returns access and refresh JWT tokens.",
         request=LoginSerializer,
@@ -256,7 +257,7 @@ class InviteValidateView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "Invites"],
+        tags=["mobile", "dashboard", "Invites"],
         summary="Validate invite token",
         description="Check if an invite token is valid and return invite details.",
         responses={200: None},
@@ -274,9 +275,9 @@ class InviteAcceptView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "Invites"],
+        tags=["mobile", "dashboard", "Invites"],
         summary="Accept invite",
-        description="Accept a government/coordinator invite by setting a password.",
+        description="Accept a government/coordinator invite by setting a password. Returns JWT tokens on success.",
         request=AcceptInviteSerializer,
         responses={200: None},
         examples=[
@@ -307,7 +308,7 @@ class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "Auth"],
+        tags=["mobile", "dashboard", "Auth"],
         summary="Forgot password",
         description="Request a password reset code. Sends reset code to the user's phone or email.",
         request=ForgotPasswordSerializer,
@@ -332,21 +333,48 @@ class ForgotPasswordView(APIView):
             return error_response(str(e), http_status=status.HTTP_400_BAD_REQUEST)
 
 
-class ResetPasswordView(APIView):
+class VerifyResetOTPView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "Auth"],
+        tags=["mobile", "dashboard", "Auth"],
+        summary="Verify reset OTP",
+        description="Verify the 6-digit OTP sent to email/phone during forgot-password. Returns an access token on success to use in the reset-password step.",
+        request=VerifyResetOTPSerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Verify Reset OTP Example",
+                value={"identifier": "gov@example.com", "code": "123456"},
+                request_only=True,
+            ),
+        ],
+    )
+    def post(self, request):
+        serializer = VerifyResetOTPSerializer(data=request.data)
+        if not serializer.is_valid():
+            return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+        try:
+            service = AuthService()
+            result = service.verify_reset_otp(**serializer.validated_data)
+            return success_response(result)
+        except Exception as e:
+            return error_response(str(e), http_status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResetPasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=["mobile", "dashboard", "Auth"],
         summary="Reset password",
-        description="Reset password using the code received via forgot-password.",
+        description="Set a new password for the authenticated user. No old password required.",
         request=ResetPasswordSerializer,
         responses={200: None},
         examples=[
             OpenApiExample(
                 "Reset Password Example",
                 value={
-                    "identifier": "01856669533",
-                    "code": "123456",
                     "new_password": "newSecurePass123",
                     "confirm_password": "newSecurePass123",
                 },
@@ -360,7 +388,9 @@ class ResetPasswordView(APIView):
             return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
         try:
             service = AuthService()
-            result = service.reset_password(**serializer.validated_data)
+            result = service.reset_password(
+                user=request.user, new_password=serializer.validated_data["new_password"]
+            )
             return success_response(result)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_400_BAD_REQUEST)
@@ -409,7 +439,7 @@ class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile", "Profile"],
+        tags=["mobile", "dashboard", "Profile"],
         summary="Change password",
         description="Change the authenticated user's password by providing the old password.",
         request=ChangePasswordSerializer,

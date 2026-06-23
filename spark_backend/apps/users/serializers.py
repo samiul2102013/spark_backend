@@ -56,9 +56,12 @@ class ForgotPasswordSerializer(serializers.Serializer):
     identifier = serializers.CharField(max_length=255)
 
 
-class ResetPasswordSerializer(serializers.Serializer):
+class VerifyResetOTPSerializer(serializers.Serializer):
     identifier = serializers.CharField(max_length=255)
     code = serializers.CharField(max_length=6)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(min_length=8)
     confirm_password = serializers.CharField(min_length=8)
 

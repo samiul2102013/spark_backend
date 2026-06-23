@@ -45,10 +45,15 @@ class SMSAdapter:
 
 class EmailAdapter:
     @staticmethod
-    def send_invite(email: str, invite_url: str) -> None:
+    def send_invite(email: str, password: str) -> None:
         send_mail(
-            subject="[SPARK] You're invited",
-            message=f"Click the link to accept your invitation:\n{invite_url}",
+            subject="[SPARK] Your Account Credentials",
+            message=(
+                f"Your SPARK government account has been created.\n\n"
+                f"Email: {email}\n"
+                f"Password: {password}\n\n"
+                f"Please log in and change your password."
+            ),
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
             fail_silently=False,
@@ -59,6 +64,16 @@ class EmailAdapter:
         send_mail(
             subject="[SPARK] Password Reset Code",
             message=f"Your password reset code is: {code}\n\nThis code expires in 5 minutes.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+        )
+
+    @staticmethod
+    def send_otp(email: str, code: str) -> None:
+        send_mail(
+            subject="[SPARK] Your Verification Code",
+            message=f"Your verification code is: {code}\n\nThis code expires in 5 minutes.",
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
             fail_silently=False,
