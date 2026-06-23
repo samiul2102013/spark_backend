@@ -20,7 +20,7 @@ class BookingSerializer(serializers.ModelSerializer):
             "status",
             "confirmation_sent",
             "check_in_time",
-            "people_count",
+            "device_count",
             "client_uuid",
             "created_at",
             "updated_at",
@@ -44,8 +44,8 @@ class BookingSerializer(serializers.ModelSerializer):
 class BookingCreateSerializer(serializers.Serializer):
     hub = serializers.IntegerField()
     start_time = serializers.DateTimeField()
-    end_time = serializers.DateTimeField()
-    people_count = serializers.IntegerField(default=1)
+    end_time = serializers.DateTimeField(required=False)
+    device_count = serializers.IntegerField(default=1)
     client_uuid = serializers.CharField(required=False, allow_null=True)
 
 

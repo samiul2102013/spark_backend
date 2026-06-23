@@ -1,3 +1,5 @@
+import math
+
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
@@ -91,3 +93,24 @@ class HubService:
             "starlink_status": hub.starlink_status,
             "active_bookings": active_bookings,
         }
+
+    def _haversine(self, lat1, lng1, lat2, lng2):
+        R = 6371
+        dlat = math.radians(lat2 - lat1)
+        dlng = math.radians(lng2 - lng1)
+        a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlng / 2) ** 2
+        return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+    def find_nearest_hub(self, latitude, longitude):
+        hubs = Hub.objects.all()
+        nearest = None
+        nearest_distance = float("inf")
+        for hub in hubs:
+            distance = self._haversine(
+                float(latitude), float(longitude),
+                float(hub.latitude), float(hub.longitude),
+            )
+            if distance < nearest_distance:
+                nearest_distance = distance
+                nearest = hub
+        return nearest, round(nearest_distance, 2)

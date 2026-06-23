@@ -111,6 +111,24 @@ class CheckInLatestView(APIView):
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class CheckInDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=["mobile", "Check-Ins"],
+        summary="Get check-in details",
+        description="Retrieve full details of a specific check-in by ID. Coordinators can view any check-in.",
+        responses={200: CheckInSerializer},
+    )
+    def get(self, request, checkin_id):
+        try:
+            service = CheckInService()
+            checkin = service.get_checkin(checkin_id)
+            return success_response(CheckInSerializer(checkin).data)
+        except Exception as e:
+            return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class BroadcastListView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -143,7 +161,7 @@ class BroadcastCreateView(APIView):
     @extend_schema(
         tags=["mobile", "Broadcasts"],
         summary="Create broadcast",
-        description="Create a new broadcast for a hub. The sender is auto-set to the authenticated user.",
+        description="Create a new broadcast. Admin specifies hub; coordinator's hub is auto-set.",
         request=BroadcastCreateSerializer,
         responses={201: BroadcastSerializer},
         examples=[
@@ -162,6 +180,13 @@ class BroadcastCreateView(APIView):
     def post(self, request):
         try:
             hub_id = request.data.get("hub")
+            user = request.user
+            if user.role == "coordinator":
+                from apps.hubs.models import Hub
+                coordinated_hub = Hub.objects.filter(coordinator=user).first()
+                if not coordinated_hub:
+                    return error_response("No hub assigned to you.", http_status=status.HTTP_400_BAD_REQUEST)
+                hub_id = coordinated_hub.id
             if not hub_id:
                 return error_response("hub is required.", http_status=status.HTTP_400_BAD_REQUEST)
             serializer = BroadcastCreateSerializer(data=request.data)

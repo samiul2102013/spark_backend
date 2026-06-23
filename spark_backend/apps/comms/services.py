@@ -27,6 +27,9 @@ class CheckInService:
     def get_latest_checkin(self, user):
         return CheckIn.objects.filter(user=user).order_by("-timestamp").first()
 
+    def get_checkin(self, checkin_id):
+        return CheckIn.objects.select_related("user", "hub").get(id=checkin_id)
+
 
 class BroadcastService:
     def list_broadcasts(self, hub_id=None):

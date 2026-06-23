@@ -57,8 +57,7 @@ class BookingListView(APIView):
                 value={
                     "hub": 1,
                     "start_time": "2026-06-20T10:00:00-05:00",
-                    "end_time": "2026-06-20T12:00:00-05:00",
-                    "people_count": 2,
+                    "device_count": 2,
                     "client_uuid": "uuid-string-here",
                 },
                 request_only=True,
@@ -142,7 +141,7 @@ class HubSlotsView(APIView):
 
             parsed_date = datetime.strptime(date, "%Y-%m-%d").date()
             service = BookingService()
-            slots = service.get_available_slots(hub_id, parsed_date)
+            slots = service.get_available_slots(hub_id, parsed_date, user=request.user)
             return success_response(slots)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)

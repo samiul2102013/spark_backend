@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 
+from apps.bookings.services import BookingService
 from apps.users.permissions import IsAdmin, IsAdminOrCoordinator
 from core.pagination import StandardPagination
 from core.responses import created_response, deleted_response, error_response, success_response
@@ -11,7 +12,10 @@ from .serializers import (
     HubCoordinatorSerializer,
     HubListSerializer,
     HubSerializer,
+    HubSlotSerializer,
+    HubSlotsResponseSerializer,
     HubStatusSerializer,
+    NearestHubSerializer,
 )
 from .services import HubService
 
@@ -258,5 +262,65 @@ class HubResourcesView(APIView):
             service = HubService()
             resources = service.get_hub_resources(hub_id)
             return success_response(resources)
+        except Exception as e:
+            return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class NearestHubView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=["mobile", "Hubs"],
+        summary="Find nearest hub",
+        description="Find the nearest hub to the given coordinates using haversine distance calculation.",
+        parameters=[
+            OpenApiParameter("lat", float, OpenApiParameter.QUERY, required=True, description="User latitude"),
+            OpenApiParameter("lng", float, OpenApiParameter.QUERY, required=True, description="User longitude"),
+        ],
+        responses={200: NearestHubSerializer},
+    )
+    def get(self, request):
+        try:
+            lat = request.query_params.get("lat")
+            lng = request.query_params.get("lng")
+            if not lat or not lng:
+                return error_response("lat and lng are required.", http_status=status.HTTP_400_BAD_REQUEST)
+            service = HubService()
+            hub, distance = service.find_nearest_hub(float(lat), float(lng))
+            if not hub:
+                return error_response("No hubs available.", http_status=status.HTTP_404_NOT_FOUND)
+            hub.distance_km = distance
+            return success_response(NearestHubSerializer(hub).data)
+        except Exception as e:
+            return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class HubSlotsDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=["mobile", "Hubs"],
+        summary="Hub details with slots",
+        description="Get hub details along with 30-min slot availability for a given date.",
+        parameters=[
+            OpenApiParameter("date", str, OpenApiParameter.QUERY, required=True, description="Date in YYYY-MM-DD format"),
+        ],
+        responses={200: HubSlotsResponseSerializer},
+    )
+    def get(self, request, hub_id):
+        try:
+            date = request.query_params.get("date")
+            if not date:
+                return error_response("date is required.", http_status=status.HTTP_400_BAD_REQUEST)
+            from datetime import datetime
+            parsed_date = datetime.strptime(date, "%Y-%m-%d").date()
+            hub_service = HubService()
+            hub = hub_service.get_hub(hub_id)
+            booking_service = BookingService()
+            slots = booking_service.get_hub_slots(hub_id, parsed_date, user=request.user)
+            return success_response({
+                "hub": HubSerializer(hub).data,
+                "slots": slots,
+            })
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)

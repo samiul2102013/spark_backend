@@ -50,3 +50,38 @@ class HubStatusSerializer(serializers.Serializer):
 
 class HubCoordinatorSerializer(serializers.Serializer):
     coordinator_id = serializers.CharField(max_length=20)
+
+
+class NearestHubSerializer(serializers.ModelSerializer):
+    distance_km = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Hub
+        fields = (
+            "id",
+            "name",
+            "address",
+            "latitude",
+            "longitude",
+            "status",
+            "battery_percentage",
+            "starlink_status",
+            "max_concurrent_bookings",
+            "distance_km",
+        )
+
+    def get_distance_km(self, obj):
+        return obj.distance_km
+
+
+class HubSlotSerializer(serializers.Serializer):
+    start_time = serializers.CharField()
+    end_time = serializers.CharField()
+    available = serializers.BooleanField()
+    booked = serializers.BooleanField()
+    battery_percentage = serializers.IntegerField()
+
+
+class HubSlotsResponseSerializer(serializers.Serializer):
+    hub = HubSerializer()
+    slots = HubSlotSerializer(many=True)

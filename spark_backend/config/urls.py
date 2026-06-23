@@ -58,6 +58,8 @@ urlpatterns = [
     path(f"{api_prefix}", include("apps.dashboard.urls")),
     # Admin
     path(f"{api_prefix}", include("apps.admin_api.urls")),
+    # Content
+    path(f"{api_prefix}", include("apps.content.urls")),
 ]
 
 if settings.DEBUG:

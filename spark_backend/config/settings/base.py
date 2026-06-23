@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "apps.sync",
     "apps.dashboard",
     "apps.admin_api",
+    "apps.content",
 ]
 
 MIDDLEWARE = [
