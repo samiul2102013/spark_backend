@@ -1,4 +1,5 @@
 import logging
+import smtplib
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -46,35 +47,44 @@ class SMSAdapter:
 class EmailAdapter:
     @staticmethod
     def send_invite(email: str, password: str) -> None:
-        send_mail(
-            subject="[SPARK] Your Account Credentials",
-            message=(
-                f"Your SPARK government account has been created.\n\n"
-                f"Email: {email}\n"
-                f"Password: {password}\n\n"
-                f"Please log in and change your password."
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
-        )
+        try:
+            send_mail(
+                subject="[SPARK] Your Account Credentials",
+                message=(
+                    f"Your SPARK government account has been created.\n\n"
+                    f"Email: {email}\n"
+                    f"Password: {password}\n\n"
+                    f"Please log in and change your password."
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+        except smtplib.SMTPException as e:
+            logger.warning("Email send failed to %s: %s", email, e)
 
     @staticmethod
     def send_reset_code(email: str, code: str) -> None:
-        send_mail(
-            subject="[SPARK] Password Reset Code",
-            message=f"Your password reset code is: {code}\n\nThis code expires in 5 minutes.",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
-        )
+        try:
+            send_mail(
+                subject="[SPARK] Password Reset Code",
+                message=f"Your password reset code is: {code}\n\nThis code expires in 5 minutes.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+        except smtplib.SMTPException as e:
+            logger.warning("Email send failed to %s: %s", email, e)
 
     @staticmethod
     def send_otp(email: str, code: str) -> None:
-        send_mail(
-            subject="[SPARK] Your Verification Code",
-            message=f"Your verification code is: {code}\n\nThis code expires in 5 minutes.",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
-        )
+        try:
+            send_mail(
+                subject="[SPARK] Your Verification Code",
+                message=f"Your verification code is: {code}\n\nThis code expires in 5 minutes.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+        except smtplib.SMTPException as e:
+            logger.warning("Email send failed to %s: %s", email, e)
