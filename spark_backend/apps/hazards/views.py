@@ -186,7 +186,7 @@ class HazardCommentListView(APIView):
             comments = service.list_comments(hazard_id)
             paginator = StandardPagination()
             page = paginator.paginate_queryset(comments, request)
-            serializer = CommentSerializer(page, many=True)
+            serializer = CommentSerializer(page, many=True, context={"request": request})
             return paginator.get_paginated_response(serializer.data)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -222,6 +222,6 @@ class HazardCommentListView(APIView):
                 author=request.user,
                 photo=serializer.validated_data.get("photo"),
             )
-            return created_response(CommentSerializer(comment).data)
+            return created_response(CommentSerializer(comment, context={"request": request}).data)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)

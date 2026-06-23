@@ -48,3 +48,10 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_author_name(self, obj):
         return obj.author.full_name if obj.author else None
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if request and data.get("photo"):
+            data["photo"] = request.build_absolute_uri(data["photo"])
+        return data
