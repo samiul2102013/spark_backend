@@ -20,7 +20,7 @@ class FilteredSpectacularAPIView(SpectacularAPIView):
                 filtered = {}
                 for method, operation in methods.items():
                     tags = operation.get("tags", [])
-                    if tags and tags[0] == self.filter_tag:
+                    if tags and self.filter_tag in tags:
                         filtered[method] = operation
                 if filtered:
                     paths[path] = filtered
