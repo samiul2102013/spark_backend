@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     "apps.comms",
     "apps.ai",
     "apps.sync",
-    "apps.dashboard",
+    "apps.gov_apis",
     "apps.admin_api",
     "apps.content",
 ]

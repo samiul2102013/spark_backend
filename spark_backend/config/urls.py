@@ -54,8 +54,8 @@ urlpatterns = [
     path(f"{api_prefix}", include("apps.hazards.urls")),
     path(f"{api_prefix}", include("apps.bookings.urls")),
     path(f"{api_prefix}", include("apps.comms.urls")),
-    # Dashboard
-    path(f"{api_prefix}", include("apps.dashboard.urls")),
+    # Government Dashboard
+    path(f"{api_prefix}", include("apps.gov_apis.urls")),
     # Admin
     path(f"{api_prefix}", include("apps.admin_api.urls")),
     # Content
