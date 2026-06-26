@@ -30,7 +30,7 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "Auth"],
+        tags=["mobile", "admin", "Auth"],
         summary="Register a new user",
         description="Create a new resident account via OTP registration.",
         request=RegisterSerializer,
@@ -66,7 +66,7 @@ class OTPSendView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "Auth"],
+        tags=["mobile", "admin", "Auth"],
         summary="Send OTP code",
         description="Send a 6-digit OTP code to the given phone number for verification.",
         request=OTPSendSerializer,
@@ -95,7 +95,7 @@ class OTPVerifyView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "Auth"],
+        tags=["mobile", "admin", "Auth"],
         summary="Verify OTP code",
         description="Verify the 6-digit OTP code. Returns access and refresh tokens on success.",
         request=OTPVerifySerializer,
@@ -124,7 +124,7 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "dashboard", "Auth"],
+        tags=["mobile", "dashboard", "admin", "Auth"],
         summary="Login with credentials",
         description="Authenticate with email/username and password. Returns access and refresh JWT tokens.",
         request=LoginSerializer,
@@ -153,7 +153,7 @@ class LogoutView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "Auth"],
+        tags=["mobile", "admin", "Auth"],
         summary="Logout",
         description="Blacklist the refresh token to invalidate the session.",
         request=LogoutSerializer,
@@ -181,7 +181,7 @@ class BiometricRegisterView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile", "Auth"],
+        tags=["mobile", "admin", "Auth"],
         summary="Register biometric key",
         description="Register a biometric key for the authenticated user.",
         request=BiometricRegisterSerializer,
@@ -210,7 +210,7 @@ class BiometricLoginView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "Auth"],
+        tags=["mobile", "admin", "Auth"],
         summary="Biometric login",
         description="Login using a biometric key instead of password.",
         request=BiometricLoginSerializer,
@@ -239,7 +239,7 @@ class OfflineTokenView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile", "Auth"],
+        tags=["mobile", "admin", "Auth"],
         summary="Issue offline token",
         description="Generate an offline token for the authenticated user to use when connectivity is limited.",
         responses={200: None},
@@ -257,7 +257,7 @@ class InviteValidateView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "dashboard", "Invites"],
+        tags=["mobile", "dashboard", "admin", "Invites"],
         summary="Validate invite token",
         description="Check if an invite token is valid and return invite details.",
         responses={200: None},
@@ -275,7 +275,7 @@ class InviteAcceptView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "dashboard", "Invites"],
+        tags=["mobile", "dashboard", "admin", "Invites"],
         summary="Accept invite",
         description="Accept a government/coordinator invite by setting a password. Returns JWT tokens on success.",
         request=AcceptInviteSerializer,
@@ -308,7 +308,7 @@ class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "dashboard", "Auth"],
+        tags=["mobile", "dashboard", "admin", "Auth"],
         summary="Forgot password",
         description="Request a password reset code. Sends reset code to the user's phone or email.",
         request=ForgotPasswordSerializer,
@@ -337,7 +337,7 @@ class VerifyResetOTPView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["mobile", "dashboard", "Auth"],
+        tags=["mobile", "dashboard", "admin", "Auth"],
         summary="Verify reset OTP",
         description="Verify the 6-digit OTP sent to email/phone during forgot-password. Returns an access token on success to use in the reset-password step.",
         request=VerifyResetOTPSerializer,
@@ -366,7 +366,7 @@ class ResetPasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile", "dashboard", "Auth"],
+        tags=["mobile", "dashboard", "admin", "Auth"],
         summary="Reset password",
         description="Set a new password for the authenticated user. No old password required.",
         request=ResetPasswordSerializer,
@@ -400,7 +400,7 @@ class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile", "Profile"],
+        tags=["mobile", "admin", "Profile"],
         summary="Get profile",
         description="Retrieve the authenticated user's profile information.",
         responses={200: ProfileSerializer},
@@ -410,7 +410,7 @@ class ProfileView(APIView):
         return success_response(serializer.data)
 
     @extend_schema(
-        tags=["mobile", "Profile"],
+        tags=["mobile", "admin", "Profile"],
         summary="Update profile",
         description="Partially update the authenticated user's profile fields.",
         request=ProfileSerializer,
@@ -439,7 +439,7 @@ class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile", "dashboard", "Profile"],
+        tags=["mobile", "dashboard", "admin", "Profile"],
         summary="Change password",
         description="Change the authenticated user's password by providing the old password.",
         request=ChangePasswordSerializer,
@@ -476,7 +476,7 @@ class SetPasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["mobile", "Profile"],
+        tags=["mobile", "admin", "Profile"],
         summary="Set password",
         description="Set a new password for the authenticated user (no old password required).",
         request=SetPasswordSerializer,

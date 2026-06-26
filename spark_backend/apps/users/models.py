@@ -62,6 +62,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     biometric_key = models.CharField(max_length=255, null=True, blank=True)
     organization = models.CharField(max_length=255, blank=True)
+    profile_photo = models.ImageField(upload_to="profiles/", null=True, blank=True)
     is_active = models.BooleanField(default=False)
     is_invite_accepted = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)

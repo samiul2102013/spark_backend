@@ -1,95 +1,87 @@
 from django.urls import path
 
-from . import views as admin_views
+from . import views
 
 urlpatterns = [
     # Overview
-    path("admin/overview/", admin_views.AdminOverviewView.as_view(), name="admin-overview"),
+    path("admin/overview/", views.AdminOverviewView.as_view(), name="admin-overview"),
     # Residents
-    path(
-        "admin/residents/", admin_views.AdminResidentListView.as_view(), name="admin-resident-list"
-    ),
+    path("admin/residents/", views.AdminResidentListView.as_view(), name="admin-resident-list"),
     path(
         "admin/residents/<str:user_id>/",
-        admin_views.AdminResidentDetailView.as_view(),
+        views.AdminResidentDetailView.as_view(),
         name="admin-resident-detail",
     ),
     path(
         "admin/residents/<str:user_id>/suspend/",
-        admin_views.AdminResidentSuspendView.as_view(),
+        views.AdminResidentSuspendView.as_view(),
         name="admin-resident-suspend",
     ),
     path(
         "admin/residents/<str:user_id>/activate/",
-        admin_views.AdminResidentActivateView.as_view(),
+        views.AdminResidentActivateView.as_view(),
         name="admin-resident-activate",
     ),
     # Coordinators
     path(
         "admin/coordinators/",
-        admin_views.AdminCoordinatorListView.as_view(),
+        views.AdminCoordinatorListView.as_view(),
         name="admin-coordinator-list",
     ),
     path(
         "admin/coordinators/<str:user_id>/",
-        admin_views.AdminCoordinatorDetailView.as_view(),
+        views.AdminCoordinatorDetailView.as_view(),
         name="admin-coordinator-detail",
     ),
     path(
         "admin/coordinators/<str:user_id>/suspend/",
-        admin_views.AdminCoordinatorSuspendView.as_view(),
+        views.AdminCoordinatorSuspendView.as_view(),
         name="admin-coordinator-suspend",
     ),
-    # Users (invite + role)
+    # Users (access control)
+    path("admin/users/", views.AdminUserListView.as_view(), name="admin-user-list"),
     path(
-        "admin/users/invite/", admin_views.AdminInviteUserView.as_view(), name="admin-users-invite"
+        "admin/users/<str:user_id>/suspend/",
+        views.AdminUserSuspendView.as_view(),
+        name="admin-user-suspend",
+    ),
+    path(
+        "admin/users/<str:user_id>/activate/",
+        views.AdminUserActivateView.as_view(),
+        name="admin-user-activate",
+    ),
+    path(
+        "admin/users/invite/", views.AdminInviteUserView.as_view(), name="admin-users-invite"
     ),
     path(
         "admin/users/invite-by-email/",
-        admin_views.AdminInviteByEmailView.as_view(),
+        views.AdminInviteByEmailView.as_view(),
         name="admin-users-invite-by-email",
     ),
     path(
         "admin/users/<str:user_id>/role/",
-        admin_views.AdminSetRoleView.as_view(),
+        views.AdminSetRoleView.as_view(),
         name="admin-users-set-role",
     ),
     # Hubs
-    path("admin/hubs/", admin_views.AdminHubListView.as_view(), name="admin-hub-list"),
-    path(
-        "admin/hubs/<int:hub_id>/",
-        admin_views.AdminHubDetailView.as_view(),
-        name="admin-hub-detail",
-    ),
-    path("admin/hubs/create/", admin_views.AdminHubCreateView.as_view(), name="admin-hub-create"),
+    path("admin/hubs/", views.AdminHubListView.as_view(), name="admin-hub-list"),
+    path("admin/hubs/<int:hub_id>/", views.AdminHubDetailView.as_view(), name="admin-hub-detail"),
+    path("admin/hubs/create/", views.AdminHubCreateView.as_view(), name="admin-hub-create"),
     path(
         "admin/hubs/<int:hub_id>/assign-coordinator/",
-        admin_views.AdminHubAssignCoordinatorView.as_view(),
+        views.AdminHubAssignCoordinatorView.as_view(),
         name="admin-hub-assign-coordinator",
     ),
     path(
         "admin/hubs/<int:hub_id>/reassign-coordinator/",
-        admin_views.AdminHubReassignCoordinatorView.as_view(),
+        views.AdminHubReassignCoordinatorView.as_view(),
         name="admin-hub-reassign-coordinator",
     ),
-    # Reports & AI
-    path("admin/reports/", admin_views.AdminReportListView.as_view(), name="admin-report-list"),
+    # Admin Profile & Security
+    path("admin/profile/", views.AdminProfileView.as_view(), name="admin-profile"),
     path(
-        "admin/reports/<int:report_id>/",
-        admin_views.AdminReportDetailView.as_view(),
-        name="admin-report-detail",
-    ),
-    path("admin/ai-config/", admin_views.AdminAIConfigView.as_view(), name="admin-ai-config"),
-    # Messages
-    path("admin/messages/", admin_views.AdminMessageListView.as_view(), name="admin-message-list"),
-    path(
-        "admin/messages/<int:msg_id>/",
-        admin_views.AdminMessageDetailView.as_view(),
-        name="admin-message-detail",
-    ),
-    path(
-        "admin/messages/<int:msg_id>/classify/",
-        admin_views.AdminMessageClassifyView.as_view(),
-        name="admin-message-classify",
+        "admin/change-password/",
+        views.AdminChangePasswordView.as_view(),
+        name="admin-change-password",
     ),
 ]
