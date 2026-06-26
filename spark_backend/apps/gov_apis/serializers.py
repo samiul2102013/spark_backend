@@ -82,6 +82,32 @@ class GovHazardDetailSerializer(serializers.ModelSerializer):
         return None
 
 
+class GovHazardListSerializer(serializers.ModelSerializer):
+    reporter_name = serializers.SerializerMethodField()
+    hub_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Hazard
+        fields = [
+            "id", "category", "severity", "status", "description",
+            "latitude", "longitude", "photo", "source", "period",
+            "reporter_name", "hub_name", "hub", "created_at", "updated_at",
+        ]
+
+    def get_reporter_name(self, obj):
+        return obj.reporter.full_name if obj.reporter else None
+
+    def get_hub_name(self, obj):
+        return obj.hub.name if obj.hub else None
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if request and data.get("photo"):
+            data["photo"] = request.build_absolute_uri(data["photo"])
+        return data
+
+
 class OverviewSerializer(serializers.Serializer):
     checkins = serializers.DictField()
     active_hubs = serializers.IntegerField()

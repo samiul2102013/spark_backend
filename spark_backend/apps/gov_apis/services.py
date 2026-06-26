@@ -159,3 +159,13 @@ class GovService:
 
     def get_infrastructure_hub(self, hub_id):
         return Hub.objects.get(id=hub_id)
+
+    def list_hazards(self, severity=None, category=None, status=None):
+        qs = Hazard.objects.select_related("reporter", "hub").all()
+        if severity:
+            qs = qs.filter(severity=severity)
+        if category:
+            qs = qs.filter(category=category)
+        if status:
+            qs = qs.filter(status=status)
+        return qs.order_by("-created_at")

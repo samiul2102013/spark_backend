@@ -10,19 +10,13 @@ from core.responses import error_response, success_response
 from .permissions import GovAPIAccess
 from .serializers import (
     GovHazardDetailSerializer,
+    GovHazardListSerializer,
     InfrastructureGovSerializer,
     MapDataSerializer,
     OverviewSerializer,
     ReportSerializer,
 )
 from .services import GovService
-
-HAZARD_CATEGORIES = [
-    "flooding", "fallen_tree", "blocked_road", "utility_pole",
-    "medical", "fire", "collapsed_building", "power_line_down",
-    "landslide", "other",
-]
-
 
 class GovOverviewView(APIView):
     permission_classes = [IsAuthenticated, GovAPIAccess]
@@ -69,6 +63,47 @@ class GovMapView(APIView):
             return error_response(
                 str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+HAZARD_CATEGORIES = [
+    "flooding", "fallen_tree", "blocked_road", "utility_pole",
+    "medical", "fire", "collapsed_building", "power_line_down",
+    "landslide", "other",
+]
+HAZARD_SEVERITIES = [1, 2, 3]
+HAZARD_STATUSES = ["active", "cleared"]
+
+
+class GovHazardListView(APIView):
+    permission_classes = [IsAuthenticated, GovAPIAccess]
+
+    @extend_schema(
+        tags=["dashboard", "gov"],
+        summary="List hazards",
+        description="Retrieve paginated list of all hazards with optional filters for severity, category, and status.",
+        parameters=[
+            OpenApiParameter("severity", int, OpenApiParameter.QUERY, required=False, enum=HAZARD_SEVERITIES, description="Filter by severity (1=Low, 2=Medium, 3=High)"),
+            OpenApiParameter("category", str, OpenApiParameter.QUERY, required=False, enum=HAZARD_CATEGORIES, description="Filter by hazard category"),
+            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False, enum=HAZARD_STATUSES, description="Filter by status"),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
+        ],
+        responses={200: GovHazardListSerializer(many=True)},
+    )
+    def get(self, request):
+        try:
+            service = GovService()
+            qs = service.list_hazards(
+                severity=request.query_params.get("severity"),
+                category=request.query_params.get("category"),
+                status=request.query_params.get("status"),
+            )
+            paginator = StandardPagination()
+            page = paginator.paginate_queryset(qs, request)
+            serializer = GovHazardListSerializer(page, many=True, context={"request": request})
+            return paginator.get_paginated_response(serializer.data)
+        except Exception as e:
+            return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class GovHazardDetailView(APIView):
