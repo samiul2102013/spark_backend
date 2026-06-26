@@ -55,53 +55,57 @@ class GovService:
             },
         }
 
-    def map_data(self, bounds=None, category=None):
-        hubs_qs = Hub.objects.all()
-        hazards_qs = Hazard.objects.select_related("reporter").all()
+    def map_data(self, bounds=None, category=None, data_type=None):
+        result = {}
 
-        bounds_filter = {}
-        if bounds:
-            lat_min = bounds.get("lat_min")
-            lat_max = bounds.get("lat_max")
-            lng_min = bounds.get("lng_min")
-            lng_max = bounds.get("lng_max")
-            if all([lat_min, lat_max, lng_min, lng_max]):
-                bounds_filter = {
-                    "latitude__gte": lat_min,
-                    "latitude__lte": lat_max,
-                    "longitude__gte": lng_min,
-                    "longitude__lte": lng_max,
-                }
-                hubs_qs = hubs_qs.filter(**bounds_filter)
-                hazards_qs = hazards_qs.filter(**bounds_filter)
-
-        if category:
-            hazards_qs = hazards_qs.filter(category=category)
-
-        medical_hubs = hubs_qs.values("id", "name", "latitude", "longitude")
-        hazard_values = hazards_qs.values(
-            "id", "category", "severity", "status",
-            "latitude", "longitude", "description", "created_at",
-        )
-        fall_incidents = hazards_qs.filter(category="fallen_tree").values(
-            "id", "category", "latitude", "longitude",
-            "description", "severity", "status", "created_at",
-        )
-        medical_needs_qs = CheckIn.objects.filter(
-            status="need_assistance",
-        ).exclude(medical_notes="").select_related("user", "hub").values(
-            "id", "user__full_name", "latitude", "longitude",
-            "medical_notes", "people_count", "hub_id", "timestamp",
-        )
-
-        return {
-            "medical_hubs": {
+        if data_type is None or data_type == "hubs":
+            hubs_qs = Hub.objects.all()
+            if bounds:
+                if all([bounds.get(k) for k in ("lat_min", "lat_max", "lng_min", "lng_max")]):
+                    hubs_qs = hubs_qs.filter(
+                        latitude__gte=bounds["lat_min"], latitude__lte=bounds["lat_max"],
+                        longitude__gte=bounds["lng_min"], longitude__lte=bounds["lng_max"],
+                    )
+            medical_hubs = hubs_qs.values("id", "name", "latitude", "longitude")
+            result["medical_hubs"] = {
                 "count": medical_hubs.count(),
                 "locations": list(medical_hubs),
-            },
-            "hazards": list(hazard_values),
-            "fall_incidents": list(fall_incidents),
-            "medical_needs": [
+            }
+
+        if data_type is None or data_type in ("hazards", "fallen"):
+            hazards_qs = Hazard.objects.select_related("reporter").all()
+            if bounds:
+                if all([bounds.get(k) for k in ("lat_min", "lat_max", "lng_min", "lng_max")]):
+                    hazards_qs = hazards_qs.filter(
+                        latitude__gte=bounds["lat_min"], latitude__lte=bounds["lat_max"],
+                        longitude__gte=bounds["lng_min"], longitude__lte=bounds["lng_max"],
+                    )
+            if category and data_type != "fallen":
+                hazards_qs = hazards_qs.filter(category=category)
+
+            if data_type is None or data_type == "hazards":
+                qs = hazards_qs if data_type == "hazards" else hazards_qs.exclude(category="fallen_tree")
+                hazard_values = qs.values(
+                    "id", "category", "severity", "status",
+                    "latitude", "longitude", "description", "created_at",
+                )
+                result["hazards"] = list(hazard_values)
+
+            if data_type is None or data_type == "fallen":
+                fallen = hazards_qs.filter(category="fallen_tree").values(
+                    "id", "category", "latitude", "longitude",
+                    "description", "severity", "status", "created_at",
+                )
+                result["fall_incidents"] = list(fallen)
+
+        if data_type is None or data_type == "medical_needs":
+            medical_needs_qs = CheckIn.objects.filter(
+                status="need_assistance",
+            ).exclude(medical_notes="").select_related("user", "hub").values(
+                "id", "user__full_name", "latitude", "longitude",
+                "medical_notes", "people_count", "hub_id", "timestamp",
+            )
+            result["medical_needs"] = [
                 {
                     "checkin_id": n["id"],
                     "user_name": n["user__full_name"],
@@ -113,8 +117,9 @@ class GovService:
                     "timestamp": n["timestamp"],
                 }
                 for n in medical_needs_qs
-            ],
-        }
+            ]
+
+        return result
 
     def hazard_detail(self, hazard_id):
         return Hazard.objects.select_related("reporter", "hub").prefetch_related(

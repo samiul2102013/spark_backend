@@ -44,7 +44,15 @@ class GovMapView(APIView):
     @extend_schema(
         tags=["dashboard", "gov"],
         summary="Get map data for government dashboard",
-        description="Retrieve medical hubs, all hazards, fallen tree incidents, and medical needs from check-ins. Optionally filter by category and bounding box.",
+        description="Retrieve map data. Use ?type=hubs|hazards|fallen|medical_needs to return only that section. Omit type to get all.",
+        parameters=[
+            OpenApiParameter("type", str, OpenApiParameter.QUERY, required=False, enum=["hubs", "hazards", "fallen", "medical_needs"], description="Filter by data type"),
+            OpenApiParameter("category", str, OpenApiParameter.QUERY, required=False, description="Filter hazards by category"),
+            OpenApiParameter("lat_min", float, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("lat_max", float, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("lng_min", float, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("lng_max", float, OpenApiParameter.QUERY, required=False),
+        ],
         responses={200: MapDataSerializer},
     )
     def get(self, request):
@@ -56,8 +64,9 @@ class GovMapView(APIView):
                 "lng_max": request.query_params.get("lng_max"),
             }
             category = request.query_params.get("category")
+            data_type = request.query_params.get("type")
             service = GovService()
-            data = service.map_data(bounds=bounds, category=category)
+            data = service.map_data(bounds=bounds, category=category, data_type=data_type)
             return success_response(data)
         except Exception as e:
             return error_response(
