@@ -188,7 +188,7 @@ class Command(BaseCommand):
                 defaults={
                     "end_time": end,
                     "status": "active",
-                    "people_count": 1 + (i % 3),
+                    "device_count": 1 + (i % 3),
                 },
             )
         self.stdout.write(self.style.SUCCESS(f"Created 4 bookings"))
