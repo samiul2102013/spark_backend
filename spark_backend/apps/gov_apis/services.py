@@ -149,8 +149,13 @@ class GovService:
             },
         ]
 
-    def get_infrastructure(self):
-        return Hub.objects.all()
+    def get_infrastructure(self, status=None):
+        qs = Hub.objects.all()
+        if status == "online":
+            qs = qs.filter(status="open")
+        elif status == "offline":
+            qs = qs.exclude(status="open")
+        return qs
 
     def get_infrastructure_hub(self, hub_id):
         return Hub.objects.get(id=hub_id)

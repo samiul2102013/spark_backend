@@ -1,4 +1,4 @@
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -125,12 +125,15 @@ class GovInfrastructureView(APIView):
         tags=["dashboard", "gov"],
         summary="List all infrastructure hubs",
         description="Paginated list of all hubs with location, status, battery, solar, connectivity, and sync info.",
+        parameters=[
+            OpenApiParameter("status", str, OpenApiParameter.QUERY, required=False, enum=["online", "offline"], description="Filter by online/offline status"),
+        ],
         responses={200: InfrastructureGovSerializer(many=True)},
     )
     def get(self, request):
         try:
             service = GovService()
-            qs = service.get_infrastructure()
+            qs = service.get_infrastructure(status=request.query_params.get("status"))
             paginator = StandardPagination()
             page = paginator.paginate_queryset(qs, request)
             serializer = InfrastructureGovSerializer(page, many=True)
