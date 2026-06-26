@@ -60,12 +60,11 @@ class GovService:
 
         if data_type is None or data_type == "hubs":
             hubs_qs = Hub.objects.all()
-            if bounds:
-                if all([bounds.get(k) for k in ("lat_min", "lat_max", "lng_min", "lng_max")]):
-                    hubs_qs = hubs_qs.filter(
-                        latitude__gte=bounds["lat_min"], latitude__lte=bounds["lat_max"],
-                        longitude__gte=bounds["lng_min"], longitude__lte=bounds["lng_max"],
-                    )
+            if bounds and all([bounds.get(k) for k in ("lat_min", "lat_max", "lng_min", "lng_max")]):
+                hubs_qs = hubs_qs.filter(
+                    latitude__gte=bounds["lat_min"], latitude__lte=bounds["lat_max"],
+                    longitude__gte=bounds["lng_min"], longitude__lte=bounds["lng_max"],
+                )
             medical_hubs = hubs_qs.values("id", "name", "latitude", "longitude")
             result["medical_hubs"] = {
                 "count": medical_hubs.count(),
@@ -73,13 +72,12 @@ class GovService:
             }
 
         if data_type is None or data_type in ("hazards", "fallen"):
-            hazards_qs = Hazard.objects.select_related("reporter").all()
-            if bounds:
-                if all([bounds.get(k) for k in ("lat_min", "lat_max", "lng_min", "lng_max")]):
-                    hazards_qs = hazards_qs.filter(
-                        latitude__gte=bounds["lat_min"], latitude__lte=bounds["lat_max"],
-                        longitude__gte=bounds["lng_min"], longitude__lte=bounds["lng_max"],
-                    )
+            hazards_qs = Hazard.objects.select_related("reporter").all().order_by("-created_at")
+            if bounds and all([bounds.get(k) for k in ("lat_min", "lat_max", "lng_min", "lng_max")]):
+                hazards_qs = hazards_qs.filter(
+                    latitude__gte=bounds["lat_min"], latitude__lte=bounds["lat_max"],
+                    longitude__gte=bounds["lng_min"], longitude__lte=bounds["lng_max"],
+                )
             if category and data_type != "fallen":
                 hazards_qs = hazards_qs.filter(category=category)
 
@@ -120,6 +118,31 @@ class GovService:
             ]
 
         return result
+
+    def get_hazards_qs(self, bounds=None, category=None):
+        qs = Hazard.objects.select_related("reporter").all().order_by("-created_at")
+        if bounds and all([bounds.get(k) for k in ("lat_min", "lat_max", "lng_min", "lng_max")]):
+            qs = qs.filter(
+                latitude__gte=bounds["lat_min"], latitude__lte=bounds["lat_max"],
+                longitude__gte=bounds["lng_min"], longitude__lte=bounds["lng_max"],
+            )
+        if category:
+            qs = qs.filter(category=category)
+        return qs
+
+    def get_fallen_qs(self, bounds=None):
+        qs = Hazard.objects.filter(category="fallen_tree").order_by("-created_at")
+        if bounds and all([bounds.get(k) for k in ("lat_min", "lat_max", "lng_min", "lng_max")]):
+            qs = qs.filter(
+                latitude__gte=bounds["lat_min"], latitude__lte=bounds["lat_max"],
+                longitude__gte=bounds["lng_min"], longitude__lte=bounds["lng_max"],
+            )
+        return qs
+
+    def get_medical_needs_qs(self):
+        return CheckIn.objects.filter(
+            status="need_assistance",
+        ).exclude(medical_notes="").select_related("user", "hub")
 
     def hazard_detail(self, hazard_id):
         return Hazard.objects.select_related("reporter", "hub").prefetch_related(

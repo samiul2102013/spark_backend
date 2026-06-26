@@ -3,7 +3,6 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from apps.hazards.models import Hazard
 from core.pagination import StandardPagination
 from core.responses import error_response, success_response
 
@@ -16,6 +15,8 @@ from .serializers import (
     OverviewSerializer,
     ReportSerializer,
 )
+from apps.hazards.models import Hazard
+from apps.hubs.models import Hub
 from .services import GovService
 
 class GovOverviewView(APIView):
@@ -44,7 +45,7 @@ class GovMapView(APIView):
     @extend_schema(
         tags=["dashboard", "gov"],
         summary="Get map data for government dashboard",
-        description="Retrieve map data. Use ?type=hubs|hazards|fallen|medical_needs to return only that section. Omit type to get all.",
+        description="Retrieve map data. Use ?type=hubs|hazards|fallen|medical_needs to return only that section. Omit type to get all. Add page/limit for pagination when type is specified.",
         parameters=[
             OpenApiParameter("type", str, OpenApiParameter.QUERY, required=False, enum=["hubs", "hazards", "fallen", "medical_needs"], description="Filter by data type"),
             OpenApiParameter("category", str, OpenApiParameter.QUERY, required=False, description="Filter hazards by category"),
@@ -52,6 +53,8 @@ class GovMapView(APIView):
             OpenApiParameter("lat_max", float, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("lng_min", float, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("lng_max", float, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number (requires type)"),
+            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page, max 100 (requires type)"),
         ],
         responses={200: MapDataSerializer},
     )
@@ -65,7 +68,49 @@ class GovMapView(APIView):
             }
             category = request.query_params.get("category")
             data_type = request.query_params.get("type")
+            page = request.query_params.get("page")
             service = GovService()
+
+            if data_type and page:
+                paginator = StandardPagination()
+                if data_type == "hazards":
+                    qs = service.get_hazards_qs(bounds=bounds, category=category)
+                    page = paginator.paginate_queryset(qs, request)
+                    serializer = GovHazardListSerializer(page, many=True, context={"request": request})
+                    return paginator.get_paginated_response(serializer.data)
+                elif data_type == "fallen":
+                    qs = service.get_fallen_qs(bounds=bounds)
+                    page = paginator.paginate_queryset(qs, request)
+                    serializer = GovHazardListSerializer(page, many=True, context={"request": request})
+                    return paginator.get_paginated_response(serializer.data)
+                elif data_type == "medical_needs":
+                    qs = service.get_medical_needs_qs()
+                    page = paginator.paginate_queryset(qs, request)
+                    data = [
+                        {
+                            "checkin_id": c.id,
+                            "user_name": c.user.full_name,
+                            "latitude": c.latitude,
+                            "longitude": c.longitude,
+                            "medical_notes": c.medical_notes,
+                            "people_count": c.people_count,
+                            "hub_id": c.hub_id,
+                            "timestamp": c.timestamp,
+                        }
+                        for c in page
+                    ]
+                    return paginator.get_paginated_response(data)
+                elif data_type == "hubs":
+                    qs = Hub.objects.all()
+                    if bounds and all([bounds.get(k) for k in ("lat_min", "lat_max", "lng_min", "lng_max")]):
+                        qs = qs.filter(
+                            latitude__gte=bounds["lat_min"], latitude__lte=bounds["lat_max"],
+                            longitude__gte=bounds["lng_min"], longitude__lte=bounds["lng_max"],
+                        )
+                    page = paginator.paginate_queryset(qs, request)
+                    data = [{"id": h.id, "name": h.name, "latitude": float(h.latitude), "longitude": float(h.longitude)} for h in page]
+                    return paginator.get_paginated_response(data)
+
             data = service.map_data(bounds=bounds, category=category, data_type=data_type)
             return success_response(data)
         except Exception as e:
