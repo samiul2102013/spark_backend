@@ -55,6 +55,22 @@ class AdminPrivacyPolicyView(APIView):
 
     @extend_schema(
         tags=["admin", "Content"],
+        summary="Get privacy policy",
+        description="Retrieve the privacy policy content (admin).",
+        responses={200: StaticContentSerializer},
+    )
+    def get(self, request):
+        try:
+            obj = StaticContent.objects.get(slug="privacy-policy")
+            serializer = StaticContentSerializer(obj)
+            return success_response(serializer.data)
+        except StaticContent.DoesNotExist:
+            return error_response(
+                "Privacy policy not found.", http_status=status.HTTP_404_NOT_FOUND
+            )
+
+    @extend_schema(
+        tags=["admin", "Content"],
         summary="Update privacy policy",
         description="Update the privacy policy content (admin only).",
         request=StaticContentSerializer,
@@ -77,6 +93,22 @@ class AdminPrivacyPolicyView(APIView):
 
 class AdminTermsView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
+
+    @extend_schema(
+        tags=["admin", "Content"],
+        summary="Get terms and conditions",
+        description="Retrieve the terms and conditions content (admin).",
+        responses={200: StaticContentSerializer},
+    )
+    def get(self, request):
+        try:
+            obj = StaticContent.objects.get(slug="terms-and-conditions")
+            serializer = StaticContentSerializer(obj)
+            return success_response(serializer.data)
+        except StaticContent.DoesNotExist:
+            return error_response(
+                "Terms and conditions not found.", http_status=status.HTTP_404_NOT_FOUND
+            )
 
     @extend_schema(
         tags=["admin", "Content"],
