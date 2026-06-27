@@ -73,6 +73,8 @@ class ResetPasswordSerializer(serializers.Serializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    profile_photo = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = (
@@ -87,6 +89,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "secondary_hub_id",
             "latitude",
             "longitude",
+            "profile_photo",
         )
         read_only_fields = (
             "phone_number",
@@ -96,7 +99,14 @@ class ProfileSerializer(serializers.ModelSerializer):
             "secondary_hub_id",
             "latitude",
             "longitude",
+            "profile_photo",
         )
+
+    def get_profile_photo(self, obj):
+        request = self.context.get("request")
+        if request and obj.profile_photo:
+            return request.build_absolute_uri(obj.profile_photo.url)
+        return None
 
 
 class ChangePasswordSerializer(serializers.Serializer):

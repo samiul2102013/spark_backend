@@ -406,7 +406,7 @@ class ProfileView(APIView):
         responses={200: ProfileSerializer},
     )
     def get(self, request):
-        serializer = ProfileSerializer(request.user)
+        serializer = ProfileSerializer(request.user, context={"request": request})
         return success_response(serializer.data)
 
     @extend_schema(
@@ -424,13 +424,13 @@ class ProfileView(APIView):
         ],
     )
     def put(self, request):
-        serializer = ProfileSerializer(request.user, data=request.data, partial=True)
+        serializer = ProfileSerializer(request.user, data=request.data, partial=True, context={"request": request})
         if not serializer.is_valid():
             return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
         try:
             service = AuthService()
             user = service.update_profile(request.user, serializer.validated_data)
-            return success_response(ProfileSerializer(user).data)
+            return success_response(ProfileSerializer(user, context={"request": request}).data)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
