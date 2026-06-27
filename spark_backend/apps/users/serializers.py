@@ -73,8 +73,6 @@ class ResetPasswordSerializer(serializers.Serializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    profile_photo = serializers.SerializerMethodField()
-
     class Meta:
         model = User
         fields = (
@@ -99,14 +97,14 @@ class ProfileSerializer(serializers.ModelSerializer):
             "secondary_hub_id",
             "latitude",
             "longitude",
-            "profile_photo",
         )
 
-    def get_profile_photo(self, obj):
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
         request = self.context.get("request")
-        if request and obj.profile_photo:
-            return request.build_absolute_uri(obj.profile_photo.url)
-        return None
+        if request and data.get("profile_photo"):
+            data["profile_photo"] = request.build_absolute_uri(data["profile_photo"])
+        return data
 
 
 class ChangePasswordSerializer(serializers.Serializer):

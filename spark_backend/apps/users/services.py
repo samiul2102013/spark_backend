@@ -199,7 +199,7 @@ class AuthService:
     # ── Profile ────────────────────────────────────────────────────
 
     def update_profile(self, user: User, data: dict) -> User:
-        allowed = ["full_name", "email", "household_size", "medical_needs"]
+        allowed = ["full_name", "email", "household_size", "medical_needs", "profile_photo"]
         for field in allowed:
             if field in data:
                 setattr(user, field, data[field])
