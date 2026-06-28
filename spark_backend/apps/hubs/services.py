@@ -101,6 +101,14 @@ class HubService:
         a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlng / 2) ** 2
         return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
+    def reassign_user_hub(self, user_id, hub_id):
+        with transaction.atomic():
+            user = User.objects.get(id=user_id)
+            hub = Hub.objects.get(id=hub_id)
+            user.hub = hub
+            user.save(update_fields=["hub"])
+            return user
+
     def find_nearest_hub(self, latitude, longitude):
         hubs = Hub.objects.all()
         nearest = None

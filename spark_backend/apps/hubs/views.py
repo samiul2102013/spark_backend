@@ -13,6 +13,8 @@ from .serializers import (
     HubAssignSerializer,
     HubCoordinatorSerializer,
     HubListSerializer,
+    HubReassignResponseSerializer,
+    HubReassignSerializer,
     HubSerializer,
     HubSlotSerializer,
     HubSlotsResponseSerializer,
@@ -264,6 +266,47 @@ class HubResourcesView(APIView):
             service = HubService()
             resources = service.get_hub_resources(hub_id)
             return success_response(resources)
+        except Exception as e:
+            return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class HubReassignView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    @extend_schema(
+        tags=["mobile", "Hubs"],
+        summary="Reassign user to a hub",
+        description="Directly assign a user to a specific hub by user ID and hub ID. Admin only.",
+        request=HubReassignSerializer,
+        responses={200: HubReassignResponseSerializer},
+        examples=[
+            OpenApiExample(
+                "Reassign User Example",
+                value={"user_id": 5, "hub_id": 3},
+                request_only=True,
+            ),
+        ],
+    )
+    def post(self, request):
+        try:
+            serializer = HubReassignSerializer(data=request.data)
+            if not serializer.is_valid():
+                return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+
+            service = HubService()
+            user = service.reassign_user_hub(
+                serializer.validated_data["user_id"],
+                serializer.validated_data["hub_id"],
+            )
+            hub_name = user.hub.name if user.hub else None
+            return success_response(
+                HubReassignResponseSerializer(user).data,
+                message=f"User reassigned to hub: {hub_name}",
+            )
+        except User.DoesNotExist:
+            return error_response("User not found", http_status=status.HTTP_404_NOT_FOUND)
+        except Hub.DoesNotExist:
+            return error_response("Hub not found", http_status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

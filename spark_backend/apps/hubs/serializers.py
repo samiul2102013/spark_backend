@@ -74,6 +74,22 @@ class NearestHubSerializer(serializers.ModelSerializer):
         return obj.distance_km
 
 
+class HubReassignSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    hub_id = serializers.IntegerField()
+
+
+class HubReassignResponseSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField(source="id")
+    phone_number = serializers.CharField()
+    full_name = serializers.CharField()
+    hub_id = serializers.IntegerField(source="hub.id", allow_null=True)
+    hub_name = serializers.SerializerMethodField()
+
+    def get_hub_name(self, obj):
+        return obj.hub.name if obj.hub else None
+
+
 class HubAssignSerializer(serializers.Serializer):
     latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
     longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
