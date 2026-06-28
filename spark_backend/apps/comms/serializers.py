@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 
 from .models import Broadcast, BroadcastRead, CheckIn, InboundMessage, Notification
@@ -61,10 +62,12 @@ class CheckInCreateSerializer(serializers.Serializer):
     road_access = serializers.ChoiceField(choices=["open", "blocked", "unknown"], default="unknown")
     medical_notes = serializers.CharField(required=False, allow_blank=True)
     latitude = serializers.DecimalField(
-        max_digits=9, decimal_places=6, required=False, allow_null=True
+        max_digits=19, decimal_places=16, required=False, allow_null=True,
+        validators=[MinValueValidator(-90), MaxValueValidator(90)],
     )
     longitude = serializers.DecimalField(
-        max_digits=9, decimal_places=6, required=False, allow_null=True
+        max_digits=19, decimal_places=16, required=False, allow_null=True,
+        validators=[MinValueValidator(-180), MaxValueValidator(180)],
     )
     client_uuid = serializers.CharField(required=False, allow_null=True)
     hub = serializers.IntegerField()
