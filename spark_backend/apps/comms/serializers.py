@@ -6,6 +6,8 @@ from .models import Broadcast, BroadcastRead, CheckIn, InboundMessage, Notificat
 class CheckInSerializer(serializers.ModelSerializer):
     user_full_name = serializers.SerializerMethodField()
     hub_name = serializers.SerializerMethodField()
+    hub_latitude = serializers.SerializerMethodField()
+    hub_longitude = serializers.SerializerMethodField()
 
     class Meta:
         model = CheckIn
@@ -15,6 +17,8 @@ class CheckInSerializer(serializers.ModelSerializer):
             "user_full_name",
             "hub",
             "hub_name",
+            "hub_latitude",
+            "hub_longitude",
             "timestamp",
             "people_count",
             "status",
@@ -24,6 +28,10 @@ class CheckInSerializer(serializers.ModelSerializer):
             "longitude",
             "channel",
             "client_uuid",
+            "assistance_type",
+            "additional_hazard",
+            "help_description",
+            "photo",
         ]
         read_only_fields = ["id", "timestamp", "user"]
 
@@ -32,6 +40,19 @@ class CheckInSerializer(serializers.ModelSerializer):
 
     def get_hub_name(self, obj):
         return obj.hub.name if obj.hub else None
+
+    def get_hub_latitude(self, obj):
+        return float(obj.hub.latitude) if obj.hub else None
+
+    def get_hub_longitude(self, obj):
+        return float(obj.hub.longitude) if obj.hub else None
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if request and data.get("photo"):
+            data["photo"] = request.build_absolute_uri(data["photo"])
+        return data
 
 
 class CheckInCreateSerializer(serializers.Serializer):
@@ -47,6 +68,10 @@ class CheckInCreateSerializer(serializers.Serializer):
     )
     client_uuid = serializers.CharField(required=False, allow_null=True)
     hub = serializers.IntegerField()
+    assistance_type = serializers.ChoiceField(choices=["medical", "trapped", "need_supplies", "unsafe", "fire", "fallen_tree", "utility_pole"], required=False, allow_null=True)
+    additional_hazard = serializers.ChoiceField(choices=["collapsed_building", "landslide", "power_line_down", "other"], required=False, allow_null=True)
+    help_description = serializers.CharField(required=False, allow_blank=True)
+    photo = serializers.ImageField(required=False, allow_null=True)
 
 
 class BroadcastSerializer(serializers.ModelSerializer):

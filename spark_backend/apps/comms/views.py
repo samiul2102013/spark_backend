@@ -53,7 +53,7 @@ class CheckInView(APIView):
                 return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
             service = CheckInService()
             checkin = service.create_checkin(serializer.validated_data, user=request.user)
-            return created_response(CheckInSerializer(checkin).data)
+            return created_response(CheckInSerializer(checkin, context={"request": request}).data)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -85,7 +85,7 @@ class CheckInHistoryView(APIView):
             )
             paginator = StandardPagination()
             page = paginator.paginate_queryset(qs, request)
-            serializer = CheckInSerializer(page, many=True)
+            serializer = CheckInSerializer(page, many=True, context={"request": request})
             return paginator.get_paginated_response(serializer.data)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -106,7 +106,7 @@ class CheckInLatestView(APIView):
             checkin = service.get_latest_checkin(request.user)
             if not checkin:
                 return success_response(None)
-            return success_response(CheckInSerializer(checkin).data)
+            return success_response(CheckInSerializer(checkin, context={"request": request}).data)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -124,7 +124,7 @@ class CheckInDetailView(APIView):
         try:
             service = CheckInService()
             checkin = service.get_checkin(checkin_id)
-            return success_response(CheckInSerializer(checkin).data)
+            return success_response(CheckInSerializer(checkin, context={"request": request}).data)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

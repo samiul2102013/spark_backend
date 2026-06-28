@@ -47,6 +47,21 @@ class CheckIn(TimeStampedModel):
     STATUS_CHOICES = [("safe", "Safe"), ("need_assistance", "Need Assistance")]
     ROAD_CHOICES = [("open", "Open"), ("blocked", "Blocked"), ("unknown", "Unknown")]
     CHANNEL_CHOICES = [("app", "App"), ("whatsapp", "WhatsApp"), ("sms", "SMS")]
+    ASSISTANCE_TYPE_CHOICES = [
+        ("medical", "Medical"),
+        ("trapped", "Trapped"),
+        ("need_supplies", "Need Supplies"),
+        ("unsafe", "Unsafe Area"),
+        ("fire", "Fire"),
+        ("fallen_tree", "Fallen Tree"),
+        ("utility_pole", "Damaged Utility Pole"),
+    ]
+    ADDITIONAL_HAZARD_CHOICES = [
+        ("collapsed_building", "Collapsed Building"),
+        ("landslide", "Landslide"),
+        ("power_line_down", "Power Line Down"),
+        ("other", "Other"),
+    ]
 
     user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="checkins")
     hub = models.ForeignKey("hubs.Hub", on_delete=models.CASCADE, related_name="checkins")
@@ -59,6 +74,10 @@ class CheckIn(TimeStampedModel):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     channel = models.CharField(max_length=10, choices=CHANNEL_CHOICES, default="app")
     client_uuid = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    assistance_type = models.CharField(max_length=30, choices=ASSISTANCE_TYPE_CHOICES, null=True, blank=True)
+    additional_hazard = models.CharField(max_length=30, choices=ADDITIONAL_HAZARD_CHOICES, null=True, blank=True)
+    help_description = models.TextField(blank=True)
+    photo = models.ImageField(upload_to="checkins/", null=True, blank=True)
 
     class Meta:
         db_table = "checkins"
