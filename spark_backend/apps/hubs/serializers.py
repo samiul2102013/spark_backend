@@ -74,6 +74,22 @@ class NearestHubSerializer(serializers.ModelSerializer):
         return obj.distance_km
 
 
+class HubAssignSerializer(serializers.Serializer):
+    latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+
+
+class HubAssignResponseSerializer(serializers.ModelSerializer):
+    distance_km = serializers.FloatField(read_only=True)
+
+    class Meta:
+        model = Hub
+        fields = (
+            "id", "name", "address", "latitude", "longitude",
+            "status", "battery_percentage", "distance_km",
+        )
+
+
 class HubSlotSerializer(serializers.Serializer):
     start_time = serializers.CharField()
     end_time = serializers.CharField()

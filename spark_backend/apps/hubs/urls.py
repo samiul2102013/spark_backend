@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path("hubs/nearest/", views.NearestHubView.as_view(), name="hub-nearest"),
+    path("hubs/assign/", views.HubAssignView.as_view(), name="hub-assign"),
     path("hubs/", views.HubListView.as_view(), name="hub-list"),
     path("hubs/<int:hub_id>/", views.HubDetailView.as_view(), name="hub-detail"),
     path("hubs/<int:hub_id>/status/", views.HubStatusView.as_view(), name="hub-status-update"),

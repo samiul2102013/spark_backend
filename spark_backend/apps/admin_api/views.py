@@ -511,6 +511,39 @@ class AdminHubDetailView(APIView):
                 str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+    @extend_schema(
+        tags=["admin", "Hubs"],
+        summary="Update hub",
+        description="Update any field on a hub. Admin only.",
+        request=AdminHubDetailSerializer,
+        responses={200: AdminHubDetailSerializer},
+        examples=[
+            OpenApiExample(
+                "Update Hub Example",
+                value={
+                    "name": "Kingston Central Hub",
+                    "address": "123 Main Street, Kingston",
+                    "status": "open",
+                    "battery_percentage": 85,
+                    "starlink_status": "operational",
+                },
+                request_only=True,
+            ),
+        ],
+    )
+    def patch(self, request, hub_id):
+        try:
+            serializer = AdminHubDetailSerializer(data=request.data, partial=True)
+            if not serializer.is_valid():
+                return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+            service = AdminHubService()
+            hub = service.update_hub(hub_id, serializer.validated_data)
+            return success_response(AdminHubDetailSerializer(hub).data)
+        except Exception as e:
+            return error_response(
+                str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 
 class AdminHubCreateView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]

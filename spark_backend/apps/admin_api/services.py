@@ -199,3 +199,10 @@ class AdminHubService:
         hub.coordinator = coord
         hub.save(update_fields=["coordinator"])
         return hub
+
+    def update_hub(self, hub_id, data):
+        hub = Hub.objects.get(id=hub_id)
+        for field, value in data.items():
+            setattr(hub, field, value)
+        hub.save()
+        return hub

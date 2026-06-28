@@ -9,6 +9,8 @@ from core.pagination import StandardPagination
 from core.responses import created_response, deleted_response, error_response, success_response
 
 from .serializers import (
+    HubAssignResponseSerializer,
+    HubAssignSerializer,
     HubCoordinatorSerializer,
     HubListSerializer,
     HubSerializer,
@@ -262,6 +264,52 @@ class HubResourcesView(APIView):
             service = HubService()
             resources = service.get_hub_resources(hub_id)
             return success_response(resources)
+        except Exception as e:
+            return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class HubAssignView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=["mobile", "Hubs"],
+        summary="Auto-assign nearest hub",
+        description="Find the nearest hub to the user's location and assign it to the authenticated user.",
+        request=HubAssignSerializer,
+        responses={200: HubAssignResponseSerializer},
+        examples=[
+            OpenApiExample(
+                "Assign Hub Example",
+                value={"latitude": 18.1096, "longitude": -77.2975},
+                request_only=True,
+            ),
+        ],
+    )
+    def post(self, request):
+        try:
+            serializer = HubAssignSerializer(data=request.data)
+            if not serializer.is_valid():
+                return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+
+            lat = float(serializer.validated_data["latitude"])
+            lng = float(serializer.validated_data["longitude"])
+
+            service = HubService()
+            hub, distance = service.find_nearest_hub(lat, lng)
+            if not hub:
+                return error_response("No hubs available.", http_status=status.HTTP_404_NOT_FOUND)
+
+            user = request.user
+            user.hub = hub
+            user.latitude = lat
+            user.longitude = lng
+            user.save(update_fields=["hub", "latitude", "longitude"])
+
+            hub.distance_km = distance
+            return success_response(
+                HubAssignResponseSerializer(hub).data,
+                message=f"Assigned to nearest hub: {hub.name}",
+            )
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
