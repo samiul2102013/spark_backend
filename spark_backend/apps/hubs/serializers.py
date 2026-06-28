@@ -75,7 +75,6 @@ class NearestHubSerializer(serializers.ModelSerializer):
 
 
 class HubReassignSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField()
     hub_id = serializers.IntegerField()
 
 

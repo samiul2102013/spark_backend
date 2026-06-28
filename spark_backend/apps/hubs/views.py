@@ -271,18 +271,18 @@ class HubResourcesView(APIView):
 
 
 class HubReassignView(APIView):
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         tags=["mobile", "Hubs"],
-        summary="Reassign user to a hub",
-        description="Directly assign a user to a specific hub by user ID and hub ID. Admin only.",
+        summary="Reassign own hub",
+        description="Update the authenticated user's assigned hub to a new hub.",
         request=HubReassignSerializer,
         responses={200: HubReassignResponseSerializer},
         examples=[
             OpenApiExample(
-                "Reassign User Example",
-                value={"user_id": 5, "hub_id": 3},
+                "Reassign Hub Example",
+                value={"hub_id": 3},
                 request_only=True,
             ),
         ],
@@ -295,16 +295,14 @@ class HubReassignView(APIView):
 
             service = HubService()
             user = service.reassign_user_hub(
-                serializer.validated_data["user_id"],
+                request.user.id,
                 serializer.validated_data["hub_id"],
             )
             hub_name = user.hub.name if user.hub else None
             return success_response(
                 HubReassignResponseSerializer(user).data,
-                message=f"User reassigned to hub: {hub_name}",
+                message=f"Reassigned to hub: {hub_name}",
             )
-        except User.DoesNotExist:
-            return error_response("User not found", http_status=status.HTTP_404_NOT_FOUND)
         except Hub.DoesNotExist:
             return error_response("Hub not found", http_status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
