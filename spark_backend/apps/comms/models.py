@@ -51,8 +51,7 @@ class CheckIn(TimeStampedModel):
         ("medical", "Medical"),
         ("trapped", "Trapped"),
         ("need_supplies", "Need Supplies"),
-        ("unsafe", "Unsafe Area"),
-        ("fire", "Fire"),
+        ("unsafe_building", "Unsafe Area"),
         ("fallen_tree", "Fallen Tree"),
         ("utility_pole", "Damaged Utility Pole"),
     ]
@@ -61,6 +60,9 @@ class CheckIn(TimeStampedModel):
         ("landslide", "Landslide"),
         ("power_line_down", "Power Line Down"),
         ("other", "Other"),
+        ("lost_or_separated", "Lost or Separated"),
+        ("mental_health_crisis", "Mental Health Crisis"),
+        ("fire", "Fire"),
     ]
 
     user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="checkins")
@@ -70,8 +72,8 @@ class CheckIn(TimeStampedModel):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="safe")
     road_access = models.CharField(max_length=10, choices=ROAD_CHOICES, default="unknown")
     medical_notes = models.TextField(blank=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    latitude = models.DecimalField(max_digits=19, decimal_places=16, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=19, decimal_places=16, null=True, blank=True)
     channel = models.CharField(max_length=10, choices=CHANNEL_CHOICES, default="app")
     client_uuid = models.CharField(max_length=255, unique=True, null=True, blank=True)
     assistance_type = models.CharField(max_length=30, choices=ASSISTANCE_TYPE_CHOICES, null=True, blank=True)
