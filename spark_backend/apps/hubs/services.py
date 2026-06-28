@@ -101,9 +101,9 @@ class HubService:
         a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlng / 2) ** 2
         return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
-    def reassign_user_hub(self, user_id, hub_id):
+    def reassign_user_hub(self, phone_number, hub_id):
         with transaction.atomic():
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(phone_number=phone_number)
             hub = Hub.objects.get(id=hub_id)
             user.hub = hub
             user.save(update_fields=["hub"])

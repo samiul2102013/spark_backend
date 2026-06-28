@@ -79,7 +79,7 @@ class HubReassignSerializer(serializers.Serializer):
 
 
 class HubReassignResponseSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField(source="id")
+    user_id = serializers.CharField(source="phone_number")
     phone_number = serializers.CharField()
     full_name = serializers.CharField()
     hub_id = serializers.IntegerField(source="hub.id", allow_null=True)

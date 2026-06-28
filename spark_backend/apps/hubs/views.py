@@ -296,7 +296,7 @@ class HubReassignView(APIView):
 
             service = HubService()
             user = service.reassign_user_hub(
-                request.user.id,
+                request.user.phone_number,
                 serializer.validated_data["hub_id"],
             )
             hub_name = user.hub.name if user.hub else None
