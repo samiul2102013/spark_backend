@@ -4,7 +4,10 @@ from .models import Comment, Hazard
 
 
 class HazardService:
-    def list_hazards(self, status=None, category=None, hub_id=None, period=None):
+    def list_hazards(self, status=None, category=None, hub_id=None, period=None, hours=None):
+        from datetime import timedelta
+        from django.utils import timezone
+
         qs = Hazard.objects.select_related("reporter", "hub").all()
         if status:
             qs = qs.filter(status=status)
@@ -14,6 +17,9 @@ class HazardService:
             qs = qs.filter(hub_id=hub_id)
         if period:
             qs = qs.filter(period=period)
+        if hours:
+            cutoff = timezone.now() - timedelta(hours=int(hours))
+            qs = qs.filter(created_at__gte=cutoff)
         return qs
 
     def get_hazard(self, hazard_id):

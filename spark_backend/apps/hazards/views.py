@@ -26,6 +26,7 @@ class HazardListView(APIView):
             OpenApiParameter("category", str, OpenApiParameter.QUERY, required=False, enum=HAZARD_CATEGORIES, description="Filter by category"),
             OpenApiParameter("hub_id", int, OpenApiParameter.QUERY, required=False, description="Filter by hub ID"),
             OpenApiParameter("period", str, OpenApiParameter.QUERY, required=False, enum=HAZARD_PERIODS, description="Filter by disaster period"),
+            OpenApiParameter("hours", int, OpenApiParameter.QUERY, required=False, description="Filter hazards created within this many hours (e.g. 1, 3, 24)"),
             OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
             OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
         ],
@@ -41,6 +42,7 @@ class HazardListView(APIView):
                 category=request.query_params.get("category"),
                 hub_id=request.query_params.get("hub_id"),
                 period=request.query_params.get("period"),
+                hours=request.query_params.get("hours"),
             )
             paginator = StandardPagination()
             page = paginator.paginate_queryset(qs, request)
