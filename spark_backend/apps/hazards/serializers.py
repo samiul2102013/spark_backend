@@ -1,10 +1,22 @@
+from django.conf import settings
 from rest_framework import serializers
 
 from .models import Comment, Hazard
 
 
+class PhotoUrlField(serializers.ImageField):
+    def to_representation(self, value):
+        if not value:
+            return None
+        request = self.context.get("request")
+        if request:
+            return request.build_absolute_uri(value.url)
+        return value.url
+
+
 class HazardSerializer(serializers.ModelSerializer):
     reporter_name = serializers.SerializerMethodField()
+    photo = PhotoUrlField(required=False, allow_null=True)
 
     class Meta:
         model = Hazard

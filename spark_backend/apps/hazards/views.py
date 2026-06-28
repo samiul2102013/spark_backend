@@ -78,12 +78,12 @@ class HazardListView(APIView):
         try:
             self.permission_classes = [IsAuthenticated, IsResidentOrCoordinator]
             self.check_permissions(request)
-            serializer = HazardSerializer(data=request.data)
+            serializer = HazardSerializer(data=request.data, context={"request": request})
             if not serializer.is_valid():
                 return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
             service = HazardService()
             hazard = service.create_hazard(serializer.validated_data, reporter=request.user)
-            return created_response(HazardSerializer(hazard).data)
+            return created_response(HazardSerializer(hazard, context={"request": request}).data)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -101,7 +101,7 @@ class HazardDetailView(APIView):
         try:
             service = HazardService()
             hazard = service.get_hazard(hazard_id)
-            return success_response(HazardSerializer(hazard).data)
+            return success_response(HazardSerializer(hazard, context={"request": request}).data)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -123,12 +123,12 @@ class HazardDetailView(APIView):
         try:
             self.permission_classes = [IsAuthenticated, IsAdmin]
             self.check_permissions(request)
-            serializer = HazardSerializer(data=request.data, partial=True)
+            serializer = HazardSerializer(data=request.data, partial=True, context={"request": request})
             if not serializer.is_valid():
                 return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
             service = HazardService()
             hazard = service.update_hazard(hazard_id, serializer.validated_data)
-            return success_response(HazardSerializer(hazard).data)
+            return success_response(HazardSerializer(hazard, context={"request": request}).data)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -162,7 +162,7 @@ class HazardClearView(APIView):
         try:
             service = HazardService()
             hazard = service.mark_cleared(hazard_id, request.user)
-            return success_response(HazardSerializer(hazard).data)
+            return success_response(HazardSerializer(hazard, context={"request": request}).data)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
