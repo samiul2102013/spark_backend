@@ -21,6 +21,7 @@ from .serializers import (
     HubStatusSerializer,
     NearestHubSerializer,
 )
+from .models import Hub
 from .services import HubService
 
 HUB_STATUSES = ["open", "closed", "low_battery", "critical"]
