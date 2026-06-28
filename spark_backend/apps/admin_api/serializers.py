@@ -8,19 +8,22 @@ from apps.users.models import User
 
 
 class AdminProfileSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(source="phone_number", read_only=True)
+
     class Meta:
         model = User
-        fields = ["phone_number", "full_name", "email", "role"]
-        read_only_fields = ["role"]
+        fields = ["id", "phone_number", "full_name", "email", "role"]
+        read_only_fields = ["id", "role"]
 
 
 class AdminUserListSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(source="phone_number", read_only=True)
     hub_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
-            "phone_number", "full_name", "email", "role",
+            "id", "phone_number", "full_name", "email", "role",
             "is_active", "hub_name", "created_at",
         ]
 
@@ -29,6 +32,7 @@ class AdminUserListSerializer(serializers.ModelSerializer):
 
 
 class ResidentListSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(source="phone_number", read_only=True)
     hub_name = serializers.SerializerMethodField()
     community = serializers.SerializerMethodField()
     last_checkin = serializers.SerializerMethodField()
@@ -37,7 +41,7 @@ class ResidentListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "phone_number", "full_name", "email", "role",
+            "id", "phone_number", "full_name", "email", "role",
             "is_active", "hub_name", "community", "last_checkin",
             "profile_photo", "household_size", "created_at",
         ]
@@ -60,6 +64,7 @@ class ResidentListSerializer(serializers.ModelSerializer):
 
 
 class ResidentDetailSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(source="phone_number", read_only=True)
     hub_name = serializers.SerializerMethodField()
     community = serializers.SerializerMethodField()
     last_checkin = serializers.SerializerMethodField()
@@ -69,7 +74,7 @@ class ResidentDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "phone_number", "full_name", "email", "role",
+            "id", "phone_number", "full_name", "email", "role",
             "household_size", "medical_needs", "is_active",
             "hub_name", "community", "latitude", "longitude",
             "last_checkin", "profile_photo", "checkins_count",
@@ -97,12 +102,13 @@ class ResidentDetailSerializer(serializers.ModelSerializer):
 
 
 class CoordinatorListSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(source="phone_number", read_only=True)
     hub_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
-            "phone_number", "full_name", "email",
+            "id", "phone_number", "full_name", "email",
             "is_active", "hub_name", "created_at",
         ]
 
@@ -111,13 +117,14 @@ class CoordinatorListSerializer(serializers.ModelSerializer):
 
 
 class CoordinatorDetailSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(source="phone_number", read_only=True)
     hub = serializers.SerializerMethodField()
     checkins_managed = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
-            "phone_number", "full_name", "email", "role",
+            "id", "phone_number", "full_name", "email", "role",
             "is_active", "hub", "checkins_managed", "created_at",
         ]
 
@@ -236,9 +243,11 @@ class InviteUserSerializer(serializers.Serializer):
 
 
 class RoleDetailSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(source="phone_number", read_only=True)
+
     class Meta:
         model = User
-        fields = ["phone_number", "full_name", "role", "is_active", "is_staff", "created_at"]
+        fields = ["id", "phone_number", "full_name", "role", "is_active", "is_staff", "created_at"]
 
 
 class SuspendUserSerializer(serializers.Serializer):

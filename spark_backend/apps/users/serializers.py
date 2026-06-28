@@ -73,6 +73,8 @@ class ResetPasswordSerializer(serializers.Serializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(source="phone_number", read_only=True)
+
     class Meta:
         model = User
         fields = (
