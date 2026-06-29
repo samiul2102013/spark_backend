@@ -54,6 +54,9 @@ class CheckIn(TimeStampedModel):
         ("unsafe_building", "Unsafe Area"),
         ("fallen_tree", "Fallen Tree"),
         ("utility_pole", "Damaged Utility Pole"),
+        ("security_concern", "Security Concern"),
+        ("vehicle_breakdown", "Vehicle Breakdown"),
+        ("stranded", "Stranded"),
     ]
     ADDITIONAL_HAZARD_CHOICES = [
         ("collapsed_building", "Collapsed Building"),

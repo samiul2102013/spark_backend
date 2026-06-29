@@ -57,9 +57,9 @@ class CheckInSerializer(serializers.ModelSerializer):
 
 
 class CheckInCreateSerializer(serializers.Serializer):
-    status = serializers.ChoiceField(choices=["safe", "need_assistance"])
+    status = serializers.ChoiceField(choices=CheckIn.STATUS_CHOICES)
     people_count = serializers.IntegerField(default=1)
-    road_access = serializers.ChoiceField(choices=["open", "blocked", "unknown"], default="unknown")
+    road_access = serializers.ChoiceField(choices=CheckIn.ROAD_CHOICES, default="unknown")
     medical_notes = serializers.CharField(required=False, allow_blank=True)
     latitude = serializers.DecimalField(
         max_digits=19, decimal_places=16, required=False, allow_null=True,
@@ -71,8 +71,8 @@ class CheckInCreateSerializer(serializers.Serializer):
     )
     client_uuid = serializers.CharField(required=False, allow_null=True)
     hub = serializers.IntegerField()
-    assistance_type = serializers.ChoiceField(choices=["medical", "trapped", "need_supplies", "unsafe", "fire", "fallen_tree", "utility_pole"], required=False, allow_null=True)
-    additional_hazard = serializers.ChoiceField(choices=["collapsed_building", "landslide", "power_line_down", "other"], required=False, allow_null=True)
+    assistance_type = serializers.ChoiceField(choices=CheckIn.ASSISTANCE_TYPE_CHOICES, required=False, allow_null=True)
+    additional_hazard = serializers.ChoiceField(choices=CheckIn.ADDITIONAL_HAZARD_CHOICES, required=False, allow_null=True)
     help_description = serializers.CharField(required=False, allow_blank=True)
     photo = serializers.ImageField(required=False, allow_null=True)
 
