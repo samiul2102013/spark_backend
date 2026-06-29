@@ -168,7 +168,7 @@ class AIScoringService:
 
             groq_kwargs = {"api_key": api_key}
             base_uri = os.environ.get("GROQ_BASE_URI") or getattr(settings, "GROQ_BASE_URI", None)
-            if base_uri:
+            if base_uri and base_uri.rstrip("/") != "https://api.groq.com/openai/v1":
                 groq_kwargs["base_url"] = base_uri
 
             client = Groq(**groq_kwargs)
