@@ -35,6 +35,10 @@ class HazardSerializer(serializers.ModelSerializer):
             "reporter_name",
             "hub",
             "client_uuid",
+            "risk_score",
+            "review_status",
+            "reviewed_by",
+            "reviewed_at",
             "created_at",
             "updated_at",
         ]
@@ -47,7 +51,7 @@ class HazardSerializer(serializers.ModelSerializer):
 class HazardListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hazard
-        fields = ["id", "category", "severity", "status", "latitude", "longitude", "created_at"]
+        fields = ["id", "category", "severity", "status", "risk_score", "latitude", "longitude", "created_at"]
 
 
 class CommentSerializer(serializers.ModelSerializer):
