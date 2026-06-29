@@ -431,6 +431,7 @@ class ReportGenerationService:
             summary=summary, generated_by="ai", is_auto=is_auto
         )
         pdf_path = ReportGenerationService.generate_pdf(report.id, summary, stats)
-        report.pdf_file = pdf_path
-        report.save(update_fields=["pdf_file"])
+        from django.core.files import File
+        with open(pdf_path, "rb") as f:
+            report.pdf_file.save(f"report_{report.id}.pdf", File(f))
         return report
