@@ -182,11 +182,9 @@ class BroadcastCreateView(APIView):
             hub_id = request.data.get("hub")
             user = request.user
             if user.role == "coordinator":
-                from apps.hubs.models import Hub
-                coordinated_hub = Hub.objects.filter(coordinator=user).first()
-                if not coordinated_hub:
+                if not user.hub:
                     return error_response("No hub assigned to you.", http_status=status.HTTP_400_BAD_REQUEST)
-                hub_id = coordinated_hub.id
+                hub_id = user.hub.id
             if not hub_id:
                 return error_response("hub is required.", http_status=status.HTTP_400_BAD_REQUEST)
             serializer = BroadcastCreateSerializer(data=request.data)
