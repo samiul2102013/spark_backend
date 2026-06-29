@@ -5,7 +5,7 @@ from .models import AIConfig, SituationReport
 
 @admin.register(SituationReport)
 class SituationReportAdmin(admin.ModelAdmin):
-    list_display = ("id", "hub", "summary", "generated_by", "is_auto", "created_at")
+    list_display = ("id", "summary", "generated_by", "is_auto", "created_at")
     list_filter = ("generated_by", "is_auto")
     search_fields = ("summary",)
 

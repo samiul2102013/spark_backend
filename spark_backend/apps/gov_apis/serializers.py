@@ -131,3 +131,11 @@ class ReportSerializer(serializers.Serializer):
     subtitle = serializers.CharField()
     timestamp = serializers.DateTimeField()
     pdf_url = serializers.URLField()
+
+
+class GovReportSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    summary = serializers.CharField()
+    generated_by = serializers.CharField()
+    created_at = serializers.DateTimeField()
+    pdf_url = serializers.URLField(allow_null=True)

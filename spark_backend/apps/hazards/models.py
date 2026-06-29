@@ -66,6 +66,25 @@ class Hazard(TimeStampedModel):
         "hubs.Hub", on_delete=models.CASCADE, null=True, blank=True, related_name="hazards"
     )
     client_uuid = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    risk_score = models.IntegerField(null=True, blank=True)
+    review_status = models.CharField(
+        max_length=20,
+        choices=[
+            ("pending", "Pending"),
+            ("reviewed", "Reviewed"),
+            ("escalated", "Escalated"),
+            ("resolved", "Resolved"),
+        ],
+        default="pending",
+    )
+    reviewed_by = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_hazards",
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = "hazards"

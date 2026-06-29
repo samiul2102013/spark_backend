@@ -58,6 +58,8 @@ urlpatterns = [
     path(f"{api_prefix}", include("apps.gov_apis.urls")),
     # Admin
     path(f"{api_prefix}", include("apps.admin_api.urls")),
+    # AI
+    path(f"{api_prefix}", include("apps.ai.urls")),
     # Content
     path(f"{api_prefix}", include("apps.content.urls")),
 ]

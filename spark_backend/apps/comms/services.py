@@ -22,7 +22,15 @@ class CheckInService:
             data["user"] = user
         hub_id = data.pop("hub")
         data["hub_id"] = hub_id
-        return CheckIn.objects.create(**data)
+        checkin = CheckIn.objects.create(**data)
+        if checkin.help_description:
+            from apps.ai.services import AIScoringService
+            checkin.risk_score = AIScoringService.assign_risk_score(
+                checkin.help_description, category=None
+            )
+            if checkin.risk_score is not None:
+                checkin.save(update_fields=["risk_score"])
+        return checkin
 
     def get_latest_checkin(self, user):
         return CheckIn.objects.filter(user=user).order_by("-timestamp").first()

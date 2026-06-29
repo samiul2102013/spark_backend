@@ -29,7 +29,15 @@ class HazardService:
     def create_hazard(self, data, reporter):
         if reporter:
             data["reporter"] = reporter
-        return Hazard.objects.create(**data)
+        hazard = Hazard.objects.create(**data)
+        if hazard.description:
+            from apps.ai.services import AIScoringService
+            hazard.risk_score = AIScoringService.assign_risk_score(
+                hazard.description, hazard.category
+            )
+            if hazard.risk_score is not None:
+                hazard.save(update_fields=["risk_score"])
+        return hazard
 
     @transaction.atomic
     def update_hazard(self, hazard_id, data):

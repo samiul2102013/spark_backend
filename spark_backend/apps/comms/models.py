@@ -83,6 +83,25 @@ class CheckIn(TimeStampedModel):
     additional_hazard = models.CharField(max_length=30, choices=ADDITIONAL_HAZARD_CHOICES, null=True, blank=True)
     help_description = models.TextField(blank=True)
     photo = models.ImageField(upload_to="checkins/", null=True, blank=True)
+    risk_score = models.IntegerField(null=True, blank=True)
+    review_status = models.CharField(
+        max_length=20,
+        choices=[
+            ("pending", "Pending"),
+            ("reviewed", "Reviewed"),
+            ("escalated", "Escalated"),
+            ("resolved", "Resolved"),
+        ],
+        default="pending",
+    )
+    reviewed_by = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_checkins",
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = "checkins"

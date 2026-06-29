@@ -174,10 +174,24 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_TIMEZONE = "America/Jamaica"
 
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    "check-ai-report-generation": {
+        "task": "apps.ai.tasks.check_and_generate_report",
+        "schedule": crontab(minute=0),  # hourly
+    },
+}
+
 FRONTEND_URL = env.str("FRONTEND_URL", default="http://localhost:3000")
 
 # OTP Mock Mode (set True to use "000000" for all codes — dev only)
 OTP_MOCK_MODE = env.bool("OTP_MOCK_MODE", default=False)
+
+# Groq (AI)
+GROQ_API_KEY = env.str("GROQ_API_KEY", default="")
+GROQ_MODEL = env.str("GROQ_MODEL", default="llama-3.1-8b-instant")
+GROQ_BASE_URI = env.str("GROQ_BASE_URI", default="")
 
 # Twilio (SMS)
 TWILIO_ACCOUNT_SID = env.str("TWILIO_ACCOUNT_SID", default="")

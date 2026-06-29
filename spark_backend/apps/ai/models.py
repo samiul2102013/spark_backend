@@ -4,9 +4,6 @@ from core.models import TimeStampedModel
 
 
 class SituationReport(TimeStampedModel):
-    hub = models.ForeignKey(
-        "hubs.Hub", on_delete=models.CASCADE, null=True, blank=True, related_name="reports"
-    )
     summary = models.TextField()
     generated_by = models.CharField(max_length=20, default="ai")
     pdf_file = models.FileField(upload_to="reports/", null=True, blank=True)
@@ -30,3 +27,61 @@ class AIConfig(TimeStampedModel):
     class Meta:
         db_table = "ai_config"
         verbose_name = "AI Configuration"
+
+
+class MessageReviewConfig(models.Model):
+    REVIEW_FREQUENCIES = [
+        ("60min", "60 Minutes"),
+        ("daily", "Daily"),
+        ("weekly", "Weekly"),
+    ]
+
+    confidence_threshold = models.IntegerField(default=70)
+    autonomous_classification = models.BooleanField(default=True)
+    review_report_frequency = models.CharField(
+        max_length=10, choices=REVIEW_FREQUENCIES, default="60min"
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "message_review_config"
+        verbose_name = "Message Review Configuration"
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return "Message Review Config"
+
+
+class AIReportingConfig(models.Model):
+    FREQUENCIES = [
+        ("daily", "Daily"),
+        ("weekly", "Weekly"),
+        ("monthly", "Monthly"),
+    ]
+
+    auto_reporting_enabled = models.BooleanField(default=True)
+    frequency = models.CharField(max_length=10, choices=FREQUENCIES, default="daily")
+    include_activity_summary = models.BooleanField(default=True)
+    include_hubs_summary = models.BooleanField(default=True)
+    include_alerts_summary = models.BooleanField(default=True)
+    include_ai_performance = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "ai_reporting_config"
+        verbose_name = "AI Reporting Configuration"
+
+    @classmethod
+    def get_solo(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def frequency_hours(self):
+        return {"daily": 24, "weekly": 168, "monthly": 720}.get(self.frequency, 24)
+
+    def __str__(self):
+        return "AI Reporting Config"

@@ -10,6 +10,7 @@ from .permissions import GovAPIAccess
 from .serializers import (
     GovHazardDetailSerializer,
     GovHazardListSerializer,
+    GovReportSerializer,
     InfrastructureGovSerializer,
     MapDataSerializer,
     OverviewSerializer,
@@ -193,14 +194,28 @@ class GovReportsView(APIView):
     @extend_schema(
         tags=["dashboard", "gov"],
         summary="List situation reports (PDFs)",
-        description="Retrieve list of situation report PDFs with title, subtitle, timestamp, and download URL.",
-        responses={200: ReportSerializer(many=True)},
+        description="Retrieve paginated list of situation reports with summary, timestamp, and PDF download URL.",
+        responses={200: GovReportSerializer(many=True)},
     )
     def get(self, request):
         try:
             service = GovService()
-            data = service.situation_reports()
-            return success_response(data)
+            qs = service.situation_reports()
+            paginator = StandardPagination()
+            page = paginator.paginate_queryset(qs, request)
+            data = []
+            for report in page:
+                pdf_url = None
+                if report.pdf_file:
+                    pdf_url = request.build_absolute_uri(report.pdf_file.url)
+                data.append({
+                    "id": report.id,
+                    "summary": report.summary,
+                    "generated_by": report.generated_by,
+                    "created_at": report.created_at,
+                    "pdf_url": pdf_url,
+                })
+            return paginator.get_paginated_response(data)
         except Exception as e:
             return error_response(
                 str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR

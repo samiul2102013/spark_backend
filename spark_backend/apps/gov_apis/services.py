@@ -4,6 +4,7 @@ from django.db.models import Prefetch
 from django.utils import timezone
 
 from apps.comms.models import CheckIn, InboundMessage
+from apps.ai.models import SituationReport
 from apps.hazards.models import Comment, Hazard
 from apps.hubs.models import Hub
 
@@ -153,29 +154,7 @@ class GovService:
         ).get(id=hazard_id)
 
     def situation_reports(self):
-        return [
-            {
-                "id": 1,
-                "title": "Situation Report - Hub Alpha",
-                "subtitle": "Daily assessment for June 25, 2026",
-                "timestamp": "2026-06-25T06:00:00+00:00",
-                "pdf_url": "https://api.chargesafe.com/media/reports/situation_report_1.pdf",
-            },
-            {
-                "id": 2,
-                "title": "Situation Report - Hub Beta",
-                "subtitle": "Evening assessment for June 24, 2026",
-                "timestamp": "2026-06-24T18:00:00+00:00",
-                "pdf_url": "https://api.chargesafe.com/media/reports/situation_report_2.pdf",
-            },
-            {
-                "id": 3,
-                "title": "Situation Report - Hub Gamma",
-                "subtitle": "Morning assessment for June 24, 2026",
-                "timestamp": "2026-06-24T06:00:00+00:00",
-                "pdf_url": "https://api.chargesafe.com/media/reports/situation_report_3.pdf",
-            },
-        ]
+        return SituationReport.objects.all().order_by("-created_at")
 
     def get_infrastructure(self, status=None):
         qs = Hub.objects.all()
