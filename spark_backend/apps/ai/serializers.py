@@ -32,6 +32,7 @@ class AIReportingConfigSerializer(serializers.ModelSerializer):
             "include_hubs_summary",
             "include_alerts_summary",
             "include_ai_performance",
+            "use_ai_summary",
             "updated_at",
         ]
         read_only_fields = ["updated_at"]

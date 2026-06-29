@@ -69,6 +69,7 @@ class AIReportingConfig(models.Model):
     include_hubs_summary = models.BooleanField(default=True)
     include_alerts_summary = models.BooleanField(default=True)
     include_ai_performance = models.BooleanField(default=False)
+    use_ai_summary = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

@@ -368,6 +368,49 @@ class ReportGenerationService:
         return filepath
 
     @staticmethod
+    def generate_ai_summary(stats: dict, config) -> str | None:
+        import json
+        import logging
+
+        from django.conf import settings
+        from groq import Groq
+
+        logger = logging.getLogger(__name__)
+
+        if not settings.GROQ_API_KEY:
+            logger.warning("GROQ_API_KEY not set — cannot generate AI summary")
+            return None
+
+        sections = []
+        for section_key in ("activity", "hubs", "alerts", "ai_performance"):
+            label = section_key.replace("_", " ").title()
+            data = stats.get(section_key)
+            if data:
+                sections.append(f"{label}: {json.dumps(data)}")
+
+        prompt = (
+            "You are a disaster response reporting assistant. "
+            "Given the following statistics, write a concise 2-3 sentence situation report "
+            "summary suitable for government officials. Be specific with numbers:\n\n"
+            + "\n".join(sections)
+        )
+
+        try:
+            client = Groq(api_key=settings.GROQ_API_KEY)
+            response = client.chat.completions.create(
+                model=settings.GROQ_MODEL,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=250,
+                temperature=0.3,
+            )
+            text = response.choices[0].message.content.strip()
+            logger.info("Groq AI summary generated (%d chars)", len(text))
+            return text
+        except Exception:
+            logger.warning("Groq summary generation failed", exc_info=True)
+            return None
+
+    @staticmethod
     def create_report(is_auto: bool = False):
         from .models import AIReportingConfig, SituationReport
 
@@ -376,7 +419,14 @@ class ReportGenerationService:
             return None
 
         stats = ReportGenerationService.gather_stats(config)
-        summary = ReportGenerationService.build_summary_text(stats)
+
+        if config.use_ai_summary:
+            summary = ReportGenerationService.generate_ai_summary(stats, config)
+            if not summary:
+                summary = ReportGenerationService.build_summary_text(stats)
+        else:
+            summary = ReportGenerationService.build_summary_text(stats)
+
         report = SituationReport.objects.create(
             summary=summary, generated_by="ai", is_auto=is_auto
         )
