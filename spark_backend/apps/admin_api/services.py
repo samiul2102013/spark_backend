@@ -45,13 +45,13 @@ class AdminOverviewService:
                 "medical_roadblocks": Hazard.objects.filter(
                     category="medical", status="active"
                 ).count(),
-                "flooding": Hazard.objects.filter(
-                    category="flooding", status="active"
+                "flood": Hazard.objects.filter(
+                    category="flood", status="active"
                 ).count(),
             },
             "checkins_over_time": checkins_over_time,
             "hazard_breakdown": {
-                "flooding": Hazard.objects.filter(category="flooding").count(),
+                "flood": Hazard.objects.filter(category="flood").count(),
                 "fire": Hazard.objects.filter(category="fire").count(),
                 "medical": Hazard.objects.filter(category="medical").count(),
             },

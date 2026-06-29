@@ -105,17 +105,17 @@ class Command(BaseCommand):
 
         # ── Hazards (Cyclone Scenario) ───────────────────────────────
         hazards_data = [
-            ("flooding", "Severe flooding on King Street, Kingston. Water levels rising rapidly after continuous rainfall from Tropical Storm.", kingston_hub, 17.9712, -76.7936, 3, "active", "post"),
+            ("flood", "Severe flooding on King Street, Kingston. Water levels rising rapidly after continuous rainfall from Tropical Storm.", kingston_hub, 17.9712, -76.7936, 3, "active", "post"),
             ("fallen_tree", "Large tree fallen across Mandela Highway near the UWI roundabout. Road impassable.", kingston_hub, 17.9830, -76.7840, 2, "active", "post"),
             ("power_line_down", "Power line down on Washington Boulevard, Portmore. Live wires on road. Keep distance.", kingston_hub, 17.9700, -76.8820, 3, "active", "post"),
             ("blocked_road", "Landslide blocking Junction Main Road, St. Elizabeth. No alternative route currently.", mobay_hub, 18.1200, -77.4500, 2, "active", "post"),
             ("landslide", "Hillside collapsed on Junction Main Road, St. Mary. Extensive debris clean-up needed.", mobay_hub, 18.2200, -76.9000, 2, "active", "post"),
             ("collapsed_building", "Partial building collapse on Spanish Town Road, Trench Town. Rescue teams dispatched.", kingston_hub, 17.9870, -76.8020, 3, "active", "post"),
-            ("flooding", "Flooding on Barnett Street, Montego Bay. Businesses and homes affected. Sandbags available at hub.", mobay_hub, 18.4710, -77.9220, 2, "active", "post"),
+            ("flood", "Flooding on Barnett Street, Montego Bay. Businesses and homes affected. Sandbags available at hub.", mobay_hub, 18.4710, -77.9220, 2, "active", "post"),
             ("fallen_tree", "Fallen tree blocking A1 Highway near Green Island, Negril. Single lane passable.", mobay_hub, 18.3900, -78.2700, 1, "active", "post"),
             ("power_line_down", "Downed power lines on Main Street, Ocho Rios. JPS crew en route.", mobay_hub, 18.4100, -77.1040, 2, "active", "post"),
             ("blocked_road", "Road blocked by debris in Buff Bay, Portland. Clearing underway by NWA.", kingston_hub, 18.2280, -76.6610, 1, "active", "post"),
-            ("flooding", "Flash flooding along the Rio Cobre near Spanish Town. Residents advised to move to higher ground.", kingston_hub, 17.9920, -76.9590, 3, "active", "post"),
+            ("flood", "Flash flooding along the Rio Cobre near Spanish Town. Residents advised to move to higher ground.", kingston_hub, 17.9920, -76.9590, 3, "active", "post"),
             ("medical", "Elderly resident in Tivoli Gardens requires urgent medical evacuation. Road access limited.", kingston_hub, 17.9780, -76.8050, 3, "active", "post"),
         ]
 

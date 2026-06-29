@@ -30,9 +30,9 @@ from .serializers import (
 from .services import AdminHubService, AdminOverviewService, AdminUserService
 
 HAZARD_CATEGORIES = [
-    "flooding", "fallen_tree", "blocked_road", "utility_pole",
+    "flood", "fallen_tree", "blocked_road", "utility_pole",
     "medical", "fire", "collapsed_building", "power_line_down",
-    "landslide", "other",
+    "landslide", "earthquake", "storm", "other",
 ]
 HUB_STATUSES = ["open", "closed", "low_battery", "critical"]
 USER_ROLES = ["resident", "coordinator", "government", "admin"]

@@ -145,9 +145,9 @@ SPECTACULAR_SETTINGS = {
     "SCHEMA_PATH_PREFIX": "/api/v1/",
     "ENUM_NAME_OVERRIDES": {
         "CategoryEnum": [
-            "flooding", "fallen_tree", "blocked_road", "utility_pole",
+            "flood", "fallen_tree", "blocked_road", "utility_pole",
             "medical", "fire", "collapsed_building", "power_line_down",
-            "landslide", "other",
+            "landslide", "earthquake", "storm", "other",
         ],
         "HazardStatusEnum": ["active", "cleared"],
         "PeriodEnum": ["pre", "post"],

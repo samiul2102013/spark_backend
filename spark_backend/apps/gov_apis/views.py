@@ -121,9 +121,9 @@ class GovMapView(APIView):
 
 
 HAZARD_CATEGORIES = [
-    "flooding", "fallen_tree", "blocked_road", "utility_pole",
+    "flood", "fallen_tree", "blocked_road", "utility_pole",
     "medical", "fire", "collapsed_building", "power_line_down",
-    "landslide", "other",
+    "landslide", "earthquake", "storm", "other",
 ]
 HAZARD_SEVERITIES = [1, 2, 3]
 HAZARD_STATUSES = ["active", "cleared"]

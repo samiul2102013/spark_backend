@@ -10,7 +10,7 @@ from core.responses import created_response, deleted_response, error_response, s
 from .serializers import CommentSerializer, HazardListSerializer, HazardSerializer
 from .services import HazardService
 
-HAZARD_CATEGORIES = ["flooding", "fallen_tree", "blocked_road", "utility_pole", "medical", "fire", "collapsed_building", "power_line_down", "landslide", "other"]
+HAZARD_CATEGORIES = ["flood", "fallen_tree", "blocked_road", "utility_pole", "medical", "fire", "collapsed_building", "power_line_down", "landslide", "earthquake", "storm", "other"]
 HAZARD_STATUSES = ["active", "cleared"]
 HAZARD_PERIODS = ["pre", "post"]
 
@@ -61,7 +61,7 @@ class HazardListView(APIView):
             OpenApiExample(
                 "Create Hazard Example",
                 value={
-                    "category": "flooding",
+                    "category": "flood",
                     "description": "Water level rising on Main Street",
                     "latitude": 18.1096,
                     "longitude": -77.2975,
