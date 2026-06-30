@@ -142,7 +142,7 @@ class HazardDetailView(APIView):
     )
     def delete(self, request, hazard_id):
         try:
-            self.permission_classes = [IsAuthenticated, IsAdmin]
+            self.permission_classes = [IsAuthenticated, IsAdminOrCoordinator]
             self.check_permissions(request)
             service = HazardService()
             service.delete_hazard(hazard_id)
