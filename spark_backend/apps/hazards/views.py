@@ -146,7 +146,7 @@ class HazardDetailView(APIView):
             self.check_permissions(request)
             service = HazardService()
             service.delete_hazard(hazard_id)
-            return deleted_response()
+            return success_response(message="Hazard deleted successfully")
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
