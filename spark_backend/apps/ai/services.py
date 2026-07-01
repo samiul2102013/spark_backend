@@ -152,55 +152,46 @@ class AIScoringService:
             return None
 
         import logging
-        import os
 
-        from groq import Groq
+        from anthropic import Anthropic
 
         logger = logging.getLogger(__name__)
 
         try:
-            api_key = os.environ.get("GROQ_API_KEY") or settings.GROQ_API_KEY
+            api_key = settings.CLAUDE_API_KEY
             if not api_key:
-                logger.warning("GROQ_API_KEY not set — skipping AI risk scoring")
+                logger.warning("CLAUDE_API_KEY not set — skipping AI risk scoring")
                 return None
 
-            model = os.environ.get("GROQ_MODEL", getattr(settings, "GROQ_MODEL", "llama-3.1-8b-instant"))
+            model = settings.CLAUDE_MODEL
 
-            groq_kwargs = {"api_key": api_key}
-            base_uri = os.environ.get("GROQ_BASE_URI") or getattr(settings, "GROQ_BASE_URI", None)
-            if base_uri and base_uri.rstrip("/") != "https://api.groq.com/openai/v1":
-                groq_kwargs["base_url"] = base_uri
-
-            client = Groq(**groq_kwargs)
-            response = client.chat.completions.create(
+            client = Anthropic(api_key=api_key)
+            response = client.messages.create(
                 model=model,
+                max_tokens=10,
+                temperature=0,
+                system=(
+                    "You score disaster/emergency messages by urgency. "
+                    "Reply with ONLY a single digit: 1 (minor), 2 (moderate), "
+                    "or 3 (critical/life-threatening). No words, no punctuation, just the digit."
+                ),
                 messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You score disaster/emergency messages by urgency. "
-                            "Reply with ONLY a single digit: 1 (minor), 2 (moderate), "
-                            "or 3 (critical/life-threatening). No words, no punctuation, just the digit."
-                        ),
-                    },
                     {
                         "role": "user",
                         "content": f"Category: {category or 'general'}. Message: {message}",
                     },
                 ],
-                max_tokens=5,
-                temperature=0,
             )
 
-            raw = response.choices[0].message.content.strip()
+            raw = response.content[0].text.strip()
             score = int(raw)
             if score not in (1, 2, 3):
-                logger.warning("Groq returned unexpected score %s — returning None", raw)
+                logger.warning("Claude returned unexpected score %s — returning None", raw)
                 return None
             return score
 
         except Exception:
-            logger.warning("Groq API call failed for message: %.60s", message, exc_info=True)
+            logger.warning("Claude API call failed for message: %.60s", message, exc_info=True)
             return None
 
 
@@ -373,12 +364,12 @@ class ReportGenerationService:
         import logging
 
         from django.conf import settings
-        from groq import Groq
+        from anthropic import Anthropic
 
         logger = logging.getLogger(__name__)
 
-        if not settings.GROQ_API_KEY:
-            logger.warning("GROQ_API_KEY not set — cannot generate AI summary")
+        if not settings.CLAUDE_API_KEY:
+            logger.warning("CLAUDE_API_KEY not set — cannot generate AI summary")
             return None
 
         sections = []
@@ -396,18 +387,18 @@ class ReportGenerationService:
         )
 
         try:
-            client = Groq(api_key=settings.GROQ_API_KEY)
-            response = client.chat.completions.create(
-                model=settings.GROQ_MODEL,
-                messages=[{"role": "user", "content": prompt}],
+            client = Anthropic(api_key=settings.CLAUDE_API_KEY)
+            response = client.messages.create(
+                model=settings.CLAUDE_MODEL,
                 max_tokens=250,
                 temperature=0.3,
+                messages=[{"role": "user", "content": prompt}],
             )
-            text = response.choices[0].message.content.strip()
-            logger.info("Groq AI summary generated (%d chars)", len(text))
+            text = response.content[0].text.strip()
+            logger.info("Claude AI summary generated (%d chars)", len(text))
             return text
         except Exception:
-            logger.warning("Groq summary generation failed", exc_info=True)
+            logger.warning("Claude summary generation failed", exc_info=True)
             return None
 
     @staticmethod
