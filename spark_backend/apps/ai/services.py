@@ -314,10 +314,13 @@ class ReportGenerationService:
         c.setFont("Helvetica-Bold", 12)
         c.drawString(inch, height - 2.0 * inch, "Summary")
 
+        from reportlab.lib.utils import simpleSplit
+
         c.setFont("Helvetica", 10)
+        max_width = width - 2 * inch
         y = height - 2.5 * inch
-        for line in summary.split(". "):
-            c.drawString(inch + 10, y, f"  - {line.strip()}.")
+        for line in simpleSplit(summary, "Helvetica", 10, max_width):
+            c.drawString(inch + 10, y, line)
             y -= 0.3 * inch
             if y < inch:
                 c.showPage()
@@ -330,10 +333,14 @@ class ReportGenerationService:
         y -= 0.3 * inch
         c.setFont("Helvetica", 10)
 
+        from reportlab.lib.utils import simpleSplit as _split
+
         def _write_stat(label, value, indent=1):
             nonlocal y
-            c.drawString(inch + 10 * indent, y, f"{label}: {value}")
-            y -= 0.25 * inch
+            line = f"{label}: {value}"
+            for wrapped in _split(line, "Helvetica", 10, width - 2 * inch):
+                c.drawString(inch + 10 * indent, y, wrapped)
+                y -= 0.25 * inch
 
         for section_key, section_data in stats.items():
             if isinstance(section_data, dict):
@@ -380,9 +387,10 @@ class ReportGenerationService:
                 sections.append(f"{label}: {json.dumps(data)}")
 
         prompt = (
-            "You are a disaster response reporting assistant. "
+            "You are a professional disaster response reporting assistant. "
             "Given the following statistics, write a concise 2-3 sentence situation report "
-            "summary suitable for government officials. Be specific with numbers:\n\n"
+            "summary suitable for government officials. Be specific with numbers. "
+            "Use plain prose — no markdown, no headers, no bullet points, no prefixes:\n\n"
             + "\n".join(sections)
         )
 
