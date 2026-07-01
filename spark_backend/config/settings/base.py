@@ -190,7 +190,7 @@ OTP_MOCK_MODE = env.bool("OTP_MOCK_MODE", default=False)
 
 # Claude (AI)
 CLAUDE_API_KEY = env.str("CLAUDE_API_KEY", default="")
-CLAUDE_MODEL = env.str("CLAUDE_MODEL", default="claude-3-5-haiku-latest")
+CLAUDE_MODEL = env.str("CLAUDE_MODEL", default="claude-haiku-4-5-20251001")
 
 # Twilio (SMS)
 TWILIO_ACCOUNT_SID = env.str("TWILIO_ACCOUNT_SID", default="")
