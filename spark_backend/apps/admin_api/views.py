@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from apps.users.models import User
 from apps.users.permissions import IsAdmin
-from apps.users.serializers import ChangePasswordSerializer, ProfileSerializer
+from apps.users.serializers import ChangePasswordSerializer, InviteGovernmentSerializer, ProfileSerializer
 from apps.users.services import AuthService
 from core.pagination import StandardPagination
 from core.responses import created_response, error_response, success_response
@@ -394,11 +394,10 @@ class AdminInviteByEmailView(APIView):
         tags=["admin", "dashboard", "Users"],
         summary="Invite government user by email",
         description="Send an invitation email to a government user.",
+        request=InviteGovernmentSerializer,
         responses={201: None},
     )
     def post(self, request):
-        from apps.users.serializers import InviteGovernmentSerializer
-
         serializer = InviteGovernmentSerializer(data=request.data)
         if not serializer.is_valid():
             return error_response(
