@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "apps.gov_apis",
     "apps.admin_api",
     "apps.content",
-    "apps.notifications",
+    "apps.notification",
 ]
 
 MIDDLEWARE = [

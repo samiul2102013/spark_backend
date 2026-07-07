@@ -63,7 +63,7 @@ urlpatterns = [
     # Content
     path(f"{api_prefix}", include("apps.content.urls")),
     # Notifications
-    path(f"{api_prefix}", include("apps.notifications.urls")),
+    path(f"{api_prefix}", include("apps.notification.urls")),
 ]
 
 if settings.DEBUG:

@@ -62,13 +62,11 @@ class HubService:
                     setattr(hub, field, value)
         hub.save()
         if status in ("critical", "low_battery") and old_status != status:
-            from apps.notifications.services import NotificationOrchestrator
-            NotificationOrchestrator.notify_hub_users(
+            from apps.notification.services.notification_service import NotificationService
+            NotificationService.send_hub_notification(
                 hub=hub,
-                type="hub_status",
                 title=f"Hub Status: {status.replace('_', ' ').title()}",
-                body=f"Your hub {hub.name} is now {status.replace('_', ' ')}.",
-                link=f"/hubs/{hub.id}",
+                message=f"Your hub {hub.name} is now {status.replace('_', ' ')}.",
                 data={"hub_id": str(hub.id), "status": status},
             )
         return hub

@@ -1,6 +1,6 @@
 from django.db import transaction
 
-from apps.notifications.services import NotificationOrchestrator
+from apps.notification.services.notification_service import NotificationService as PushNotificationService
 
 from .models import Broadcast, BroadcastRead, CheckIn, Notification
 
@@ -33,12 +33,10 @@ class CheckInService:
             if checkin.risk_score is not None:
                 checkin.save(update_fields=["risk_score"])
         if checkin.status == "need_assistance" and checkin.hub:
-            NotificationOrchestrator.notify_coordinators_and_admins(
+            PushNotificationService.send_coordinator_notification(
                 hub=checkin.hub,
-                type="alert",
                 title="Assistance Needed",
-                body=f"{checkin.user.full_name or checkin.user.phone_number} needs help at {checkin.hub.name}: {checkin.get_assistance_type_display() or 'Assistance requested'}",
-                link=f"/checkins/{checkin.id}",
+                message=f"{checkin.user.full_name or checkin.user.phone_number} needs help at {checkin.hub.name}: {checkin.get_assistance_type_display() or 'Assistance requested'}",
                 data={"checkin_id": str(checkin.id), "status": "need_assistance"},
             )
         return checkin
@@ -64,12 +62,10 @@ class BroadcastService:
         data["hub_id"] = hub_id
         broadcast = Broadcast.objects.create(**data)
         if broadcast.priority in ("warning", "urgent"):
-            NotificationOrchestrator.notify_hub_users(
+            PushNotificationService.send_hub_notification(
                 hub=broadcast.hub,
-                type="broadcast",
                 title=f"{broadcast.priority.upper()} Broadcast",
-                body=f"{broadcast.subject}: {broadcast.body[:100]}",
-                link=f"/broadcasts/{broadcast.id}",
+                message=f"{broadcast.subject}: {broadcast.body[:100]}",
                 data={"broadcast_id": str(broadcast.id), "priority": broadcast.priority},
             )
         return broadcast

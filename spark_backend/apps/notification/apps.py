@@ -4,10 +4,10 @@ from django.apps import AppConfig
 from django.conf import settings
 
 
-class NotificationsConfig(AppConfig):
+class NotificationConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "apps.notifications"
-    label = "notifications"
+    name = "apps.notification"
+    label = "notification"
 
     def ready(self):
         import firebase_admin

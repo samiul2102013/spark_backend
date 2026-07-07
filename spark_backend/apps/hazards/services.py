@@ -1,6 +1,7 @@
 from django.db import transaction
 
-from apps.notifications.services import NotificationOrchestrator
+from apps.comms.models import Notification as InAppNotification
+from apps.notification.services.notification_service import NotificationService
 
 from .models import Comment, Hazard
 
@@ -40,13 +41,14 @@ class HazardService:
             if hazard.risk_score is not None:
                 hazard.save(update_fields=["risk_score"])
         if hazard.hub:
-            NotificationOrchestrator.notify_hub_users(
+            title = f"{hazard.get_category_display()} Alert"
+            body = f"{hazard.get_category_display()} reported near you. Severity: {hazard.severity}. {hazard.description[:100]}"
+            data = {"hazard_id": str(hazard.id), "category": hazard.category}
+            NotificationService.send_hub_notification(
                 hub=hazard.hub,
-                type="alert",
-                title=f"{hazard.get_category_display()} Alert",
-                body=f"{hazard.get_category_display()} reported near you. Severity: {hazard.severity}. {hazard.description[:100]}",
-                link=f"/hazards/{hazard.id}",
-                data={"hazard_id": str(hazard.id), "category": hazard.category},
+                title=title,
+                message=body,
+                data=data,
             )
         return hazard
 
@@ -69,12 +71,10 @@ class HazardService:
         hazard.status = "cleared"
         hazard.save(update_fields=["status"])
         if hazard.reporter:
-            NotificationOrchestrator.notify(
+            NotificationService.send_notification(
                 user=hazard.reporter,
-                type="alert",
                 title="Hazard Resolved",
-                body=f"{hazard.get_category_display()} at {hazard.description[:100]} has been cleared.",
-                link=f"/hazards/{hazard.id}",
+                message=f"{hazard.get_category_display()} at {hazard.description[:100]} has been cleared.",
                 data={"hazard_id": str(hazard.id), "status": "cleared"},
             )
         return hazard
@@ -87,12 +87,10 @@ class HazardService:
         comment = Comment.objects.create(hazard_id=hazard_id, author=author, body=body, photo=photo)
         hazard = comment.hazard
         if hazard.reporter and (not author or hazard.reporter != author):
-            NotificationOrchestrator.notify(
+            NotificationService.send_notification(
                 user=hazard.reporter,
-                type="alert",
                 title="New Update",
-                body=f"{author.full_name if author else 'Someone'} commented on your {hazard.get_category_display()} report.",
-                link=f"/hazards/{hazard.id}",
+                message=f"{author.full_name if author else 'Someone'} commented on your {hazard.get_category_display()} report.",
                 data={"hazard_id": str(hazard.id), "comment_id": str(comment.id)},
             )
         return comment
