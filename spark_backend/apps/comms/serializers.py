@@ -1,7 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 
-from .models import Broadcast, BroadcastRead, CheckIn, InboundMessage, Notification
+from .models import Broadcast, BroadcastRead, CheckIn, InboundMessage
 
 
 class CheckInSerializer(serializers.ModelSerializer):
@@ -100,13 +100,6 @@ class BroadcastReadSerializer(serializers.ModelSerializer):
         model = BroadcastRead
         fields = ["id", "broadcast", "user", "read_at"]
         read_only_fields = ["id", "read_at", "user"]
-
-
-class NotificationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Notification
-        fields = ["id", "user", "hub", "type", "title", "body", "read", "link", "created_at"]
-        read_only_fields = ["id", "created_at", "user"]
 
 
 class InboundMessageSerializer(serializers.ModelSerializer):

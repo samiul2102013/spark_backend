@@ -14,15 +14,4 @@ urlpatterns = [
         views.BroadcastReadView.as_view(),
         name="broadcast-read",
     ),
-    path("notifications/", views.NotificationListView.as_view(), name="notification-list"),
-    path(
-        "notifications/<int:notification_id>/read/",
-        views.NotificationReadView.as_view(),
-        name="notification-read",
-    ),
-    path(
-        "notifications/read-all/",
-        views.NotificationReadAllView.as_view(),
-        name="notification-read-all",
-    ),
 ]

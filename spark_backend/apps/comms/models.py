@@ -147,27 +147,4 @@ class BroadcastRead(TimeStampedModel):
         return f"{self.user} read {self.broadcast}"
 
 
-class Notification(TimeStampedModel):
-    TYPE_CHOICES = [
-        ("broadcast", "Broadcast"),
-        ("alert", "Alert"),
-        ("booking", "Booking"),
-        ("hub_status", "Hub Status"),
-    ]
 
-    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="notifications")
-    hub = models.ForeignKey(
-        "hubs.Hub", on_delete=models.SET_NULL, null=True, blank=True, related_name="notifications"
-    )
-    type = models.CharField(max_length=15, choices=TYPE_CHOICES)
-    title = models.CharField(max_length=255)
-    body = models.TextField()
-    read = models.BooleanField(default=False)
-    link = models.CharField(max_length=500, null=True, blank=True)
-
-    class Meta:
-        db_table = "notifications"
-        ordering = ["-created_at"]
-
-    def __str__(self):
-        return f"[{self.get_type_display()}] {self.title}"

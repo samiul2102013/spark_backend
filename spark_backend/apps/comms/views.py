@@ -12,9 +12,8 @@ from .serializers import (
     BroadcastSerializer,
     CheckInCreateSerializer,
     CheckInSerializer,
-    NotificationSerializer,
 )
-from .services import BroadcastService, CheckInService, NotificationService
+from .services import BroadcastService, CheckInService
 
 CHECKIN_STATUSES = ["safe", "need_assistance"]
 BROADCAST_PRIORITIES = ["info", "warning", "urgent"]
@@ -217,64 +216,4 @@ class BroadcastReadView(APIView):
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class NotificationListView(APIView):
-    permission_classes = [IsAuthenticated]
 
-    @extend_schema(
-        tags=["mobile", "Notifications"],
-        summary="List notifications",
-        description="Retrieve paginated list of notifications for the authenticated user.",
-        parameters=[
-            OpenApiParameter("unread_only", bool, OpenApiParameter.QUERY, required=False, description="Filter to only unread notifications"),
-            OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False, description="Page number"),
-            OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False, description="Results per page (max 100)"),
-        ],
-        responses={200: NotificationSerializer(many=True)},
-    )
-    def get(self, request):
-        try:
-            unread_only = request.query_params.get("unread_only", "").lower() in ("true", "1")
-            service = NotificationService()
-            qs = service.list_notifications(request.user, unread_only=unread_only)
-            paginator = StandardPagination()
-            page = paginator.paginate_queryset(qs, request)
-            serializer = NotificationSerializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
-        except Exception as e:
-            return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class NotificationReadView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        tags=["mobile", "Notifications"],
-        summary="Mark notification as read",
-        description="Mark a specific notification as read by ID.",
-        responses={200: NotificationSerializer},
-    )
-    def patch(self, request, notification_id):
-        try:
-            service = NotificationService()
-            notification = service.mark_read(notification_id, request.user)
-            return success_response(NotificationSerializer(notification).data)
-        except Exception as e:
-            return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class NotificationReadAllView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        tags=["mobile", "Notifications"],
-        summary="Mark all notifications as read",
-        description="Mark all notifications for the authenticated user as read.",
-        responses={200: dict},
-    )
-    def post(self, request):
-        try:
-            service = NotificationService()
-            result = service.mark_all_read(request.user)
-            return success_response(result)
-        except Exception as e:
-            return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)

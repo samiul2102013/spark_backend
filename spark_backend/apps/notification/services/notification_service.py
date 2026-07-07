@@ -2,7 +2,6 @@ import logging
 
 from django.contrib.auth import get_user_model
 
-from apps.comms.models import Notification as InAppNotification
 from apps.notification.models import Notification
 from apps.notification.tasks import send_push_notification
 
@@ -11,31 +10,49 @@ User = get_user_model()
 
 
 class NotificationService:
+
+    CATEGORY_MAP = {
+        "alert": "alert",
+        "broadcast": "broadcast",
+        "booking": "booking",
+        "hub_status": "hub_status",
+    }
+
     @staticmethod
-    def send_notification(user, title, message, notification_types=None, data=None):
-        if notification_types is None:
-            notification_types = ["push"]
+    def send_notification(user, title, message, category="alert", data=None, link=None, hub=None, send_push=False):
         if isinstance(user, str):
             user = User.objects.get(pk=user)
 
-        preferences = getattr(user, "notification_preference", None)
+        record = Notification.objects.create(
+            user=user,
+            hub=hub,
+            title=title,
+            message=message,
+            category=category,
+            data=data or {},
+            link=link,
+        )
 
-        for notif_type in notification_types:
-            if not NotificationService._should_send(user, notif_type, preferences):
-                continue
-            NotificationService._dispatch_notification(
-                user, title, message, notif_type, data
-            )
+        if send_push:
+            try:
+                send_push_notification.delay(record.id)
+            except Exception:
+                logger.warning("Celery/Redis unavailable; push skipped (in-app notification saved)")
+
+        return record
 
     @staticmethod
-    def send_hub_notification(hub, title, message, notification_types=None, data=None):
+    def send_hub_notification(hub, title, message, category="alert", data=None, link=None):
+        notifications = []
         for user in hub.residents.all():
-            NotificationService.send_notification(
-                user, title, message, notification_types, data
+            n = NotificationService.send_notification(
+                user, title, message, category=category, data=data, link=link, hub=hub, send_push=True
             )
+            notifications.append(n)
+        return notifications
 
     @staticmethod
-    def send_coordinator_notification(hub, title, message, notification_types=None, data=None):
+    def send_coordinator_notification(hub, title, message, category="alert", data=None, link=None):
         users = []
         if hub.coordinator:
             users.append(hub.coordinator)
@@ -45,38 +62,29 @@ class NotificationService:
             .distinct()
         )
         users.extend(admins)
+        notifications = []
         for user in users:
-            NotificationService.send_notification(
-                user, title, message, notification_types, data
+            n = NotificationService.send_notification(
+                user, title, message, category=category, data=data, link=link, hub=hub, send_push=True
             )
+            notifications.append(n)
+        return notifications
 
     @staticmethod
-    def _should_send(user, notif_type, preferences):
-        if not preferences:
-            return True
-        return getattr(preferences, f"{notif_type}_enabled", True)
+    def list_notifications(user, unread_only=False):
+        qs = Notification.objects.filter(user=user).select_related("hub")
+        if unread_only:
+            qs = qs.filter(read=False)
+        return qs.order_by("-created_at")
 
     @staticmethod
-    def _dispatch_notification(user, title, message, notif_type, data):
-        record = Notification.objects.create(
-            user=user,
-            title=title,
-            message=message,
-            notification_type=notif_type,
-            data=data or {},
-        )
-        from apps.comms.models import Notification as InAppNotification
-        InAppNotification.objects.create(
-            user=user,
-            type="alert",
-            title=title,
-            body=message,
-            link=data.get("link") if data else None,
-        )
-        if notif_type == "push":
-            try:
-                send_push_notification.delay(record.id)
-            except Exception:
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.warning("Celery/Redis unavailable; push skipped (in-app notification saved)")
+    def mark_read(notification_id, user):
+        notification = Notification.objects.get(id=notification_id, user=user)
+        notification.read = True
+        notification.save(update_fields=["read"])
+        return notification
+
+    @staticmethod
+    def mark_all_read(user):
+        updated = Notification.objects.filter(user=user, read=False).update(read=True)
+        return {"marked_read": updated}

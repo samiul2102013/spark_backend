@@ -27,7 +27,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from django.contrib.auth import get_user_model
         from apps.bookings.models import Booking
-        from apps.comms.models import Broadcast, CheckIn, Notification
+        from apps.comms.models import Broadcast, CheckIn
+        from apps.notification.models import Notification
         from apps.hazards.models import Comment, Hazard
         from apps.hubs.models import Hub
 
@@ -219,9 +220,8 @@ class Command(BaseCommand):
                 user=u,
                 title="Tropical Storm Warning",
                 defaults={
-                    "type": "alert",
-                    "body": "A tropical storm warning is in effect. Stay indoors and monitor local news.",
-                    "read": False,
+                    "category": "alert",
+                    "message": "A tropical storm warning is in effect. Stay indoors and monitor local news.",
                     "hub": u.hub,
                 },
             )
@@ -229,9 +229,8 @@ class Command(BaseCommand):
                 user=u,
                 title="Hub Status Update",
                 defaults={
-                    "type": "hub_status",
-                    "body": f"{u.hub.name} is open. Charge your devices and check in to confirm your safety.",
-                    "read": False,
+                    "category": "hub_status",
+                    "message": f"{u.hub.name} is open. Charge your devices and check in to confirm your safety.",
                     "hub": u.hub,
                 },
             )

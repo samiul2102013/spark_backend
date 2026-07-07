@@ -1,6 +1,5 @@
 from django.db import transaction
 
-from apps.comms.models import Notification as InAppNotification
 from apps.notification.services.notification_service import NotificationService
 
 from .models import Comment, Hazard

@@ -2,7 +2,7 @@ from django.db import transaction
 
 from apps.notification.services.notification_service import NotificationService as PushNotificationService
 
-from .models import Broadcast, BroadcastRead, CheckIn, Notification
+from .models import Broadcast, BroadcastRead, CheckIn
 
 
 class CheckInService:
@@ -74,29 +74,3 @@ class BroadcastService:
     def mark_read(self, broadcast_id, user):
         obj, _ = BroadcastRead.objects.get_or_create(broadcast_id=broadcast_id, user=user)
         return obj
-
-
-class NotificationService:
-    def list_notifications(self, user, unread_only=False):
-        qs = Notification.objects.filter(user=user).select_related("hub")
-        if unread_only:
-            qs = qs.filter(read=False)
-        return qs.order_by("-created_at")
-
-    @transaction.atomic
-    def mark_read(self, notification_id, user):
-        notification = Notification.objects.get(id=notification_id, user=user)
-        notification.read = True
-        notification.save(update_fields=["read"])
-        return notification
-
-    @transaction.atomic
-    def mark_all_read(self, user):
-        updated = Notification.objects.filter(user=user, read=False).update(read=True)
-        return {"marked_read": updated}
-
-    @transaction.atomic
-    def create_notification(self, user, type, title, body, hub=None, link=None):
-        return Notification.objects.create(
-            user=user, type=type, title=title, body=body, hub=hub, link=link
-        )

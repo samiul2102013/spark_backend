@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Broadcast, BroadcastRead, CheckIn, InboundMessage, Notification, SentMessage
+from .models import Broadcast, BroadcastRead, CheckIn, InboundMessage, SentMessage
 
 
 @admin.register(CheckIn)
@@ -21,13 +21,6 @@ class BroadcastAdmin(admin.ModelAdmin):
 class BroadcastReadAdmin(admin.ModelAdmin):
     list_display = ("broadcast", "user", "read_at")
     search_fields = ("user__full_name",)
-
-
-@admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "type", "title", "read", "created_at")
-    list_filter = ("type", "read")
-    search_fields = ("title", "body")
 
 
 @admin.register(InboundMessage)

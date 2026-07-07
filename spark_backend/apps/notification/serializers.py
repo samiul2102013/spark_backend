@@ -13,5 +13,8 @@ class FCMTokenSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ["id", "title", "message", "notification_type", "data", "sent_at", "created_at"]
-        read_only_fields = ["id", "sent_at", "created_at"]
+        fields = [
+            "id", "user", "hub", "title", "message", "category",
+            "data", "link", "read", "sent_at", "created_at",
+        ]
+        read_only_fields = ["id", "user", "sent_at", "created_at"]

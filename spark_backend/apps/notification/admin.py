@@ -11,8 +11,8 @@ class FCMTokenAdmin(admin.ModelAdmin):
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
-    list_display = ["title", "user", "notification_type", "sent_at", "created_at"]
-    list_filter = ["notification_type"]
+    list_display = ["title", "user", "category", "read", "sent_at", "created_at"]
+    list_filter = ["category", "read"]
 
 
 @admin.register(NotificationPreference)

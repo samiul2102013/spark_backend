@@ -81,10 +81,11 @@ class ScheduledNotification(TimeStampedModel):
 
 
 class Notification(TimeStampedModel):
-    NOTIFICATION_TYPE_CHOICES = [
-        ("push", "Push"),
-        ("in_app", "In-App"),
-        ("email", "Email"),
+    CATEGORY_CHOICES = [
+        ("broadcast", "Broadcast"),
+        ("alert", "Alert"),
+        ("booking", "Booking"),
+        ("hub_status", "Hub Status"),
     ]
 
     user = models.ForeignKey(
@@ -92,12 +93,15 @@ class Notification(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="push_notifications",
     )
+    hub = models.ForeignKey(
+        "hubs.Hub", on_delete=models.SET_NULL, null=True, blank=True, related_name="notification_records"
+    )
     title = models.CharField(max_length=255)
     message = models.TextField()
-    notification_type = models.CharField(
-        max_length=10, choices=NOTIFICATION_TYPE_CHOICES, default="push"
-    )
+    category = models.CharField(max_length=15, choices=CATEGORY_CHOICES, default="alert")
     data = models.JSONField(default=dict, blank=True)
+    link = models.CharField(max_length=500, null=True, blank=True)
+    read = models.BooleanField(default=False)
     sent_at = models.DateTimeField(null=True, blank=True)
     scheduled_notification = models.ForeignKey(
         "ScheduledNotification",
@@ -112,4 +116,4 @@ class Notification(TimeStampedModel):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"[{self.notification_type}] {self.title} -> {self.user.phone_number}"
+        return f"[{self.category}] {self.title} -> {self.user.phone_number}"
