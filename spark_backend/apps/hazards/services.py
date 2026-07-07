@@ -1,5 +1,7 @@
 from django.db import transaction
 
+from apps.notifications.services import NotificationOrchestrator
+
 from .models import Comment, Hazard
 
 
@@ -37,6 +39,15 @@ class HazardService:
             )
             if hazard.risk_score is not None:
                 hazard.save(update_fields=["risk_score"])
+        if hazard.hub:
+            NotificationOrchestrator.notify_hub_users(
+                hub=hazard.hub,
+                type="alert",
+                title=f"{hazard.get_category_display()} Alert",
+                body=f"{hazard.get_category_display()} reported near you. Severity: {hazard.severity}. {hazard.description[:100]}",
+                link=f"/hazards/{hazard.id}",
+                data={"hazard_id": str(hazard.id), "category": hazard.category},
+            )
         return hazard
 
     @transaction.atomic
@@ -57,6 +68,15 @@ class HazardService:
         hazard = Hazard.objects.get(id=hazard_id)
         hazard.status = "cleared"
         hazard.save(update_fields=["status"])
+        if hazard.reporter:
+            NotificationOrchestrator.notify(
+                user=hazard.reporter,
+                type="alert",
+                title="Hazard Resolved",
+                body=f"{hazard.get_category_display()} at {hazard.description[:100]} has been cleared.",
+                link=f"/hazards/{hazard.id}",
+                data={"hazard_id": str(hazard.id), "status": "cleared"},
+            )
         return hazard
 
     def list_comments(self, hazard_id):
@@ -64,4 +84,15 @@ class HazardService:
 
     @transaction.atomic
     def add_comment(self, hazard_id, body, author=None, photo=None):
-        return Comment.objects.create(hazard_id=hazard_id, author=author, body=body, photo=photo)
+        comment = Comment.objects.create(hazard_id=hazard_id, author=author, body=body, photo=photo)
+        hazard = comment.hazard
+        if hazard.reporter and (not author or hazard.reporter != author):
+            NotificationOrchestrator.notify(
+                user=hazard.reporter,
+                type="alert",
+                title="New Update",
+                body=f"{author.full_name if author else 'Someone'} commented on your {hazard.get_category_display()} report.",
+                link=f"/hazards/{hazard.id}",
+                data={"hazard_id": str(hazard.id), "comment_id": str(comment.id)},
+            )
+        return comment

@@ -62,6 +62,8 @@ urlpatterns = [
     path(f"{api_prefix}", include("apps.ai.urls")),
     # Content
     path(f"{api_prefix}", include("apps.content.urls")),
+    # Notifications
+    path(f"{api_prefix}", include("apps.notifications.urls")),
 ]
 
 if settings.DEBUG:

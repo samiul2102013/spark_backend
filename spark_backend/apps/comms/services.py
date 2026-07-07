@@ -1,5 +1,7 @@
 from django.db import transaction
 
+from apps.notifications.services import NotificationOrchestrator
+
 from .models import Broadcast, BroadcastRead, CheckIn, Notification
 
 
@@ -30,6 +32,15 @@ class CheckInService:
             )
             if checkin.risk_score is not None:
                 checkin.save(update_fields=["risk_score"])
+        if checkin.status == "need_assistance" and checkin.hub:
+            NotificationOrchestrator.notify_coordinators_and_admins(
+                hub=checkin.hub,
+                type="alert",
+                title="Assistance Needed",
+                body=f"{checkin.user.full_name or checkin.user.phone_number} needs help at {checkin.hub.name}: {checkin.get_assistance_type_display() or 'Assistance requested'}",
+                link=f"/checkins/{checkin.id}",
+                data={"checkin_id": str(checkin.id), "status": "need_assistance"},
+            )
         return checkin
 
     def get_latest_checkin(self, user):
@@ -51,7 +62,17 @@ class BroadcastService:
         if sender:
             data["sender"] = sender
         data["hub_id"] = hub_id
-        return Broadcast.objects.create(**data)
+        broadcast = Broadcast.objects.create(**data)
+        if broadcast.priority in ("warning", "urgent"):
+            NotificationOrchestrator.notify_hub_users(
+                hub=broadcast.hub,
+                type="broadcast",
+                title=f"{broadcast.priority.upper()} Broadcast",
+                body=f"{broadcast.subject}: {broadcast.body[:100]}",
+                link=f"/broadcasts/{broadcast.id}",
+                data={"broadcast_id": str(broadcast.id), "priority": broadcast.priority},
+            )
+        return broadcast
 
     @transaction.atomic
     def mark_read(self, broadcast_id, user):

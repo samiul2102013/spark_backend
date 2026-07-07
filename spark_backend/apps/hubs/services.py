@@ -54,12 +54,23 @@ class HubService:
     @transaction.atomic
     def update_status(self, hub_id, status, extra=None):
         hub = self.get_hub(hub_id)
+        old_status = hub.status
         hub.status = status
         if extra:
             for field, value in extra.items():
                 if hasattr(hub, field):
                     setattr(hub, field, value)
         hub.save()
+        if status in ("critical", "low_battery") and old_status != status:
+            from apps.notifications.services import NotificationOrchestrator
+            NotificationOrchestrator.notify_hub_users(
+                hub=hub,
+                type="hub_status",
+                title=f"Hub Status: {status.replace('_', ' ').title()}",
+                body=f"Your hub {hub.name} is now {status.replace('_', ' ')}.",
+                link=f"/hubs/{hub.id}",
+                data={"hub_id": str(hub.id), "status": status},
+            )
         return hub
 
     @transaction.atomic
