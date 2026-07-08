@@ -37,6 +37,7 @@ class AuthService:
         latitude: float,
         longitude: float,
     ) -> dict:
+        phone = SMSAdapter._to_e164(phone)
         if User.objects.filter(phone_number=phone).exists():
             raise AuthError("Phone number already registered.")
 
@@ -59,6 +60,7 @@ class AuthService:
         return {"user_id": user.phone_number}
 
     def send_otp(self, phone: str) -> dict:
+        phone = SMSAdapter._to_e164(phone)
         try:
             User.objects.get(phone_number=phone, role__in=("resident", "coordinator"))
         except User.DoesNotExist:
@@ -68,6 +70,7 @@ class AuthService:
         return {"message": "OTP sent"}
 
     def verify_otp(self, phone: str, code: str) -> dict:
+        phone = SMSAdapter._to_e164(phone)
         if not verify_otp(phone, code):
             raise AuthError("Invalid or expired OTP.")
         try:
@@ -165,6 +168,7 @@ class AuthService:
             if "@" in identifier:
                 user = User.objects.get(email=identifier)
             else:
+                identifier = SMSAdapter._to_e164(identifier)
                 user = User.objects.get(phone_number=identifier)
         except User.DoesNotExist:
             raise AuthError("User not found.")
@@ -177,6 +181,8 @@ class AuthService:
         return {"message": "Reset code sent."}
 
     def verify_reset_otp(self, identifier: str, code: str) -> dict:
+        if "@" not in identifier:
+            identifier = SMSAdapter._to_e164(identifier)
         if not verify_otp(identifier, code):
             raise AuthError("Invalid or expired code.")
         try:
