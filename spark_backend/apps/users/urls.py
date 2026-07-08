@@ -39,4 +39,6 @@ urlpatterns = [
     path(
         "users/change-password/", views.ChangePasswordView.as_view(), name="users-change-password"
     ),
+    # Account Deletion
+    path("auth/account/", views.DeleteAccountView.as_view(), name="auth-delete-account"),
 ]

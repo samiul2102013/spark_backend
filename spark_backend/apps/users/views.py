@@ -513,6 +513,21 @@ class SetPasswordView(APIView):
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class DeleteAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=["mobile", "Auth"],
+        summary="Delete account",
+        description="Permanently delete the authenticated user's account.",
+        request=None,
+        responses={200: None},
+    )
+    def delete(self, request):
+        AuthService().delete_my_account(request.user)
+        return success_response({"message": "Account deleted."})
+
+
 class BlacklistCheckTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         refresh = request.data.get("refresh")

@@ -258,6 +258,9 @@ class AuthService:
         user = User.objects.get(id=user_id)
         user.delete()
 
+    def delete_my_account(self, user):
+        user.delete()
+
     def set_role(self, user: User, role: str) -> dict:
         if role not in ("resident", "coordinator", "government", "admin"):
             raise AuthError("Invalid role.")
