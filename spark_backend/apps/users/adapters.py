@@ -12,14 +12,14 @@ logger = logging.getLogger(__name__)
 class SMSAdapter:
     @staticmethod
     def _to_e164(phone: str) -> str:
-        phone = phone.strip()
-        if phone.startswith("+"):
-            return phone
-        if phone.startswith("00"):
+        phone = phone.strip().lstrip("+")
+        if phone.startswith("1") and len(phone) == 11:
+            return f"+{phone}"
+        if phone.startswith("001"):
             return f"+{phone[2:]}"
         if phone.startswith("0"):
-            return f"+880{phone[1:]}"
-        return f"+{phone}"
+            phone = phone[1:]
+        return f"+1{phone}"
 
     @staticmethod
     def send_otp(phone_number: str, code: str) -> None:
