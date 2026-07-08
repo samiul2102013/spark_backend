@@ -32,8 +32,8 @@ class AuthService:
         self,
         phone: str,
         full_name: str,
-        household_size: Optional[int],
-        medical_needs: str,
+        household_size: Optional[int] = None,
+        medical_needs: str = "",
         latitude: float,
         longitude: float,
     ) -> dict:
