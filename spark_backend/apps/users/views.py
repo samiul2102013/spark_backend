@@ -438,6 +438,7 @@ class ProfileView(APIView):
                 message="Your profile has been updated successfully.",
                 category="alert",
                 data={"action": "profile_updated"},
+                send_push=True,
             )
 
             return success_response(ProfileSerializer(user, context={"request": request}).data)
