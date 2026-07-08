@@ -32,10 +32,10 @@ class AuthService:
         self,
         phone: str,
         full_name: str,
-        household_size: Optional[int] = None,
-        medical_needs: str = "",
         latitude: float,
         longitude: float,
+        household_size: Optional[int] = None,
+        medical_needs: str = "",
     ) -> dict:
         phone = SMSAdapter._to_e164(phone)
         if User.objects.filter(phone_number=phone).exists():
