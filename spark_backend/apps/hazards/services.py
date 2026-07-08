@@ -31,6 +31,12 @@ class HazardService:
     def create_hazard(self, data, reporter):
         if reporter:
             data["reporter"] = reporter
+        hub_id = data.pop("hub")
+        if isinstance(hub_id, int):
+            from apps.hubs.models import Hub
+            data["hub"] = Hub.objects.get(id=hub_id)
+        else:
+            data["hub"] = hub_id
         hazard = Hazard.objects.create(**data)
         if hazard.description:
             from apps.ai.services import AIScoringService
