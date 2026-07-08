@@ -430,7 +430,18 @@ class ProfileView(APIView):
         try:
             service = AuthService()
             user = service.update_profile(request.user, serializer.validated_data)
+
+            from apps.notification.services.notification_service import NotificationService
+            NotificationService.send_notification(
+                user=user,
+                title="Profile Updated",
+                message="Your profile has been updated successfully.",
+                category="alert",
+                data={"action": "profile_updated"},
+            )
+
             return success_response(ProfileSerializer(user, context={"request": request}).data)
+
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
