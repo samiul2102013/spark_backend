@@ -50,6 +50,26 @@ class TermsView(APIView):
             )
 
 
+class AccountDeletionPolicyView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        tags=["mobile", "Content"],
+        summary="Get account deletion policy",
+        description="Retrieve the account deletion policy content.",
+        responses={200: StaticContentSerializer},
+    )
+    def get(self, request):
+        try:
+            obj = StaticContent.objects.get(slug="account-deletion-policy")
+            serializer = StaticContentSerializer(obj)
+            return success_response(serializer.data)
+        except StaticContent.DoesNotExist:
+            return error_response(
+                "Account deletion policy not found.", http_status=status.HTTP_404_NOT_FOUND
+            )
+
+
 class AdminPrivacyPolicyView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
@@ -122,6 +142,47 @@ class AdminTermsView(APIView):
             obj, _ = StaticContent.objects.get_or_create(
                 slug="terms-and-conditions",
                 defaults={"title": "Terms and Conditions", "content": ""},
+            )
+            serializer = StaticContentSerializer(obj, data=request.data, partial=True)
+            if not serializer.is_valid():
+                return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+            return success_response(serializer.data)
+        except Exception as e:
+            return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class AdminAccountDeletionPolicyView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    @extend_schema(
+        tags=["admin", "Content"],
+        summary="Get account deletion policy",
+        description="Retrieve the account deletion policy content (admin).",
+        responses={200: StaticContentSerializer},
+    )
+    def get(self, request):
+        try:
+            obj = StaticContent.objects.get(slug="account-deletion-policy")
+            serializer = StaticContentSerializer(obj)
+            return success_response(serializer.data)
+        except StaticContent.DoesNotExist:
+            return error_response(
+                "Account deletion policy not found.", http_status=status.HTTP_404_NOT_FOUND
+            )
+
+    @extend_schema(
+        tags=["admin", "Content"],
+        summary="Update account deletion policy",
+        description="Update the account deletion policy content (admin only).",
+        request=StaticContentSerializer,
+        responses={200: StaticContentSerializer},
+    )
+    def patch(self, request):
+        try:
+            obj, _ = StaticContent.objects.get_or_create(
+                slug="account-deletion-policy",
+                defaults={"title": "Account Deletion Policy", "content": ""},
             )
             serializer = StaticContentSerializer(obj, data=request.data, partial=True)
             if not serializer.is_valid():
