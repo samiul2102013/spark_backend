@@ -189,6 +189,10 @@ FRONTEND_URL = env.str("FRONTEND_URL", default="http://localhost:3000")
 # OTP Mock Mode (set True to use "000000" for all codes — dev only)
 OTP_MOCK_MODE = env.bool("OTP_MOCK_MODE", default=False)
 
+# Demo phone bypass — this phone + OTP always passes verification (no Twilio)
+DEMO_PHONE_NUMBER = env.str("DEMO_PHONE_NUMBER", default="+10000000000")
+DEMO_OTP_CODE = env.str("DEMO_OTP_CODE", default="000000")
+
 # Claude (AI)
 CLAUDE_API_KEY = env.str("CLAUDE_API_KEY", default="")
 CLAUDE_MODEL = env.str("CLAUDE_MODEL", default="claude-haiku-4-5-20251001")

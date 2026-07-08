@@ -27,6 +27,9 @@ class SMSAdapter:
         if getattr(settings, "OTP_MOCK_MODE", False):
             logger.info("[SMS MOCK] To: %s — Code: %s", to_number, code)
             return
+        if to_number == getattr(settings, "DEMO_PHONE_NUMBER", None):
+            logger.info("[DEMO] Skipping SMS for demo phone %s — Code: %s", to_number, code)
+            return
         try:
             client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
             client.messages.create(
