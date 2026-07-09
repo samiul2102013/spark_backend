@@ -31,7 +31,7 @@ class HazardService:
     def create_hazard(self, data, reporter):
         if reporter:
             data["reporter"] = reporter
-        hub_id = data.pop("hub")
+        hub_id = data.pop("hub", None)
         if isinstance(hub_id, int):
             from apps.hubs.models import Hub
             data["hub"] = Hub.objects.get(id=hub_id)
