@@ -1,3 +1,5 @@
+import logging
+
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -6,6 +8,8 @@ from rest_framework.views import APIView
 from apps.users.permissions import IsAdmin, IsAdminOrCoordinator, IsResidentOrCoordinator
 from core.pagination import StandardPagination
 from core.responses import created_response, deleted_response, error_response, success_response
+
+logger = logging.getLogger(__name__)
 
 from .serializers import CommentSerializer, HazardListSerializer, HazardSerializer
 from .services import HazardService
@@ -87,6 +91,7 @@ class HazardListView(APIView):
             hazard = service.create_hazard(serializer.validated_data, reporter=request.user)
             return created_response(HazardSerializer(hazard, context={"request": request}).data)
         except Exception as e:
+            logger.exception("Hazard creation failed")
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
