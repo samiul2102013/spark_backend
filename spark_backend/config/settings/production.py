@@ -21,8 +21,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://spark-dashboard-xi.vercel.app",
     "https://api.sparkcentra.com",
     "https://admin.sparkcentra.com",
-    "https://admin.sparkcentra.com",
-    
+    "https://gov.sparkcentra.com",
 ]
 
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"

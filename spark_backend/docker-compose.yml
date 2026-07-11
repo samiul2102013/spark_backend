@@ -50,6 +50,7 @@ services:
     restart: unless-stopped
     command: python -m celery -A config worker -l info --concurrency=4
     volumes:
+      - .:/app
       - static_volume:/app/staticfiles
       - ./media:/app/media
     env_file:
@@ -65,6 +66,7 @@ services:
     restart: unless-stopped
     command: python -m celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
+      - .:/app
       - static_volume:/app/staticfiles
       - ./media:/app/media
     env_file:
@@ -78,13 +80,32 @@ services:
     restart: unless-stopped
     ports:
       - "8000:80"
+      - "443:443"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./docker/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
       - static_volume:/static:ro
       - ./media:/media:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - django
+  admin:
+    build:
+      context: /opt/admin_dashboard
+    restart: unless-stopped
+    expose:
+      - "80"
+    env_file:
+      - /opt/admin_dashboard/.env.production
+
+  gov:
+    build:
+      context: /opt/gov_dashboard
+    restart: unless-stopped
+    expose:
+      - "80"
+    env_file:
+      - /opt/gov_dashboard/.env.production
 
 volumes:
   postgres_data:
