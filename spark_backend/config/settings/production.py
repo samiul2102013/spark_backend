@@ -17,6 +17,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "http://spark.kodevio.com:8000",
     "https://spark.kodevio.com",
+    https://spark-admin-dashboard.vercel.app,
+    https://spark-dashboard-xi.vercel.app,
 ]
 
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"

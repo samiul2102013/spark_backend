@@ -6,6 +6,7 @@ class StaticContent(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         db_table = "static_content"

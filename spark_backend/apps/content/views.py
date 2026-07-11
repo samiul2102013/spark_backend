@@ -105,6 +105,7 @@ class AdminPrivacyPolicyView(APIView):
             serializer = StaticContentSerializer(obj, data=request.data, partial=True)
             if not serializer.is_valid():
                 return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+            obj.updated_by = request.user
             serializer.save()
             return success_response(serializer.data)
         except Exception as e:
@@ -146,6 +147,7 @@ class AdminTermsView(APIView):
             serializer = StaticContentSerializer(obj, data=request.data, partial=True)
             if not serializer.is_valid():
                 return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+            obj.updated_by = request.user
             serializer.save()
             return success_response(serializer.data)
         except Exception as e:
@@ -187,6 +189,7 @@ class AdminAccountDeletionPolicyView(APIView):
             serializer = StaticContentSerializer(obj, data=request.data, partial=True)
             if not serializer.is_valid():
                 return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+            obj.updated_by = request.user
             serializer.save()
             return success_response(serializer.data)
         except Exception as e:
