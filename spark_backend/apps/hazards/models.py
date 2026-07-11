@@ -25,10 +25,10 @@ class Comment(TimeStampedModel):
 
 class Hazard(TimeStampedModel):
     CATEGORY_CHOICES = [
-        ("flood", "Flood"),
+        ("flooding", "Flood"),
         ("fallen_tree", "Fallen Tree"),
         ("blocked_road", "Blocked Road"),
-        ("utility_pole", "Damaged Utility Pole"),
+        ("fallen_utility_pole", "Fallen Utility Pole"),
         ("medical", "Urgent Medical"),
         ("fire", "Fire"),
         ("collapsed_building", "Collapsed Building"),

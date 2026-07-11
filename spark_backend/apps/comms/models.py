@@ -50,6 +50,7 @@ class CheckIn(TimeStampedModel):
     ASSISTANCE_TYPE_CHOICES = [
         ("medical", "Medical"),
         ("trapped", "Trapped"),
+        ("emergency_medical", "Emergency Medical"),
         ("need_supplies", "Need Supplies"),
         ("unsafe_building", "Unsafe Area"),
         ("fallen_tree", "Fallen Tree"),
