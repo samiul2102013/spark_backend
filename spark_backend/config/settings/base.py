@@ -180,7 +180,7 @@ from celery.schedules import crontab
 CELERY_BEAT_SCHEDULE = {
     "check-ai-report-generation": {
         "task": "apps.ai.tasks.check_and_generate_report",
-        "schedule": crontab(minute=0),  # hourly
+        "schedule": crontab(),  # every minute — task decides whether enough time passed
     },
 }
 

@@ -27,7 +27,7 @@ class AIReportingConfigSerializer(serializers.ModelSerializer):
         model = AIReportingConfig
         fields = [
             "auto_reporting_enabled",
-            "frequency",
+            "frequency_interval_minutes",
             "include_activity_summary",
             "include_hubs_summary",
             "include_alerts_summary",

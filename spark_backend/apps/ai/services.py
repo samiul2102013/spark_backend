@@ -1,6 +1,22 @@
 from .models import AIReportingConfig, MessageReviewConfig
 
 
+SPARK_SYSTEM_PROMPT = (
+    "You are a disaster response reporting assistant for SPARK (Strategic Platform for "
+    "Automated Response and Knowledge). Generate concise situation reports for government officials.\n\n"
+    "RULES:\n"
+    "- Use ONLY the numbers provided — never invent data\n"
+    "- Write 2-3 sentences maximum\n"
+    "- Be specific with counts and percentages\n"
+    "- Use professional, factual language\n"
+    "- Do NOT use markdown, headers, bullet points, or prefixes\n"
+    "- Do NOT add commentary, recommendations, or opinions\n"
+    "- Each section (Activity, Hubs, Alerts, AI Performance) gets exactly one sentence if its data is provided\n\n"
+    "OUTPUT FORMAT:\n"
+    "A single paragraph of 2-3 sentences covering all provided sections."
+)
+
+
 class AIConfigService:
 
     @staticmethod
@@ -170,11 +186,17 @@ class AIScoringService:
                 model=model,
                 max_tokens=10,
                 temperature=0,
-                system=(
-                    "You score disaster/emergency messages by urgency. "
-                    "Reply with ONLY a single digit: 1 (minor), 2 (moderate), "
-                    "or 3 (critical/life-threatening). No words, no punctuation, just the digit."
-                ),
+                system=[
+                    {
+                        "type": "text",
+                        "text": (
+                            "You score disaster/emergency messages by urgency. "
+                            "Reply with ONLY a single digit: 1 (minor), 2 (moderate), "
+                            "or 3 (critical/life-threatening). No words, no punctuation, just the digit."
+                        ),
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ],
                 messages=[
                     {
                         "role": "user",
@@ -367,10 +389,12 @@ class ReportGenerationService:
 
     @staticmethod
     def generate_ai_summary(stats: dict, config) -> str | None:
+        import hashlib
         import json
         import logging
 
         from django.conf import settings
+        from django.core.cache import cache
         from anthropic import Anthropic
 
         logger = logging.getLogger(__name__)
@@ -378,6 +402,12 @@ class ReportGenerationService:
         if not settings.CLAUDE_API_KEY:
             logger.warning("CLAUDE_API_KEY not set — cannot generate AI summary")
             return None
+
+        cache_key = "ai_report_summary_" + hashlib.md5(json.dumps(stats, sort_keys=True).encode()).hexdigest()
+        cached = cache.get(cache_key)
+        if cached is not None:
+            logger.info("Returning cached AI summary")
+            return cached
 
         sections = []
         for section_key in ("activity", "hubs", "alerts", "ai_performance"):
@@ -387,10 +417,7 @@ class ReportGenerationService:
                 sections.append(f"{label}: {json.dumps(data)}")
 
         prompt = (
-            "You are a professional disaster response reporting assistant. "
-            "Given the following statistics, write a concise 2-3 sentence situation report "
-            "summary suitable for government officials. Be specific with numbers. "
-            "Use plain prose — no markdown, no headers, no bullet points, no prefixes:\n\n"
+            "Current reporting period data:\n"
             + "\n".join(sections)
         )
 
@@ -400,10 +427,19 @@ class ReportGenerationService:
                 model=settings.CLAUDE_MODEL,
                 max_tokens=250,
                 temperature=0.3,
+                system=[
+                    {
+                        "type": "text",
+                        "text": SPARK_SYSTEM_PROMPT,
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ],
                 messages=[{"role": "user", "content": prompt}],
             )
             text = response.content[0].text.strip()
             logger.info("Claude AI summary generated (%d chars)", len(text))
+            ttl = max(config.frequency_interval_minutes * 60, 60)
+            cache.set(cache_key, text, timeout=ttl)
             return text
         except Exception:
             logger.warning("Claude summary generation failed", exc_info=True)

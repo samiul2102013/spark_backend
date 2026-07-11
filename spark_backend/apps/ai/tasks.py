@@ -21,7 +21,7 @@ def check_and_generate_report():
     latest = SituationReport.objects.filter(is_auto=True).order_by("-created_at").first()
     if latest:
         elapsed = timezone.now() - latest.created_at
-        if elapsed < timedelta(hours=config.frequency_hours()):
+        if elapsed < timedelta(minutes=config.frequency_interval_minutes):
             logger.info("Last auto report %s is %s old — skipping", latest.id, elapsed)
             return
 

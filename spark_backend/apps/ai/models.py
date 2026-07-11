@@ -57,14 +57,8 @@ class MessageReviewConfig(models.Model):
 
 
 class AIReportingConfig(models.Model):
-    FREQUENCIES = [
-        ("daily", "Daily"),
-        ("weekly", "Weekly"),
-        ("monthly", "Monthly"),
-    ]
-
     auto_reporting_enabled = models.BooleanField(default=True)
-    frequency = models.CharField(max_length=10, choices=FREQUENCIES, default="daily")
+    frequency_interval_minutes = models.PositiveIntegerField(default=60)
     include_activity_summary = models.BooleanField(default=True)
     include_hubs_summary = models.BooleanField(default=True)
     include_alerts_summary = models.BooleanField(default=True)
@@ -80,9 +74,6 @@ class AIReportingConfig(models.Model):
     def get_solo(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
-
-    def frequency_hours(self):
-        return {"daily": 24, "weekly": 168, "monthly": 720}.get(self.frequency, 24)
 
     def __str__(self):
         return "AI Reporting Config"
