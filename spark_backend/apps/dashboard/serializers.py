@@ -35,3 +35,6 @@ class UrgentFlagSerializer(serializers.ModelSerializer):
 
     def get_severity_label(self, obj):
         return dict(Hazard.SEVERITY_CHOICES).get(obj.severity, "")
+
+
+#hi i am samiul
