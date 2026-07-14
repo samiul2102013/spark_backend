@@ -41,25 +41,8 @@ class DashboardService:
 
         return hazard_breakdown, checkins
 
-    def list_urgent_flags(
-        self, category=None, status=None, period=None, severity=None, hours=None
-    ):
+    def list_urgent_flags(self, category=None):
         qs = Hazard.objects.select_related("reporter").all()
-
         if category:
-            cats = [c.strip() for c in category.split(",") if c.strip()]
-            if cats:
-                qs = qs.filter(category__in=cats)
-        if status:
-            qs = qs.filter(status=status)
-        if period:
-            qs = qs.filter(period=period)
-        if severity:
-            qs = qs.filter(severity=severity)
-        if hours:
-            cutoff = timezone.now() - timedelta(hours=int(hours))
-            qs = qs.filter(created_at__gte=cutoff)
-
+            qs = qs.filter(category=category)
         return qs.order_by("-severity", "-created_at")
-    
-    #hi i am samiul

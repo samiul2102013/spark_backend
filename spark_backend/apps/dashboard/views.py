@@ -27,24 +27,8 @@ class UrgentFlagsView(APIView):
                 str,
                 OpenApiParameter.QUERY,
                 required=False,
-                description="Comma-separated categories to filter by. E.g. ?category=fire,flooding,medical",
+                description="Filter by category. E.g. ?category=fire",
             ),
-            OpenApiParameter(
-                "status",
-                str,
-                OpenApiParameter.QUERY,
-                required=False,
-                enum=["active", "cleared"],
-            ),
-            OpenApiParameter(
-                "period",
-                str,
-                OpenApiParameter.QUERY,
-                required=False,
-                enum=["pre", "post"],
-            ),
-            OpenApiParameter("severity", int, OpenApiParameter.QUERY, required=False),
-            OpenApiParameter("hours", int, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("page", int, OpenApiParameter.QUERY, required=False),
             OpenApiParameter("limit", int, OpenApiParameter.QUERY, required=False),
         ],
@@ -58,10 +42,6 @@ class UrgentFlagsView(APIView):
 
             qs = service.list_urgent_flags(
                 category=request.query_params.get("category"),
-                status=request.query_params.get("status"),
-                period=request.query_params.get("period"),
-                severity=request.query_params.get("severity"),
-                hours=request.query_params.get("hours"),
             )
 
             paginator = StandardPagination()
