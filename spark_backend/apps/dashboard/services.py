@@ -47,7 +47,9 @@ class DashboardService:
         qs = Hazard.objects.select_related("reporter").all()
 
         if category:
-            qs = qs.filter(category=category)
+            cats = [c.strip() for c in category.split(",") if c.strip()]
+            if cats:
+                qs = qs.filter(category__in=cats)
         if status:
             qs = qs.filter(status=status)
         if period:

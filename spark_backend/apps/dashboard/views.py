@@ -27,7 +27,7 @@ class UrgentFlagsView(APIView):
                 str,
                 OpenApiParameter.QUERY,
                 required=False,
-                enum=ALL_CATEGORIES,
+                description="Comma-separated categories to filter by. E.g. ?category=fire,flooding,medical",
             ),
             OpenApiParameter(
                 "status",
