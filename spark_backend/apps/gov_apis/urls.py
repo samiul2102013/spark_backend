@@ -1,8 +1,10 @@
 from django.urls import path
 
 from . import views
+from apps.dashboard.views import UrgentFlagsView
 
 urlpatterns = [
+    path("gov/urgent-flags/", UrgentFlagsView.as_view(), name="gov-urgent-flags"),
     path("gov/overview/", views.GovOverviewView.as_view(), name="gov-overview"),
     path("gov/map/", views.GovMapView.as_view(), name="gov-map"),
     path("gov/hazards/", views.GovHazardListView.as_view(), name="gov-hazard-list"),

@@ -64,6 +64,8 @@ urlpatterns = [
     path(f"{api_prefix}", include("apps.content.urls")),
     # Notifications
     path(f"{api_prefix}", include("apps.notification.urls")),
+    # Dashboard
+    path(f"{api_prefix}", include("apps.dashboard.urls")),
 ]
 
 if settings.DEBUG:

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.admin_api",
     "apps.content",
     "apps.notification",
+    "apps.dashboard",
 ]
 
 MIDDLEWARE = [
