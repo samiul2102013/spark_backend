@@ -74,3 +74,12 @@ class BroadcastService:
     def mark_read(self, broadcast_id, user):
         obj, _ = BroadcastRead.objects.get_or_create(broadcast_id=broadcast_id, user=user)
         return obj
+
+    @transaction.atomic
+    def delete_broadcast(self, broadcast_id, user):
+        broadcast = Broadcast.objects.select_related("hub").get(id=broadcast_id)
+        if user.role != "admin" and broadcast.hub_id != getattr(user.hub, "id", None):
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied("You can only delete broadcasts from your own hub.")
+        broadcast.delete()
+        return broadcast

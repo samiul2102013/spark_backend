@@ -1,3 +1,4 @@
+from django.core.exceptions import PermissionDenied
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -5,7 +6,7 @@ from rest_framework.views import APIView
 
 from apps.users.permissions import IsAdminOrCoordinator
 from core.pagination import StandardPagination
-from core.responses import created_response, error_response, success_response
+from core.responses import created_response, deleted_response, error_response, success_response
 
 from .serializers import (
     BroadcastCreateSerializer,
@@ -212,6 +213,31 @@ class BroadcastReadView(APIView):
             service = BroadcastService()
             service.mark_read(broadcast_id, request.user)
             return success_response({"message": "Marked as read."})
+        except Exception as e:
+            return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class BroadcastDeleteView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminOrCoordinator]
+
+    @extend_schema(
+        tags=["mobile", "Broadcasts"],
+        summary="Delete broadcast",
+        description="Delete a broadcast. Admin can delete any; coordinator can only delete from their own hub.",
+        responses={204: None},
+    )
+    def delete(self, request, broadcast_id):
+        try:
+            service = BroadcastService()
+            service.delete_broadcast(broadcast_id, request.user)
+            return deleted_response()
+        except Broadcast.DoesNotExist:
+            return error_response("Broadcast not found.", http_status=status.HTTP_404_NOT_FOUND)
+        except PermissionDenied:
+            return error_response(
+                "You can only delete broadcasts from your own hub.",
+                http_status=status.HTTP_403_FORBIDDEN,
+            )
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

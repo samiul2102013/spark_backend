@@ -2,6 +2,7 @@ import math
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models import Sum
 
 from apps.bookings.models import Booking
 from apps.comms.models import Broadcast, CheckIn
@@ -94,6 +95,9 @@ class HubService:
     def get_hub_resources(self, hub_id):
         hub = self.get_hub(hub_id)
         active_bookings = Booking.objects.filter(hub=hub, status="active").count()
+        used_ports = Booking.objects.filter(hub=hub, status="active").aggregate(
+            total=Sum("device_count")
+        )["total"] or 0
         return {
             "battery_percentage": hub.battery_percentage,
             "solar_input_w": hub.solar_input_w,
@@ -101,6 +105,8 @@ class HubService:
             "estimated_runtime_h": hub.estimated_runtime_h,
             "starlink_status": hub.starlink_status,
             "active_bookings": active_bookings,
+            "total_ports": hub.total_ports,
+            "available_ports": hub.total_ports - used_ports,
         }
 
     def _haversine(self, lat1, lng1, lat2, lng2):

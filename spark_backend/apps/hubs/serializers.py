@@ -1,9 +1,15 @@
+from django.db.models import Sum
+
 from rest_framework import serializers
+
+from apps.bookings.models import Booking
 
 from .models import Hub
 
 
 class HubSerializer(serializers.ModelSerializer):
+    available_ports = serializers.SerializerMethodField()
+
     class Meta:
         model = Hub
         fields = (
@@ -19,14 +25,22 @@ class HubSerializer(serializers.ModelSerializer):
             "estimated_runtime_h",
             "starlink_status",
             "max_concurrent_bookings",
+            "total_ports",
+            "available_ports",
             "coordinator",
             "created_at",
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at")
 
+    def get_available_ports(self, obj):
+        used = Booking.objects.filter(hub=obj, status="active").aggregate(total=Sum("device_count"))["total"] or 0
+        return obj.total_ports - used
+
 
 class HubListSerializer(serializers.ModelSerializer):
+    available_ports = serializers.SerializerMethodField()
+
     class Meta:
         model = Hub
         fields = (
@@ -38,7 +52,13 @@ class HubListSerializer(serializers.ModelSerializer):
             "latitude",
             "longitude",
             "starlink_status",
+            "total_ports",
+            "available_ports",
         )
+
+    def get_available_ports(self, obj):
+        used = Booking.objects.filter(hub=obj, status="active").aggregate(total=Sum("device_count"))["total"] or 0
+        return obj.total_ports - used
 
 
 class HubStatusSerializer(serializers.Serializer):
@@ -54,6 +74,7 @@ class HubCoordinatorSerializer(serializers.Serializer):
 
 class NearestHubSerializer(serializers.ModelSerializer):
     distance_km = serializers.SerializerMethodField()
+    available_ports = serializers.SerializerMethodField()
 
     class Meta:
         model = Hub
@@ -67,11 +88,17 @@ class NearestHubSerializer(serializers.ModelSerializer):
             "battery_percentage",
             "starlink_status",
             "max_concurrent_bookings",
+            "total_ports",
+            "available_ports",
             "distance_km",
         )
 
     def get_distance_km(self, obj):
         return obj.distance_km
+
+    def get_available_ports(self, obj):
+        used = Booking.objects.filter(hub=obj, status="active").aggregate(total=Sum("device_count"))["total"] or 0
+        return obj.total_ports - used
 
 
 class HubReassignSerializer(serializers.Serializer):

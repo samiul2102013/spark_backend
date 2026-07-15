@@ -1,0 +1,5755 @@
+openapi: 3.0.3
+info:
+  title: SPARK API
+  version: 1.0.0
+  description: Disaster communication and energy resilience platform
+paths:
+  /api/v1/admin/change-password/:
+    put:
+      operationId: admin_change_password_update
+      description: Change password by providing old password, new password, and confirmation.
+      summary: Change admin password
+      tags:
+      - admin
+      - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+            examples:
+              ChangePasswordExample:
+                value:
+                  old_password: currentPass123
+                  new_password: newSecurePass456
+                  confirm_password: newSecurePass456
+                summary: Change Password Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/admin/content/account-deletion-policy/:
+    get:
+      operationId: admin_content_account_deletion_policy_retrieve
+      description: Retrieve the account deletion policy content (admin).
+      summary: Get account deletion policy
+      tags:
+      - admin
+      - Content
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaticContent'
+          description: ''
+    patch:
+      operationId: admin_content_account_deletion_policy_partial_update
+      description: Update the account deletion policy content (admin only).
+      summary: Update account deletion policy
+      tags:
+      - admin
+      - Content
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaticContent'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaticContent'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaticContent'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaticContent'
+          description: ''
+  /api/v1/admin/content/privacy-policy/:
+    get:
+      operationId: admin_content_privacy_policy_retrieve
+      description: Retrieve the privacy policy content (admin).
+      summary: Get privacy policy
+      tags:
+      - admin
+      - Content
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaticContent'
+          description: ''
+    patch:
+      operationId: admin_content_privacy_policy_partial_update
+      description: Update the privacy policy content (admin only).
+      summary: Update privacy policy
+      tags:
+      - admin
+      - Content
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaticContent'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaticContent'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaticContent'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaticContent'
+          description: ''
+  /api/v1/admin/content/terms/:
+    get:
+      operationId: admin_content_terms_retrieve
+      description: Retrieve the terms and conditions content (admin).
+      summary: Get terms and conditions
+      tags:
+      - admin
+      - Content
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaticContent'
+          description: ''
+    patch:
+      operationId: admin_content_terms_partial_update
+      description: Update the terms and conditions content (admin only).
+      summary: Update terms and conditions
+      tags:
+      - admin
+      - Content
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaticContent'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaticContent'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaticContent'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaticContent'
+          description: ''
+  /api/v1/admin/coordinators/:
+    get:
+      operationId: admin_coordinators_list
+      description: Retrieve paginated list of all coordinators.
+      summary: List coordinators
+      parameters:
+      - in: query
+        name: hub_id
+        schema:
+          type: integer
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - in: query
+        name: limit
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+      tags:
+      - admin
+      - Coordinators
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CoordinatorList'
+          description: ''
+  /api/v1/admin/coordinators/{user_id}/:
+    get:
+      operationId: admin_coordinators_retrieve
+      description: Full details of a specific coordinator.
+      summary: Get coordinator details
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      - Coordinators
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoordinatorDetail'
+          description: ''
+  /api/v1/admin/coordinators/{user_id}/suspend/:
+    patch:
+      operationId: admin_coordinators_suspend_partial_update
+      description: Deactivate a coordinator account.
+      summary: Suspend coordinator
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      - Coordinators
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoordinatorList'
+          description: ''
+  /api/v1/admin/hubs/:
+    get:
+      operationId: admin_hubs_list
+      description: Retrieve paginated list of all hubs.
+      summary: List hubs
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - closed
+          - critical
+          - low_battery
+          - open
+      tags:
+      - admin
+      - Hubs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminHubList'
+          description: ''
+  /api/v1/admin/hubs/{hub_id}/:
+    get:
+      operationId: admin_hubs_retrieve
+      description: Full hub detail with coordinator info, battery, starlink, last
+        resident check-in, recent check-ins and hazards.
+      summary: Get hub details
+      parameters:
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admin
+      - Hubs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminHubDetail'
+          description: ''
+    patch:
+      operationId: admin_hubs_partial_update
+      description: Update any field on a hub. Admin only.
+      summary: Update hub
+      parameters:
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admin
+      - Hubs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminHubDetail'
+            examples:
+              UpdateHubExample:
+                value:
+                  name: Kingston Central Hub
+                  address: 123 Main Street, Kingston
+                  status: open
+                  battery_percentage: 85
+                  starlink_status: operational
+                summary: Update Hub Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminHubDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminHubDetail'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminHubDetail'
+          description: ''
+  /api/v1/admin/hubs/{hub_id}/assign-coordinator/:
+    patch:
+      operationId: admin_hubs_assign_coordinator_partial_update
+      description: Assign a coordinator to a hub by their phone number.
+      summary: Assign coordinator to hub
+      parameters:
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admin
+      - Hubs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAssignCoordinator'
+            examples:
+              AssignCoordinatorExample:
+                value:
+                  coordinator_id: 01856669533
+                summary: Assign Coordinator Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAssignCoordinator'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAssignCoordinator'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminHubList'
+          description: ''
+  /api/v1/admin/hubs/{hub_id}/reassign-coordinator/:
+    patch:
+      operationId: admin_hubs_reassign_coordinator_partial_update
+      description: Replace the coordinator for a hub.
+      summary: Reassign coordinator
+      parameters:
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admin
+      - Hubs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReassignCoordinator'
+            examples:
+              ReassignCoordinatorExample:
+                value:
+                  new_coordinator_id: 01856669534
+                summary: Reassign Coordinator Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReassignCoordinator'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReassignCoordinator'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminHubList'
+          description: ''
+  /api/v1/admin/hubs/create/:
+    post:
+      operationId: admin_hubs_create_create
+      description: Create a new hub with location and optional coordinator.
+      summary: Create hub
+      tags:
+      - admin
+      - Hubs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HubCreate'
+            examples:
+              CreateHubExample:
+                value:
+                  name: Port Antonio Hub
+                  address: 10 Harbour Street
+                  latitude: 18.1757
+                  longitude: -76.4503
+                  max_concurrent_bookings: 10
+                  coordinator_id: 01856669533
+                summary: Create Hub Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HubCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HubCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminHubList'
+          description: ''
+  /api/v1/admin/overview/:
+    get:
+      operationId: admin_overview_retrieve
+      description: 'Aggregated platform statistics for the admin dashboard: check-ins,
+        hubs, hazards, users, messages, urgent flags, and check-ins over time.'
+      summary: Get admin overview
+      tags:
+      - admin
+      - Overview
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOverview'
+          description: ''
+  /api/v1/admin/profile/:
+    get:
+      operationId: admin_profile_retrieve
+      description: Retrieve the admin's own profile information.
+      summary: Get admin profile
+      tags:
+      - admin
+      - Profile
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProfile'
+          description: ''
+    patch:
+      operationId: admin_profile_partial_update
+      description: Update admin's own name, email, and phone number.
+      summary: Update admin profile
+      tags:
+      - admin
+      - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminProfile'
+            examples:
+              UpdateAdminProfile:
+                value:
+                  full_name: Admin Name
+                  email: admin@example.com
+                  phone_number: '+1234567890'
+                summary: Update Admin Profile
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminProfile'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProfile'
+          description: ''
+  /api/v1/admin/residents/:
+    get:
+      operationId: admin_residents_list
+      description: Retrieve paginated list of all resident users with community, last
+        check-in, and profile photo.
+      summary: List residents
+      parameters:
+      - in: query
+        name: hub_id
+        schema:
+          type: integer
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - in: query
+        name: limit
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+      tags:
+      - admin
+      - Residents
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResidentList'
+          description: ''
+  /api/v1/admin/residents/{user_id}/:
+    get:
+      operationId: admin_residents_retrieve
+      description: Full resident details including community, last check-in, check-in
+        count, and profile photo.
+      summary: Get resident details
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      - Residents
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResidentDetail'
+          description: ''
+  /api/v1/admin/residents/{user_id}/activate/:
+    patch:
+      operationId: admin_residents_activate_partial_update
+      description: Reactivate a suspended resident account.
+      summary: Activate resident
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      - Residents
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResidentList'
+          description: ''
+  /api/v1/admin/residents/{user_id}/suspend/:
+    patch:
+      operationId: admin_residents_suspend_partial_update
+      description: Deactivate a resident account.
+      summary: Suspend resident
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      - Residents
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResidentList'
+          description: ''
+  /api/v1/admin/users/:
+    get:
+      operationId: admin_users_list
+      description: Retrieve paginated list of all platform users for access control.
+      summary: List all users
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - in: query
+        name: limit
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: role
+        schema:
+          type: string
+          enum:
+          - admin
+          - coordinator
+          - government
+          - resident
+      - in: query
+        name: search
+        schema:
+          type: string
+      tags:
+      - admin
+      - Users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminUserList'
+          description: ''
+  /api/v1/admin/users/{user_id}/activate/:
+    patch:
+      operationId: admin_users_activate_partial_update
+      description: Reactivate a suspended user account.
+      summary: Activate any user
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      - Users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserList'
+          description: ''
+  /api/v1/admin/users/{user_id}/role/:
+    patch:
+      operationId: admin_users_role_partial_update
+      description: Change a user's role (e.g. resident to coordinator).
+      summary: Set user role
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      - Users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleDetail'
+          description: ''
+  /api/v1/admin/users/{user_id}/suspend/:
+    patch:
+      operationId: admin_users_suspend_partial_update
+      description: Deactivate any user account (resident, coordinator, government).
+      summary: Suspend any user
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSuspendUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSuspendUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSuspendUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserList'
+          description: ''
+  /api/v1/admin/users/invite/:
+    post:
+      operationId: admin_users_invite_create
+      description: Invite a new user (resident, coordinator, or government).
+      summary: Invite user
+      tags:
+      - admin
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteUser'
+            examples:
+              InviteUserExample:
+                value:
+                  phone_number: 01856669533
+                  full_name: John Doe
+                  role: resident
+                  hub_id: 1
+                summary: Invite User Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InviteUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InviteUser'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+  /api/v1/admin/users/invite-by-email/:
+    post:
+      operationId: admin_users_invite_by_email_create
+      description: Send an invitation email to a government user.
+      summary: Invite government user by email
+      tags:
+      - admin
+      - dashboard
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteGovernment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InviteGovernment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InviteGovernment'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          description: No response body
+  /api/v1/ai/control-config/:
+    get:
+      operationId: ai_control_config_retrieve
+      description: 'GET: Retrieve the singleton message review configuration. PUT:
+        Update fields (partial). Returns the full config.'
+      summary: Get or update Message Review Config
+      tags:
+      - admin
+      - AI
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageReviewConfig'
+          description: ''
+    put:
+      operationId: ai_control_config_update
+      description: 'GET: Retrieve the singleton message review configuration. PUT:
+        Update fields (partial). Returns the full config.'
+      summary: Get or update Message Review Config
+      tags:
+      - admin
+      - AI
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageReviewConfig'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MessageReviewConfig'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MessageReviewConfig'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageReviewConfig'
+          description: ''
+  /api/v1/ai/message-review/:
+    get:
+      operationId: ai_message_review_list
+      description: 'Paginated list of hazards and check-ins pending review. Filters:
+        ?status=pending&severity=3&source=hazard'
+      summary: List message review queue
+      parameters:
+      - in: query
+        name: severity
+        schema:
+          type: integer
+          enum:
+          - 1
+          - 2
+          - 3
+      - in: query
+        name: source
+        schema:
+          type: string
+          enum:
+          - checkin
+          - hazard
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - escalated
+          - pending
+          - resolved
+          - reviewed
+      tags:
+      - admin
+      - AI
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageReviewItem'
+          description: ''
+  /api/v1/ai/message-review/{source}/{item_id}/:
+    get:
+      operationId: ai_message_review_retrieve
+      description: 'GET: return single item. PATCH: update review_status, sets reviewed_by
+        and reviewed_at.'
+      summary: Get or update a review item
+      parameters:
+      - in: path
+        name: item_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: source
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      - AI
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageReviewItem'
+          description: ''
+    patch:
+      operationId: ai_message_review_partial_update
+      description: 'GET: return single item. PATCH: update review_status, sets reviewed_by
+        and reviewed_at.'
+      summary: Get or update a review item
+      parameters:
+      - in: path
+        name: item_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: source
+        schema:
+          type: string
+        required: true
+      tags:
+      - admin
+      - AI
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMessageReviewStatusUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMessageReviewStatusUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMessageReviewStatusUpdate'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageReviewItem'
+          description: ''
+  /api/v1/ai/reporting-config/:
+    get:
+      operationId: ai_reporting_config_retrieve
+      description: 'GET: Retrieve the singleton AI reporting configuration. PUT: Update
+        fields (partial). Returns the full config.'
+      summary: Get or update AI Reporting Config
+      tags:
+      - admin
+      - AI
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIReportingConfig'
+          description: ''
+    put:
+      operationId: ai_reporting_config_update
+      description: 'GET: Retrieve the singleton AI reporting configuration. PUT: Update
+        fields (partial). Returns the full config.'
+      summary: Get or update AI Reporting Config
+      tags:
+      - admin
+      - AI
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIReportingConfig'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AIReportingConfig'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AIReportingConfig'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIReportingConfig'
+          description: ''
+  /api/v1/ai/reports/:
+    get:
+      operationId: ai_reports_list
+      description: 'GET: paginated list of reports. POST: manually trigger a new report.'
+      summary: List or create situation reports
+      tags:
+      - admin
+      - AI
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SituationReport'
+          description: ''
+    post:
+      operationId: ai_reports_create
+      description: 'GET: paginated list of reports. POST: manually trigger a new report.'
+      summary: List or create situation reports
+      tags:
+      - admin
+      - AI
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SituationReport'
+          description: ''
+  /api/v1/ai/reports/{report_id}/:
+    get:
+      operationId: ai_reports_retrieve
+      description: 'GET: single report detail. DELETE: remove a report.'
+      summary: Get or delete a situation report
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admin
+      - AI
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SituationReport'
+          description: ''
+    delete:
+      operationId: ai_reports_destroy
+      description: 'GET: single report detail. DELETE: remove a report.'
+      summary: Get or delete a situation report
+      parameters:
+      - in: path
+        name: report_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admin
+      - AI
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SituationReport'
+          description: ''
+  /api/v1/auth/account/:
+    delete:
+      operationId: auth_account_destroy
+      description: Permanently delete the authenticated user's account.
+      summary: Delete account
+      tags:
+      - mobile
+      - Auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/biometric/login/:
+    post:
+      operationId: auth_biometric_login_create
+      description: Login using a biometric key instead of password.
+      summary: Biometric login
+      tags:
+      - mobile
+      - admin
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BiometricLogin'
+            examples:
+              BiometricLoginExample:
+                value:
+                  key: device-biometric-key-here
+                summary: Biometric Login Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BiometricLogin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BiometricLogin'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/biometric/register/:
+    post:
+      operationId: auth_biometric_register_create
+      description: Register a biometric key for the authenticated user.
+      summary: Register biometric key
+      tags:
+      - mobile
+      - admin
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BiometricRegister'
+            examples:
+              BiometricRegisterExample:
+                value:
+                  key: device-biometric-key-here
+                summary: Biometric Register Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BiometricRegister'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BiometricRegister'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/forgot-password/:
+    post:
+      operationId: auth_forgot_password_create
+      description: Request a password reset code. Sends reset code to the user's phone
+        or email.
+      summary: Forgot password
+      tags:
+      - mobile
+      - dashboard
+      - admin
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPassword'
+            examples:
+              ForgotPasswordExample:
+                value:
+                  identifier: 01856669533
+                summary: Forgot Password Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ForgotPassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ForgotPassword'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/invite/{token}/:
+    post:
+      operationId: auth_invite_create
+      description: Check if an invite token is valid and return invite details.
+      summary: Validate invite token
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+      tags:
+      - mobile
+      - dashboard
+      - admin
+      - Invites
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/invite/accept/:
+    post:
+      operationId: auth_invite_accept_create
+      description: Accept a government/coordinator invite by setting a password. Returns
+        JWT tokens on success.
+      summary: Accept invite
+      tags:
+      - mobile
+      - dashboard
+      - admin
+      - Invites
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptInvite'
+            examples:
+              AcceptInviteExample:
+                value:
+                  token: invite-token-here
+                  password: securePassword123
+                  confirm_password: securePassword123
+                summary: Accept Invite Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AcceptInvite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AcceptInvite'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: Authenticate with email/username and password. Returns access and
+        refresh JWT tokens.
+      summary: Login with credentials
+      tags:
+      - mobile
+      - dashboard
+      - admin
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+            examples:
+              LoginExample:
+                value:
+                  username: john@example.com
+                  password: password123
+                summary: Login Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: Blacklist the refresh token to invalidate the session.
+      summary: Logout
+      tags:
+      - mobile
+      - admin
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Logout'
+            examples:
+              LogoutExample:
+                value:
+                  refresh: eyJhbGciOiJIUzI1NiJ9...
+                summary: Logout Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Logout'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Logout'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/offline-token/:
+    post:
+      operationId: auth_offline_token_create
+      description: Generate an offline token for the authenticated user to use when
+        connectivity is limited.
+      summary: Issue offline token
+      tags:
+      - mobile
+      - admin
+      - Auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/otp/send/:
+    post:
+      operationId: auth_otp_send_create
+      description: Send a 6-digit OTP code to the given phone number for verification.
+      summary: Send OTP code
+      tags:
+      - mobile
+      - admin
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPSend'
+            examples:
+              SendOTPExample:
+                value:
+                  phone: 01856669533
+                summary: Send OTP Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPSend'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPSend'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/otp/verify/:
+    post:
+      operationId: auth_otp_verify_create
+      description: Verify the 6-digit OTP code. Returns access and refresh tokens
+        on success.
+      summary: Verify OTP code
+      tags:
+      - mobile
+      - admin
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPVerify'
+            examples:
+              VerifyOTPExample:
+                value:
+                  phone: 01856669533
+                  code: '123456'
+                summary: Verify OTP Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPVerify'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: Create a new resident account via OTP registration.
+      summary: Register a new user
+      tags:
+      - mobile
+      - admin
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+            examples:
+              RegisterExample:
+                value:
+                  phone: 01856669533
+                  full_name: John Doe
+                  household_size: 4
+                  medical_needs: None
+                  latitude: 18.1096
+                  longitude: -77.2975
+                summary: Register Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          description: No response body
+  /api/v1/auth/reset-password/:
+    post:
+      operationId: auth_reset_password_create
+      description: Set a new password for the authenticated user. No old password
+        required.
+      summary: Reset password
+      tags:
+      - mobile
+      - dashboard
+      - admin
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+            examples:
+              ResetPasswordExample:
+                value:
+                  new_password: newSecurePass123
+                  confirm_password: newSecurePass123
+                summary: Reset Password Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/set-password/:
+    post:
+      operationId: auth_set_password_create
+      description: Set a new password for the authenticated user (no old password
+        required).
+      summary: Set password
+      tags:
+      - mobile
+      - admin
+      - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetPassword'
+            examples:
+              SetPasswordExample:
+                value:
+                  new_password: newSecurePass456
+                  confirm_password: newSecurePass456
+                summary: Set Password Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SetPassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SetPassword'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/verify-reset-otp/:
+    post:
+      operationId: auth_verify_reset_otp_create
+      description: Verify the 6-digit OTP sent to email/phone during forgot-password.
+        Returns an access token on success to use in the reset-password step.
+      summary: Verify reset OTP
+      tags:
+      - mobile
+      - dashboard
+      - admin
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyResetOTP'
+            examples:
+              VerifyResetOTPExample:
+                value:
+                  identifier: gov@example.com
+                  code: '123456'
+                summary: Verify Reset OTP Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyResetOTP'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyResetOTP'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/bookings/:
+    get:
+      operationId: bookings_list
+      description: Retrieve a paginated list of bookings. Regular users see their
+        own; admins see all.
+      summary: List bookings
+      parameters:
+      - in: query
+        name: hub_id
+        schema:
+          type: integer
+        description: Filter by hub ID
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Results per page (max 100)
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - cancelled
+          - completed
+        description: Filter by booking status
+      tags:
+      - mobile
+      - Bookings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+          description: ''
+    post:
+      operationId: bookings_create
+      description: Create a new booking at a hub. The user is auto-set to the authenticated
+        user.
+      summary: Create booking
+      tags:
+      - mobile
+      - Bookings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+            examples:
+              CreateBookingExample:
+                value:
+                  hub: 1
+                  start_time: '2026-06-20T10:00:00-05:00'
+                  device_count: 2
+                  client_uuid: uuid-string-here
+                summary: Create Booking Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+  /api/v1/bookings/{booking_id}/:
+    get:
+      operationId: bookings_retrieve
+      description: Retrieve full details of a specific booking by ID.
+      summary: Get booking details
+      parameters:
+      - in: path
+        name: booking_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Bookings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+  /api/v1/bookings/{booking_id}/cancel/:
+    patch:
+      operationId: bookings_cancel_partial_update
+      description: Cancel an existing booking by ID.
+      summary: Cancel booking
+      parameters:
+      - in: path
+        name: booking_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Bookings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+          description: ''
+  /api/v1/bookings/slots/:
+    get:
+      operationId: bookings_slots_retrieve
+      description: Retrieve available booking time slots for a hub on a specific date.
+      summary: Get available slots
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+        description: Date in YYYY-MM-DD format
+        required: true
+      - in: query
+        name: hub_id
+        schema:
+          type: integer
+        description: Hub ID
+        required: true
+      tags:
+      - mobile
+      - Bookings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/broadcasts/:
+    get:
+      operationId: broadcasts_list
+      description: Retrieve paginated list of broadcasts, optionally filtered by hub.
+      summary: List broadcasts
+      parameters:
+      - in: query
+        name: hub_id
+        schema:
+          type: integer
+        description: Filter by hub ID
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Results per page (max 100)
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      tags:
+      - mobile
+      - Broadcasts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Broadcast'
+          description: ''
+  /api/v1/broadcasts/{broadcast_id}/delete/:
+    delete:
+      operationId: broadcasts_delete_destroy
+      description: Delete a broadcast. Admin can delete any; coordinator can only
+        delete from their own hub.
+      summary: Delete broadcast
+      parameters:
+      - in: path
+        name: broadcast_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Broadcasts
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/broadcasts/{broadcast_id}/read/:
+    post:
+      operationId: broadcasts_read_create
+      description: Mark a specific broadcast as read by the authenticated user.
+      summary: Mark broadcast as read
+      parameters:
+      - in: path
+        name: broadcast_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Broadcasts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/broadcasts/create/:
+    post:
+      operationId: broadcasts_create_create
+      description: Create a new broadcast. Admin specifies hub; coordinator's hub
+        is auto-set.
+      summary: Create broadcast
+      tags:
+      - mobile
+      - Broadcasts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BroadcastCreate'
+            examples:
+              CreateBroadcastExample:
+                value:
+                  hub: 1
+                  subject: Weather Advisory
+                  body: Heavy rainfall expected. Stay indoors.
+                  priority: warning
+                summary: Create Broadcast Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BroadcastCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BroadcastCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Broadcast'
+          description: ''
+  /api/v1/checkins/:
+    post:
+      operationId: checkins_create
+      description: Submit a safety check-in at a hub. The user is auto-set to the
+        authenticated user.
+      summary: Create check-in
+      tags:
+      - mobile
+      - Check-Ins
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckInCreate'
+            examples:
+              Check-InExample:
+                value:
+                  hub: 1
+                  status: safe
+                  people_count: 3
+                  road_access: open
+                  medical_notes: No issues
+                  latitude: 18.1096
+                  longitude: -77.2975
+                  client_uuid: uuid-string-here
+                summary: Check-In Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CheckInCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CheckInCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckIn'
+          description: ''
+  /api/v1/checkins/{checkin_id}/:
+    get:
+      operationId: checkins_retrieve
+      description: Retrieve full details of a specific check-in by ID. Coordinators
+        can view any check-in.
+      summary: Get check-in details
+      parameters:
+      - in: path
+        name: checkin_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Check-Ins
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckIn'
+          description: ''
+  /api/v1/checkins/history/:
+    get:
+      operationId: checkins_history_list
+      description: Retrieve paginated check-in history for the authenticated user,
+        with optional filters.
+      summary: List check-in history
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+        description: Filter by date (YYYY-MM-DD)
+      - in: query
+        name: hub_id
+        schema:
+          type: integer
+        description: Filter by hub ID
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Results per page (max 100)
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - need_assistance
+          - safe
+        description: Filter by status
+      tags:
+      - mobile
+      - Check-Ins
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CheckIn'
+          description: ''
+  /api/v1/checkins/latest/:
+    get:
+      operationId: checkins_latest_retrieve
+      description: Retrieve the most recent check-in for the authenticated user. Returns
+        a single object, not paginated.
+      summary: Get latest check-in
+      tags:
+      - mobile
+      - Check-Ins
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckIn'
+          description: ''
+  /api/v1/content/account-deletion-policy/:
+    get:
+      operationId: content_account_deletion_policy_retrieve
+      description: Retrieve the account deletion policy content.
+      summary: Get account deletion policy
+      tags:
+      - mobile
+      - Content
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaticContent'
+          description: ''
+  /api/v1/content/privacy-policy/:
+    get:
+      operationId: content_privacy_policy_retrieve
+      description: Retrieve the privacy policy content.
+      summary: Get privacy policy
+      tags:
+      - mobile
+      - Content
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaticContent'
+          description: ''
+  /api/v1/content/terms/:
+    get:
+      operationId: content_terms_retrieve
+      description: Retrieve the terms and conditions content.
+      summary: Get terms and conditions
+      tags:
+      - mobile
+      - Content
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaticContent'
+          description: ''
+  /api/v1/dashboard/urgent-flags/:
+    get:
+      operationId: dashboard_urgent_flags_list
+      description: Returns a hazard breakdown by all categories, check-in statistics,
+        and a paginated list of hazards with optional filters.
+      summary: Dashboard overview — hazard breakdown, check-ins & hazard list
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter by category. E.g. ?category=fire
+      - in: query
+        name: limit
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+      tags:
+      - dashboard
+      - Urgent Flags
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrgentFlag'
+          description: ''
+  /api/v1/devices/register/:
+    post:
+      operationId: devices_register_create
+      summary: Register device token
+      tags:
+      - mobile
+      - Notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FCMToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FCMToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FCMToken'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FCMToken'
+          description: ''
+  /api/v1/devices/unregister/:
+    delete:
+      operationId: devices_unregister_destroy
+      summary: Unregister device token
+      tags:
+      - mobile
+      - Notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/gov/hazards/:
+    get:
+      operationId: gov_hazards_list
+      description: Retrieve paginated list of all hazards with optional filters for
+        severity, category, and status.
+      summary: List hazards
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+          enum:
+          - blocked_road
+          - collapsed_building
+          - earthquake
+          - fallen_tree
+          - fire
+          - flood
+          - landslide
+          - medical
+          - other
+          - power_line_down
+          - storm
+          - utility_pole
+        description: Filter by hazard category
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Results per page (max 100)
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: severity
+        schema:
+          type: integer
+          enum:
+          - 1
+          - 2
+          - 3
+        description: Filter by severity (1=Low, 2=Medium, 3=High)
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - cleared
+        description: Filter by status
+      tags:
+      - dashboard
+      - gov
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GovHazardList'
+          description: ''
+  /api/v1/gov/hazards/{hazard_id}/:
+    get:
+      operationId: gov_hazards_retrieve
+      description: Full hazard details including all comments, photos, and metadata.
+      summary: Get hazard detail with comments and images
+      parameters:
+      - in: path
+        name: hazard_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - dashboard
+      - gov
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GovHazardDetail'
+          description: ''
+  /api/v1/gov/infrastructure/:
+    get:
+      operationId: gov_infrastructure_list
+      description: Paginated list of all hubs with location, status, battery, solar,
+        connectivity, and sync info.
+      summary: List all infrastructure hubs
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - offline
+          - online
+        description: Filter by online/offline status
+      tags:
+      - dashboard
+      - gov
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InfrastructureGov'
+          description: ''
+  /api/v1/gov/infrastructure/{hub_id}/:
+    get:
+      operationId: gov_infrastructure_retrieve
+      description: Detailed infrastructure data for a single hub.
+      summary: Get infrastructure hub detail
+      parameters:
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - dashboard
+      - gov
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfrastructureGov'
+          description: ''
+  /api/v1/gov/map/:
+    get:
+      operationId: gov_map_retrieve
+      description: Retrieve map data. Use ?type=hubs|hazards|fallen|medical_needs
+        to return only that section. Omit type to get all. Add page/limit for pagination
+        when type is specified.
+      summary: Get map data for government dashboard
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter hazards by category
+      - in: query
+        name: lat_max
+        schema:
+          type: number
+          format: double
+      - in: query
+        name: lat_min
+        schema:
+          type: number
+          format: double
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Results per page, max 100 (requires type)
+      - in: query
+        name: lng_max
+        schema:
+          type: number
+          format: double
+      - in: query
+        name: lng_min
+        schema:
+          type: number
+          format: double
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number (requires type)
+      - in: query
+        name: type
+        schema:
+          type: string
+          enum:
+          - fallen
+          - hazards
+          - hubs
+          - medical_needs
+        description: Filter by data type
+      tags:
+      - dashboard
+      - gov
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapData'
+          description: ''
+  /api/v1/gov/overview/:
+    get:
+      operationId: gov_overview_retrieve
+      description: 'Aggregated stats: check-ins, active hubs, hazard reports, silent
+        communications, urgent flags, check-ins over time, hazard breakdown.'
+      summary: Get government dashboard overview
+      tags:
+      - dashboard
+      - gov
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Overview'
+          description: ''
+  /api/v1/gov/reports/:
+    get:
+      operationId: gov_reports_list
+      description: Retrieve paginated list of situation reports with summary, timestamp,
+        and PDF download URL.
+      summary: List situation reports (PDFs)
+      tags:
+      - dashboard
+      - gov
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GovReport'
+          description: ''
+  /api/v1/gov/urgent-flags/:
+    get:
+      operationId: gov_urgent_flags_list
+      description: Returns a hazard breakdown by all categories, check-in statistics,
+        and a paginated list of hazards with optional filters.
+      summary: Dashboard overview — hazard breakdown, check-ins & hazard list
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter by category. E.g. ?category=fire
+      - in: query
+        name: limit
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+      tags:
+      - dashboard
+      - Urgent Flags
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UrgentFlag'
+          description: ''
+  /api/v1/hazards/:
+    get:
+      operationId: hazards_list
+      description: Retrieve a paginated list of hazards with optional filters.
+      summary: List hazards
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+          enum:
+          - blocked_road
+          - collapsed_building
+          - earthquake
+          - fallen_tree
+          - fire
+          - flood
+          - landslide
+          - medical
+          - other
+          - power_line_down
+          - storm
+          - utility_pole
+        description: Filter by category
+      - in: query
+        name: hours
+        schema:
+          type: integer
+        description: Filter hazards created within this many hours (e.g. 1, 3, 24)
+      - in: query
+        name: hub_id
+        schema:
+          type: integer
+        description: Filter by hub ID
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Results per page (max 100)
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: period
+        schema:
+          type: string
+          enum:
+          - post
+          - pre
+        description: Filter by disaster period
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - cleared
+        description: Filter by status
+      tags:
+      - mobile
+      - Hazards
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HazardList'
+          description: ''
+    post:
+      operationId: hazards_create
+      description: Report a new hazard. The reporter is auto-set to the authenticated
+        user.
+      summary: Create a hazard
+      tags:
+      - mobile
+      - Hazards
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Hazard'
+            examples:
+              CreateHazardExample:
+                value:
+                  category: flood
+                  description: Water level rising on Main Street
+                  latitude: 18.1096
+                  longitude: -77.2975
+                  severity: 2
+                  source: app
+                  status: active
+                  period: post
+                  hub: 1
+                  client_uuid: uuid-string-here
+                summary: Create Hazard Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Hazard'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Hazard'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hazard'
+          description: ''
+  /api/v1/hazards/{hazard_id}/:
+    get:
+      operationId: hazards_retrieve
+      description: Retrieve full details of a specific hazard by ID.
+      summary: Get hazard details
+      parameters:
+      - in: path
+        name: hazard_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hazards
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hazard'
+          description: ''
+    put:
+      operationId: hazards_update
+      description: Partially update a hazard. Admin only.
+      summary: Update hazard
+      parameters:
+      - in: path
+        name: hazard_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hazards
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Hazard'
+            examples:
+              UpdateHazardExample:
+                value:
+                  status: cleared
+                  severity: 1
+                summary: Update Hazard Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Hazard'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Hazard'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hazard'
+          description: ''
+    delete:
+      operationId: hazards_destroy
+      description: Delete a hazard. Admin only.
+      summary: Delete hazard
+      parameters:
+      - in: path
+        name: hazard_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hazards
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/hazards/{hazard_id}/clear/:
+    patch:
+      operationId: hazards_clear_partial_update
+      description: Mark a hazard as cleared by setting status to 'cleared'.
+      summary: Clear a hazard
+      parameters:
+      - in: path
+        name: hazard_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hazards
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hazard'
+          description: ''
+  /api/v1/hazards/{hazard_id}/comments/:
+    get:
+      operationId: hazards_comments_list
+      description: Retrieve all comments for a specific hazard, paginated.
+      summary: List comments
+      parameters:
+      - in: path
+        name: hazard_id
+        schema:
+          type: integer
+        required: true
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Results per page (max 100)
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      tags:
+      - mobile
+      - Hazards
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+          description: ''
+    post:
+      operationId: hazards_comments_create
+      description: Add a comment to a hazard. The hazard is determined by the URL
+        path; do not send `hazard` in the body. The author is auto-set to the authenticated
+        user.
+      summary: Add comment
+      parameters:
+      - in: path
+        name: hazard_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hazards
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+            examples:
+              AddCommentExample(textOnly):
+                value:
+                  body: Crew dispatched to investigate
+                summary: Add Comment Example (text only)
+              AddCommentExample(withPhoto):
+                value:
+                  body: Here is an updated photo of the site
+                  photo: (upload file)
+                summary: Add Comment Example (with photo)
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Comment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Comment'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+          description: ''
+  /api/v1/health/:
+    get:
+      operationId: health_retrieve
+      tags:
+      - health
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/hubs/:
+    get:
+      operationId: hubs_list
+      description: Retrieve a paginated list of all hubs with optional status filter.
+      summary: List hubs
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Results per page (max 100)
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - closed
+          - critical
+          - low_battery
+          - open
+        description: Filter by hub status
+      tags:
+      - mobile
+      - Hubs
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HubList'
+          description: ''
+    post:
+      operationId: hubs_create
+      description: Create a new hub. Admin only.
+      summary: Create a hub
+      tags:
+      - mobile
+      - Hubs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Hub'
+            examples:
+              CreateHubExample:
+                value:
+                  name: Kingston Central Hub
+                  address: 123 Main Street, Kingston
+                  latitude: 18.1096
+                  longitude: -77.2975
+                  status: open
+                  max_concurrent_bookings: 5
+                summary: Create Hub Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Hub'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Hub'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hub'
+          description: ''
+  /api/v1/hubs/{hub_id}/:
+    get:
+      operationId: hubs_retrieve
+      description: Retrieve full details of a specific hub by ID.
+      summary: Get hub details
+      parameters:
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hubs
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hub'
+          description: ''
+    put:
+      operationId: hubs_update
+      description: Partially update a hub's information. Admin only.
+      summary: Update hub
+      parameters:
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hubs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Hub'
+            examples:
+              UpdateHubExample:
+                value:
+                  status: low_battery
+                  battery_percentage: 15
+                summary: Update Hub Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Hub'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Hub'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hub'
+          description: ''
+    delete:
+      operationId: hubs_destroy
+      description: Delete a hub. Admin only.
+      summary: Delete hub
+      parameters:
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hubs
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/v1/hubs/{hub_id}/broadcasts/:
+    get:
+      operationId: hubs_broadcasts_retrieve
+      description: Retrieve all broadcasts for a specific hub.
+      summary: List hub broadcasts
+      parameters:
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hubs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/hubs/{hub_id}/checkins/:
+    get:
+      operationId: hubs_checkins_retrieve
+      description: Retrieve all check-ins for a specific hub, optionally filtered
+        by date.
+      summary: List hub check-ins
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+        description: Filter by date (YYYY-MM-DD)
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hubs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/hubs/{hub_id}/coordinator/:
+    patch:
+      operationId: hubs_coordinator_partial_update
+      description: Assign a coordinator user to a hub by phone number. Admin only.
+      summary: Assign coordinator
+      parameters:
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hubs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedHubCoordinator'
+            examples:
+              AssignCoordinatorExample:
+                value:
+                  coordinator_id: 01856669533
+                summary: Assign Coordinator Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedHubCoordinator'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedHubCoordinator'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hub'
+          description: ''
+  /api/v1/hubs/{hub_id}/resources/:
+    get:
+      operationId: hubs_resources_retrieve
+      description: Retrieve resource availability for a specific hub.
+      summary: List hub resources
+      parameters:
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hubs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/hubs/{hub_id}/slots/:
+    get:
+      operationId: hubs_slots_retrieve
+      description: Get hub details along with 30-min slot availability for a given
+        date.
+      summary: Hub details with slots
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+        description: Date in YYYY-MM-DD format
+        required: true
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hubs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HubSlotsResponse'
+          description: ''
+  /api/v1/hubs/{hub_id}/status/:
+    patch:
+      operationId: hubs_status_partial_update
+      description: Update the operational status and metrics for a hub (battery, solar).
+      summary: Update hub status
+      parameters:
+      - in: path
+        name: hub_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Hubs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedHubStatus'
+            examples:
+              UpdateHubStatusExample:
+                value:
+                  status: low_battery
+                  battery_percentage: 20
+                  solar_input_w: 500
+                summary: Update Hub Status Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedHubStatus'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedHubStatus'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Hub'
+          description: ''
+  /api/v1/hubs/assign/:
+    post:
+      operationId: hubs_assign_create
+      description: Find the nearest hub to the user's location and assign it to the
+        authenticated user.
+      summary: Auto-assign nearest hub
+      tags:
+      - mobile
+      - Hubs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HubAssign'
+            examples:
+              AssignHubExample:
+                value:
+                  latitude: 18.1096
+                  longitude: -77.2975
+                summary: Assign Hub Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HubAssign'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HubAssign'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HubAssignResponse'
+          description: ''
+  /api/v1/hubs/nearest/:
+    get:
+      operationId: hubs_nearest_retrieve
+      description: Find the nearest hub to the given coordinates using haversine distance
+        calculation.
+      summary: Find nearest hub
+      parameters:
+      - in: query
+        name: lat
+        schema:
+          type: number
+          format: double
+        description: User latitude
+        required: true
+      - in: query
+        name: lng
+        schema:
+          type: number
+          format: double
+        description: User longitude
+        required: true
+      tags:
+      - mobile
+      - Hubs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NearestHub'
+          description: ''
+  /api/v1/hubs/reassign/:
+    post:
+      operationId: hubs_reassign_create
+      description: Update the authenticated user's assigned hub to a new hub.
+      summary: Reassign own hub
+      tags:
+      - mobile
+      - Hubs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HubReassign'
+            examples:
+              ReassignHubExample:
+                value:
+                  hub_id: 3
+                summary: Reassign Hub Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HubReassign'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HubReassign'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HubReassignResponse'
+          description: ''
+  /api/v1/notifications/:
+    get:
+      operationId: notifications_list
+      summary: List notifications
+      parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: unread_only
+        schema:
+          type: boolean
+      tags:
+      - mobile
+      - Notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/notifications/{notification_id}/read/:
+    patch:
+      operationId: notifications_read_partial_update
+      summary: Mark notification as read
+      parameters:
+      - in: path
+        name: notification_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - mobile
+      - Notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/notifications/read-all/:
+    post:
+      operationId: notifications_read_all_create
+      summary: Mark all notifications as read
+      tags:
+      - mobile
+      - Notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/schema/admin/:
+    get:
+      operationId: schema_admin_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      tags:
+      - schema
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/schema/dashboard/:
+    get:
+      operationId: schema_dashboard_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      tags:
+      - schema
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/schema/mobile/:
+    get:
+      operationId: schema_mobile_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      tags:
+      - schema
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/users/change-password/:
+    put:
+      operationId: users_change_password_update
+      description: Change the authenticated user's password by providing the old password.
+      summary: Change password
+      tags:
+      - mobile
+      - dashboard
+      - admin
+      - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+            examples:
+              ChangePasswordExample:
+                value:
+                  old_password: currentPass123
+                  new_password: newSecurePass456
+                  confirm_password: newSecurePass456
+                summary: Change Password Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/users/profile/:
+    get:
+      operationId: users_profile_retrieve
+      description: Retrieve the authenticated user's profile information.
+      summary: Get profile
+      tags:
+      - mobile
+      - admin
+      - Profile
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+    put:
+      operationId: users_profile_update
+      description: Partially update the authenticated user's profile fields.
+      summary: Update profile
+      tags:
+      - mobile
+      - admin
+      - Profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Profile'
+            examples:
+              UpdateProfileExample:
+                value:
+                  full_name: Jane Doe
+                  household_size: 3
+                  medical_needs: Asthma
+                summary: Update Profile Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Profile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Profile'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+components:
+  schemas:
+    AIReportingConfig:
+      type: object
+      properties:
+        auto_reporting_enabled:
+          type: boolean
+        frequency_interval_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        include_activity_summary:
+          type: boolean
+        include_hubs_summary:
+          type: boolean
+        include_alerts_summary:
+          type: boolean
+        include_ai_performance:
+          type: boolean
+        use_ai_summary:
+          type: boolean
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - updated_at
+    AcceptInvite:
+      type: object
+      properties:
+        token:
+          type: string
+        password:
+          type: string
+          minLength: 8
+        confirm_password:
+          type: string
+          minLength: 8
+      required:
+      - confirm_password
+      - password
+      - token
+    AdditionalHazardEnum:
+      enum:
+      - collapsed_building
+      - landslide
+      - power_line_down
+      - other
+      - lost_or_separated
+      - mental_health_crisis
+      - fire
+      type: string
+      description: |-
+        * `collapsed_building` - Collapsed Building
+        * `landslide` - Landslide
+        * `power_line_down` - Power Line Down
+        * `other` - Other
+        * `lost_or_separated` - Lost or Separated
+        * `mental_health_crisis` - Mental Health Crisis
+        * `fire` - Fire
+    AdminHubDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        coordinator:
+          type: string
+          readOnly: true
+        residents_count:
+          type: string
+          readOnly: true
+        active_bookings:
+          type: string
+          readOnly: true
+        last_resident_checkin:
+          type: string
+          readOnly: true
+        recent_checkins:
+          type: string
+          readOnly: true
+        recent_hazards:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+          maxLength: 500
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        status:
+          $ref: '#/components/schemas/Status6a2Enum'
+        battery_percentage:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        solar_input_w:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        solar_output_w:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        estimated_runtime_h:
+          type: number
+          format: double
+          nullable: true
+        starlink_status:
+          type: boolean
+        max_concurrent_bookings:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        total_ports:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+      required:
+      - active_bookings
+      - coordinator
+      - created_at
+      - id
+      - last_resident_checkin
+      - latitude
+      - longitude
+      - name
+      - recent_checkins
+      - recent_hazards
+      - residents_count
+      - updated_at
+    AdminHubList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+          maxLength: 500
+        status:
+          $ref: '#/components/schemas/Status6a2Enum'
+        battery_percentage:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        starlink_status:
+          type: boolean
+        coordinator_name:
+          type: string
+          readOnly: true
+        residents_count:
+          type: string
+          readOnly: true
+      required:
+      - coordinator_name
+      - id
+      - name
+      - residents_count
+    AdminOverview:
+      type: object
+      properties:
+        checkins:
+          type: object
+          additionalProperties: {}
+        active_hubs:
+          type: integer
+        hazard_reports:
+          type: integer
+        silent_communications:
+          type: integer
+        urgent_flags:
+          type: object
+          additionalProperties: {}
+        checkins_over_time:
+          type: array
+          items: {}
+        hazard_breakdown:
+          type: object
+          additionalProperties: {}
+        users:
+          type: object
+          additionalProperties: {}
+        messages:
+          type: object
+          additionalProperties: {}
+      required:
+      - active_hubs
+      - checkins
+      - checkins_over_time
+      - hazard_breakdown
+      - hazard_reports
+      - messages
+      - silent_communications
+      - urgent_flags
+      - users
+    AdminProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          maxLength: 20
+        full_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        role:
+          allOf:
+          - $ref: '#/components/schemas/Role2eaEnum'
+          readOnly: true
+      required:
+      - full_name
+      - id
+      - phone_number
+      - role
+    AdminUserList:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          maxLength: 20
+        full_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        role:
+          $ref: '#/components/schemas/Role2eaEnum'
+        is_active:
+          type: boolean
+        hub_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - full_name
+      - hub_name
+      - id
+      - phone_number
+    AssistanceTypeEnum:
+      enum:
+      - medical
+      - trapped
+      - emergency_medical
+      - need_supplies
+      - unsafe_building
+      - fallen_tree
+      - utility_pole
+      - security_concern
+      - vehicle_breakdown
+      - stranded
+      type: string
+      description: |-
+        * `medical` - Medical
+        * `trapped` - Trapped
+        * `emergency_medical` - Emergency Medical
+        * `need_supplies` - Need Supplies
+        * `unsafe_building` - Unsafe Area
+        * `fallen_tree` - Fallen Tree
+        * `utility_pole` - Damaged Utility Pole
+        * `security_concern` - Security Concern
+        * `vehicle_breakdown` - Vehicle Breakdown
+        * `stranded` - Stranded
+    BiometricLogin:
+      type: object
+      properties:
+        key:
+          type: string
+          maxLength: 255
+      required:
+      - key
+    BiometricRegister:
+      type: object
+      properties:
+        key:
+          type: string
+          maxLength: 255
+      required:
+      - key
+    BlankEnum:
+      enum:
+      - ''
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: string
+        user_name:
+          type: string
+          readOnly: true
+        hub:
+          type: integer
+        hub_name:
+          type: string
+          readOnly: true
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BookingStatusEnum'
+          readOnly: true
+        confirmation_sent:
+          type: boolean
+          readOnly: true
+        check_in_time:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        device_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        client_uuid:
+          type: string
+          nullable: true
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - check_in_time
+      - confirmation_sent
+      - created_at
+      - end_time
+      - hub
+      - hub_name
+      - id
+      - start_time
+      - status
+      - updated_at
+      - user
+      - user_name
+    BookingCreate:
+      type: object
+      properties:
+        hub:
+          type: integer
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        device_count:
+          type: integer
+          default: 1
+        client_uuid:
+          type: string
+          nullable: true
+      required:
+      - hub
+      - start_time
+    BookingStatusEnum:
+      enum:
+      - active
+      - cancelled
+      - completed
+      type: string
+      description: |-
+        * `active` - Active
+        * `cancelled` - Cancelled
+        * `completed` - Completed
+    Broadcast:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        hub:
+          type: integer
+        sender:
+          type: string
+          readOnly: true
+          nullable: true
+        sender_name:
+          type: string
+          readOnly: true
+        subject:
+          type: string
+          maxLength: 255
+        body:
+          type: string
+        priority:
+          $ref: '#/components/schemas/BroadcastPriorityEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - body
+      - created_at
+      - hub
+      - id
+      - sender
+      - sender_name
+      - subject
+    BroadcastCreate:
+      type: object
+      properties:
+        subject:
+          type: string
+        body:
+          type: string
+        priority:
+          allOf:
+          - $ref: '#/components/schemas/BroadcastPriorityEnum'
+          default: info
+      required:
+      - body
+      - subject
+    BroadcastPriorityEnum:
+      enum:
+      - info
+      - warning
+      - urgent
+      type: string
+      description: |-
+        * `info` - Info
+        * `warning` - Warning
+        * `urgent` - Urgent
+    CategoryE0cEnum:
+      enum:
+      - flooding
+      - fallen_tree
+      - blocked_road
+      - fallen_utility_pole
+      - medical
+      - fire
+      - collapsed_building
+      - power_line_down
+      - landslide
+      - earthquake
+      - storm
+      - other
+      type: string
+      description: |-
+        * `flooding` - Flood
+        * `fallen_tree` - Fallen Tree
+        * `blocked_road` - Blocked Road
+        * `fallen_utility_pole` - Fallen Utility Pole
+        * `medical` - Urgent Medical
+        * `fire` - Fire
+        * `collapsed_building` - Collapsed Building
+        * `power_line_down` - Power Line Down
+        * `landslide` - Landslide
+        * `earthquake` - Earthquake
+        * `storm` - Storm
+        * `other` - Other
+    ChangePassword:
+      type: object
+      properties:
+        old_password:
+          type: string
+        new_password:
+          type: string
+          minLength: 8
+        confirm_password:
+          type: string
+          minLength: 8
+      required:
+      - confirm_password
+      - new_password
+      - old_password
+    ChannelEnum:
+      enum:
+      - app
+      - whatsapp
+      - sms
+      type: string
+      description: |-
+        * `app` - App
+        * `whatsapp` - WhatsApp
+        * `sms` - SMS
+    CheckIn:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: string
+          readOnly: true
+        user_full_name:
+          type: string
+          readOnly: true
+        hub:
+          type: integer
+        hub_name:
+          type: string
+          readOnly: true
+        hub_latitude:
+          type: string
+          readOnly: true
+        hub_longitude:
+          type: string
+          readOnly: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+        people_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/StatusAb0Enum'
+        road_access:
+          $ref: '#/components/schemas/RoadAccessEnum'
+        medical_notes:
+          type: string
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,16})?$
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,16})?$
+          nullable: true
+        channel:
+          $ref: '#/components/schemas/ChannelEnum'
+        client_uuid:
+          type: string
+          nullable: true
+          maxLength: 255
+        assistance_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AssistanceTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        additional_hazard:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AdditionalHazardEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        help_description:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - hub
+      - hub_latitude
+      - hub_longitude
+      - hub_name
+      - id
+      - timestamp
+      - user
+      - user_full_name
+    CheckInCreate:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusAb0Enum'
+        people_count:
+          type: integer
+          default: 1
+        road_access:
+          allOf:
+          - $ref: '#/components/schemas/RoadAccessEnum'
+          default: unknown
+        medical_notes:
+          type: string
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,16})?$
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,16})?$
+          nullable: true
+        client_uuid:
+          type: string
+          nullable: true
+        hub:
+          type: integer
+        assistance_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AssistanceTypeEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        additional_hazard:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/AdditionalHazardEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        help_description:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - hub
+      - status
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        hazard:
+          type: integer
+          readOnly: true
+        author:
+          type: string
+          readOnly: true
+          nullable: true
+        author_name:
+          type: string
+          readOnly: true
+        body:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - author
+      - author_name
+      - body
+      - created_at
+      - hazard
+      - id
+    CoordinatorDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          maxLength: 20
+        full_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        role:
+          $ref: '#/components/schemas/Role2eaEnum'
+        is_active:
+          type: boolean
+        hub:
+          type: string
+          readOnly: true
+        checkins_managed:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - checkins_managed
+      - created_at
+      - full_name
+      - hub
+      - id
+      - phone_number
+    CoordinatorList:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          maxLength: 20
+        full_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        is_active:
+          type: boolean
+        hub_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - full_name
+      - hub_name
+      - id
+      - phone_number
+    FCMToken:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        token:
+          type: string
+        platform:
+          $ref: '#/components/schemas/PlatformEnum'
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - token
+    ForgotPassword:
+      type: object
+      properties:
+        identifier:
+          type: string
+          maxLength: 255
+      required:
+      - identifier
+    GovComment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        author_name:
+          type: string
+          readOnly: true
+        body:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - author_name
+      - body
+      - created_at
+      - id
+    GovHazardDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category:
+          $ref: '#/components/schemas/CategoryE0cEnum'
+        severity:
+          allOf:
+          - $ref: '#/components/schemas/SeverityEnum'
+          minimum: 0
+          maximum: 32767
+        status:
+          $ref: '#/components/schemas/StatusBbeEnum'
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        description:
+          type: string
+        photo:
+          type: string
+          readOnly: true
+        source:
+          $ref: '#/components/schemas/SourceEnum'
+        period:
+          $ref: '#/components/schemas/PeriodEnum'
+        reporter_name:
+          type: string
+          readOnly: true
+        hub:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/GovComment'
+          readOnly: true
+      required:
+      - category
+      - comments
+      - created_at
+      - description
+      - id
+      - latitude
+      - longitude
+      - photo
+      - reporter_name
+      - updated_at
+    GovHazardList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category:
+          $ref: '#/components/schemas/CategoryE0cEnum'
+        severity:
+          allOf:
+          - $ref: '#/components/schemas/SeverityEnum'
+          minimum: 0
+          maximum: 32767
+        status:
+          $ref: '#/components/schemas/StatusBbeEnum'
+        description:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        source:
+          $ref: '#/components/schemas/SourceEnum'
+        period:
+          $ref: '#/components/schemas/PeriodEnum'
+        reporter_name:
+          type: string
+          readOnly: true
+        hub_name:
+          type: string
+          readOnly: true
+        hub:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - category
+      - created_at
+      - description
+      - hub_name
+      - id
+      - latitude
+      - longitude
+      - reporter_name
+      - updated_at
+    GovReport:
+      type: object
+      properties:
+        id:
+          type: integer
+        summary:
+          type: string
+        generated_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        pdf_url:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - created_at
+      - generated_by
+      - id
+      - pdf_url
+      - summary
+    Hazard:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category:
+          $ref: '#/components/schemas/CategoryE0cEnum'
+        description:
+          type: string
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        severity:
+          allOf:
+          - $ref: '#/components/schemas/SeverityEnum'
+          minimum: 0
+          maximum: 32767
+        source:
+          $ref: '#/components/schemas/SourceEnum'
+        status:
+          $ref: '#/components/schemas/StatusBbeEnum'
+        period:
+          $ref: '#/components/schemas/PeriodEnum'
+        reporter:
+          type: string
+          readOnly: true
+          nullable: true
+        reporter_name:
+          type: string
+          readOnly: true
+        hub:
+          type: integer
+          nullable: true
+        client_uuid:
+          type: string
+          nullable: true
+          maxLength: 255
+        risk_score:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        review_status:
+          $ref: '#/components/schemas/ReviewStatus1e5Enum'
+        reviewed_by:
+          type: string
+          nullable: true
+        reviewed_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - category
+      - created_at
+      - description
+      - id
+      - latitude
+      - longitude
+      - reporter
+      - reporter_name
+      - updated_at
+    HazardList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category:
+          $ref: '#/components/schemas/CategoryE0cEnum'
+        severity:
+          allOf:
+          - $ref: '#/components/schemas/SeverityEnum'
+          minimum: 0
+          maximum: 32767
+        status:
+          $ref: '#/components/schemas/StatusBbeEnum'
+        risk_score:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - category
+      - created_at
+      - id
+      - latitude
+      - longitude
+    Hub:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+          maxLength: 500
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        status:
+          $ref: '#/components/schemas/Status6a2Enum'
+        battery_percentage:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        solar_input_w:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        solar_output_w:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        estimated_runtime_h:
+          type: number
+          format: double
+          nullable: true
+        starlink_status:
+          type: boolean
+        max_concurrent_bookings:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        total_ports:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        available_ports:
+          type: string
+          readOnly: true
+        coordinator:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - available_ports
+      - created_at
+      - id
+      - latitude
+      - longitude
+      - name
+      - updated_at
+    HubAssign:
+      type: object
+      properties:
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+      required:
+      - latitude
+      - longitude
+    HubAssignResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+          maxLength: 500
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        status:
+          $ref: '#/components/schemas/Status6a2Enum'
+        battery_percentage:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        distance_km:
+          type: number
+          format: double
+          readOnly: true
+      required:
+      - distance_km
+      - id
+      - latitude
+      - longitude
+      - name
+    HubCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        max_concurrent_bookings:
+          type: integer
+          default: 5
+        coordinator_id:
+          type: string
+          nullable: true
+      required:
+      - latitude
+      - longitude
+      - name
+    HubList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+          maxLength: 500
+        status:
+          $ref: '#/components/schemas/Status6a2Enum'
+        battery_percentage:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        starlink_status:
+          type: boolean
+        total_ports:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        available_ports:
+          type: string
+          readOnly: true
+      required:
+      - available_ports
+      - id
+      - latitude
+      - longitude
+      - name
+    HubReassign:
+      type: object
+      properties:
+        hub_id:
+          type: integer
+      required:
+      - hub_id
+    HubReassignResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+        phone_number:
+          type: string
+        full_name:
+          type: string
+        hub_id:
+          type: integer
+          nullable: true
+        hub_name:
+          type: string
+          readOnly: true
+      required:
+      - full_name
+      - hub_id
+      - hub_name
+      - phone_number
+      - user_id
+    HubSlot:
+      type: object
+      properties:
+        start_time:
+          type: string
+        end_time:
+          type: string
+        available:
+          type: boolean
+        booked:
+          type: boolean
+        battery_percentage:
+          type: integer
+      required:
+      - available
+      - battery_percentage
+      - booked
+      - end_time
+      - start_time
+    HubSlotsResponse:
+      type: object
+      properties:
+        hub:
+          $ref: '#/components/schemas/Hub'
+        slots:
+          type: array
+          items:
+            $ref: '#/components/schemas/HubSlot'
+      required:
+      - hub
+      - slots
+    InfrastructureGov:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        location:
+          type: string
+          readOnly: true
+        status:
+          type: string
+          readOnly: true
+        battery_percentage:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        solar:
+          type: string
+          readOnly: true
+        connectivity:
+          type: string
+          readOnly: true
+        sync:
+          type: string
+          readOnly: true
+      required:
+      - connectivity
+      - id
+      - location
+      - name
+      - solar
+      - status
+      - sync
+    InviteGovernment:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+          maxLength: 255
+      required:
+      - email
+      - full_name
+    InviteUser:
+      type: object
+      properties:
+        phone_number:
+          type: string
+        full_name:
+          type: string
+        role:
+          $ref: '#/components/schemas/InviteUserRoleEnum'
+        hub_id:
+          type: integer
+          nullable: true
+      required:
+      - full_name
+      - phone_number
+      - role
+    InviteUserRoleEnum:
+      enum:
+      - resident
+      - coordinator
+      - government
+      type: string
+      description: |-
+        * `resident` - resident
+        * `coordinator` - coordinator
+        * `government` - government
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 255
+        password:
+          type: string
+      required:
+      - password
+      - username
+    Logout:
+      type: object
+      properties:
+        refresh:
+          type: string
+      required:
+      - refresh
+    MapData:
+      type: object
+      properties:
+        medical_hubs:
+          type: object
+          additionalProperties: {}
+        hazards:
+          type: array
+          items: {}
+        fall_incidents:
+          type: array
+          items: {}
+        medical_needs:
+          type: array
+          items: {}
+      required:
+      - fall_incidents
+      - hazards
+      - medical_hubs
+      - medical_needs
+    MessageReviewConfig:
+      type: object
+      properties:
+        confidence_threshold:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        autonomous_classification:
+          type: boolean
+        review_report_frequency:
+          $ref: '#/components/schemas/ReviewReportFrequencyEnum'
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - updated_at
+    MessageReviewItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        source:
+          type: string
+        message:
+          type: string
+        hazard_type:
+          type: string
+          nullable: true
+        severity:
+          type: integer
+          nullable: true
+        risk_score:
+          type: integer
+          nullable: true
+        review_status:
+          type: string
+        reporter:
+          type: string
+          nullable: true
+        hub_name:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+        photo_url:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - created_at
+      - hazard_type
+      - hub_name
+      - id
+      - latitude
+      - longitude
+      - message
+      - photo_url
+      - reporter
+      - review_status
+      - risk_score
+      - severity
+      - source
+    MessageReviewStatusUpdateReviewStatusEnum:
+      enum:
+      - pending
+      - reviewed
+      - escalated
+      - resolved
+      type: string
+      description: |-
+        * `pending` - pending
+        * `reviewed` - reviewed
+        * `escalated` - escalated
+        * `resolved` - resolved
+    NearestHub:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+          maxLength: 500
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        status:
+          $ref: '#/components/schemas/Status6a2Enum'
+        battery_percentage:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        starlink_status:
+          type: boolean
+        max_concurrent_bookings:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        total_ports:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        available_ports:
+          type: string
+          readOnly: true
+        distance_km:
+          type: string
+          readOnly: true
+      required:
+      - available_ports
+      - distance_km
+      - id
+      - latitude
+      - longitude
+      - name
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: string
+          readOnly: true
+        hub:
+          type: integer
+          nullable: true
+        title:
+          type: string
+          maxLength: 255
+        message:
+          type: string
+        category:
+          $ref: '#/components/schemas/NotificationCategoryEnum'
+        data: {}
+        link:
+          type: string
+          nullable: true
+          maxLength: 500
+        read:
+          type: boolean
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - message
+      - sent_at
+      - title
+      - user
+    NotificationCategoryEnum:
+      enum:
+      - broadcast
+      - alert
+      - booking
+      - hub_status
+      type: string
+      description: |-
+        * `broadcast` - Broadcast
+        * `alert` - Alert
+        * `booking` - Booking
+        * `hub_status` - Hub Status
+    NullEnum:
+      enum:
+      - null
+    OTPSend:
+      type: object
+      properties:
+        phone:
+          type: string
+          maxLength: 20
+      required:
+      - phone
+    OTPVerify:
+      type: object
+      properties:
+        phone:
+          type: string
+          maxLength: 20
+        code:
+          type: string
+          maxLength: 6
+      required:
+      - code
+      - phone
+    Overview:
+      type: object
+      properties:
+        checkins:
+          type: object
+          additionalProperties: {}
+        active_hubs:
+          type: integer
+        hazard_reports:
+          type: integer
+        silent_communications:
+          type: integer
+        urgent_flags:
+          type: object
+          additionalProperties: {}
+        checkins_over_time:
+          type: array
+          items: {}
+        hazard_breakdown:
+          type: object
+          additionalProperties: {}
+      required:
+      - active_hubs
+      - checkins
+      - checkins_over_time
+      - hazard_breakdown
+      - hazard_reports
+      - silent_communications
+      - urgent_flags
+    PatchedAdminHubDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        coordinator:
+          type: string
+          readOnly: true
+        residents_count:
+          type: string
+          readOnly: true
+        active_bookings:
+          type: string
+          readOnly: true
+        last_resident_checkin:
+          type: string
+          readOnly: true
+        recent_checkins:
+          type: string
+          readOnly: true
+        recent_hazards:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+          maxLength: 500
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        status:
+          $ref: '#/components/schemas/Status6a2Enum'
+        battery_percentage:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        solar_input_w:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        solar_output_w:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        estimated_runtime_h:
+          type: number
+          format: double
+          nullable: true
+        starlink_status:
+          type: boolean
+        max_concurrent_bookings:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        total_ports:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+    PatchedAdminProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          maxLength: 20
+        full_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        role:
+          allOf:
+          - $ref: '#/components/schemas/Role2eaEnum'
+          readOnly: true
+    PatchedAssignCoordinator:
+      type: object
+      properties:
+        coordinator_id:
+          type: string
+    PatchedHubCoordinator:
+      type: object
+      properties:
+        coordinator_id:
+          type: string
+          maxLength: 20
+    PatchedHubStatus:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/Status6a2Enum'
+        battery_percentage:
+          type: integer
+          maximum: 100
+          minimum: 0
+        solar_input_w:
+          type: integer
+          nullable: true
+        solar_output_w:
+          type: integer
+          nullable: true
+    PatchedMessageReviewStatusUpdate:
+      type: object
+      properties:
+        review_status:
+          $ref: '#/components/schemas/MessageReviewStatusUpdateReviewStatusEnum'
+    PatchedReassignCoordinator:
+      type: object
+      properties:
+        new_coordinator_id:
+          type: string
+    PatchedStaticContent:
+      type: object
+      properties:
+        slug:
+          type: string
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        title:
+          type: string
+          maxLength: 255
+        content:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        last_edited_by:
+          type: string
+          readOnly: true
+    PatchedSuspendUser:
+      type: object
+      properties:
+        reason:
+          type: string
+    PeriodEnum:
+      enum:
+      - pre
+      - post
+      type: string
+      description: |-
+        * `pre` - Pre-Disaster
+        * `post` - Post-Disaster
+    PlatformEnum:
+      enum:
+      - ios
+      - android
+      - web
+      type: string
+      description: |-
+        * `ios` - iOS
+        * `android` - Android
+        * `web` - Web
+    Profile:
+      type: object
+      properties:
+        phone_number:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        username:
+          type: string
+          readOnly: true
+          nullable: true
+        full_name:
+          type: string
+          maxLength: 255
+        role:
+          allOf:
+          - $ref: '#/components/schemas/Role2eaEnum'
+          readOnly: true
+        household_size:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        medical_needs:
+          type: string
+        hub_id:
+          type: integer
+          nullable: true
+          readOnly: true
+        secondary_hub_id:
+          type: integer
+          nullable: true
+          readOnly: true
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          readOnly: true
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          readOnly: true
+          nullable: true
+        profile_photo:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - full_name
+      - hub_id
+      - latitude
+      - longitude
+      - phone_number
+      - role
+      - secondary_hub_id
+      - username
+    Register:
+      type: object
+      properties:
+        phone:
+          type: string
+          maxLength: 20
+        full_name:
+          type: string
+          maxLength: 255
+        household_size:
+          type: integer
+          nullable: true
+        medical_needs:
+          type: string
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+      required:
+      - full_name
+      - latitude
+      - longitude
+      - phone
+    ResetPassword:
+      type: object
+      properties:
+        new_password:
+          type: string
+          minLength: 8
+        confirm_password:
+          type: string
+          minLength: 8
+      required:
+      - confirm_password
+      - new_password
+    ResidentDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          maxLength: 20
+        full_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        role:
+          $ref: '#/components/schemas/Role2eaEnum'
+        household_size:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        medical_needs:
+          type: string
+        is_active:
+          type: boolean
+        hub_name:
+          type: string
+          readOnly: true
+        community:
+          type: string
+          readOnly: true
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        last_checkin:
+          type: string
+          readOnly: true
+        profile_photo:
+          type: string
+          readOnly: true
+        checkins_count:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - checkins_count
+      - community
+      - created_at
+      - full_name
+      - hub_name
+      - id
+      - last_checkin
+      - phone_number
+      - profile_photo
+    ResidentList:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          maxLength: 20
+        full_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        role:
+          $ref: '#/components/schemas/Role2eaEnum'
+        is_active:
+          type: boolean
+        hub_name:
+          type: string
+          readOnly: true
+        community:
+          type: string
+          readOnly: true
+        last_checkin:
+          type: string
+          readOnly: true
+        profile_photo:
+          type: string
+          readOnly: true
+        household_size:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - community
+      - created_at
+      - full_name
+      - hub_name
+      - id
+      - last_checkin
+      - phone_number
+      - profile_photo
+    ReviewReportFrequencyEnum:
+      enum:
+      - 60min
+      - daily
+      - weekly
+      type: string
+      description: |-
+        * `60min` - 60 Minutes
+        * `daily` - Daily
+        * `weekly` - Weekly
+    ReviewStatus1e5Enum:
+      enum:
+      - pending
+      - reviewed
+      - escalated
+      - resolved
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `reviewed` - Reviewed
+        * `escalated` - Escalated
+        * `resolved` - Resolved
+    RoadAccessEnum:
+      enum:
+      - open
+      - blocked
+      - unknown
+      type: string
+      description: |-
+        * `open` - Open
+        * `blocked` - Blocked
+        * `unknown` - Unknown
+    Role2eaEnum:
+      enum:
+      - resident
+      - coordinator
+      - government
+      - admin
+      type: string
+      description: |-
+        * `resident` - Resident
+        * `coordinator` - Coordinator
+        * `government` - Government
+        * `admin` - Admin
+    RoleDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          maxLength: 20
+        full_name:
+          type: string
+          maxLength: 255
+        role:
+          $ref: '#/components/schemas/Role2eaEnum'
+        is_active:
+          type: boolean
+        is_staff:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - full_name
+      - id
+      - phone_number
+    SetPassword:
+      type: object
+      properties:
+        new_password:
+          type: string
+          minLength: 8
+        confirm_password:
+          type: string
+          minLength: 8
+      required:
+      - confirm_password
+      - new_password
+    SeverityEnum:
+      enum:
+      - 1
+      - 2
+      - 3
+      type: integer
+      description: |-
+        * `1` - Low
+        * `2` - Medium
+        * `3` - High
+    SituationReport:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        summary:
+          type: string
+        generated_by:
+          type: string
+          maxLength: 20
+        is_auto:
+          type: boolean
+        pdf_url:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - pdf_url
+      - summary
+      - updated_at
+    SourceEnum:
+      enum:
+      - app
+      - whatsapp
+      - sms
+      - ai
+      type: string
+      description: |-
+        * `app` - App
+        * `whatsapp` - WhatsApp
+        * `sms` - SMS
+        * `ai` - AI
+    StaticContent:
+      type: object
+      properties:
+        slug:
+          type: string
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        title:
+          type: string
+          maxLength: 255
+        content:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        last_edited_by:
+          type: string
+          readOnly: true
+      required:
+      - content
+      - last_edited_by
+      - slug
+      - title
+      - updated_at
+    Status6a2Enum:
+      enum:
+      - open
+      - closed
+      - low_battery
+      - critical
+      type: string
+      description: |-
+        * `open` - Open
+        * `closed` - Closed
+        * `low_battery` - Low Battery
+        * `critical` - Critical
+    StatusAb0Enum:
+      enum:
+      - safe
+      - need_assistance
+      type: string
+      description: |-
+        * `safe` - Safe
+        * `need_assistance` - Need Assistance
+    StatusBbeEnum:
+      enum:
+      - active
+      - cleared
+      type: string
+      description: |-
+        * `active` - Active
+        * `cleared` - Cleared
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    UrgentFlag:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category:
+          $ref: '#/components/schemas/CategoryE0cEnum'
+        category_label:
+          type: string
+          readOnly: true
+        description:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        severity:
+          allOf:
+          - $ref: '#/components/schemas/SeverityEnum'
+          minimum: 0
+          maximum: 32767
+        severity_label:
+          type: string
+          readOnly: true
+        reporter_name:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StatusBbeEnum'
+        review_status:
+          $ref: '#/components/schemas/ReviewStatus1e5Enum'
+        risk_score:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - category
+      - category_label
+      - created_at
+      - description
+      - id
+      - latitude
+      - longitude
+      - reporter_name
+      - severity_label
+    VerifyResetOTP:
+      type: object
+      properties:
+        identifier:
+          type: string
+          maxLength: 255
+        code:
+          type: string
+          maxLength: 6
+      required:
+      - code
+      - identifier
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

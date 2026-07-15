@@ -21,6 +21,7 @@ class Hub(TimeStampedModel):
     estimated_runtime_h = models.FloatField(null=True, blank=True)
     starlink_status = models.BooleanField(default=True)
     max_concurrent_bookings = models.PositiveIntegerField(default=5)
+    total_ports = models.PositiveIntegerField(default=10)
     coordinator = models.ForeignKey(
         "users.User",
         on_delete=models.SET_NULL,

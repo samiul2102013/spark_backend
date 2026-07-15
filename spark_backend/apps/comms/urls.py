@@ -14,4 +14,9 @@ urlpatterns = [
         views.BroadcastReadView.as_view(),
         name="broadcast-read",
     ),
+    path(
+        "broadcasts/<int:broadcast_id>/delete/",
+        views.BroadcastDeleteView.as_view(),
+        name="broadcast-delete",
+    ),
 ]

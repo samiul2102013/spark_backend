@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.db import transaction
+from django.db.models import Sum
 from django.utils import timezone
 
 from apps.hubs.models import Hub
@@ -28,6 +29,7 @@ class BookingService:
     @transaction.atomic
     def create_booking(self, user, data):
         hub_id = data.pop("hub")
+        device_count = data.get("device_count", 1)
         start_time = data.pop("start_time")
         end_time = data.pop("end_time", None)
         if not end_time:
@@ -38,6 +40,13 @@ class BookingService:
         ).count()
         if concurrent >= hub.max_concurrent_bookings:
             raise BookingConflictError("Hub is at full capacity for this time slot.")
+        used_ports = Booking.objects.filter(hub=hub, status="active").aggregate(
+            total=Sum("device_count")
+        )["total"] or 0
+        if used_ports + device_count > hub.total_ports:
+            raise BookingConflictError(
+                f"Not enough available ports. {hub.total_ports - used_ports} port(s) remaining."
+            )
         return Booking.objects.create(user=user, hub=hub, start_time=start_time, end_time=end_time, **data)
 
     @transaction.atomic
