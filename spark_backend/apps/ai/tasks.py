@@ -27,6 +27,11 @@ def check_and_generate_report():
 
     report = ReportGenerationService.create_report(is_auto=True)
     if report:
-        logger.info("Auto-generated report %s", report.id)
+        mode = "structured" if report.extraction else "summary"
+        logger.info(
+            "Auto-generated report %s (%s mode) — period: %s to %s",
+            report.id, mode,
+            report.report_period_start, report.report_period_end,
+        )
     else:
         logger.warning("Auto-report generation returned None")

@@ -19,6 +19,8 @@ urlpatterns = [
         name="auth-biometric-register",
     ),
     path("auth/biometric/login/", views.BiometricLoginView.as_view(), name="auth-biometric-login"),
+    # Apple Sign-In
+    path("auth/apple/login/", views.AppleLoginView.as_view(), name="apple-login"),
     # Offline Token
     path("auth/offline-token/", views.OfflineTokenView.as_view(), name="auth-offline-token"),
     # Government Invite

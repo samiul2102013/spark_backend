@@ -59,7 +59,12 @@ def message_review_config_view(request):
     summary="Get or update AI Reporting Config",
     description=(
         "GET: Retrieve the singleton AI reporting configuration. "
-        "PUT: Update fields (partial). Returns the full config."
+        "PUT: Update fields (partial). Returns the full config.\n\n"
+        "New fields:\n"
+        "- structured_reporting: enable extraction/classification/triage sections\n"
+        "- include_extraction: include extraction data in AI prompt\n"
+        "- include_classification: include classification data in AI prompt\n"
+        "- include_triage: include triage/priority data in AI prompt"
     ),
     request=AIReportingConfigSerializer,
     responses={200: AIReportingConfigSerializer},
@@ -159,7 +164,11 @@ def message_review_detail_view(request, source, item_id):
 @extend_schema(
     tags=["admin", "AI"],
     summary="List or create situation reports",
-    description="GET: paginated list of reports. POST: manually trigger a new report.",
+    description=(
+        "GET: paginated list of reports (includes extraction, hazard_classification, "
+        "triage JSON fields when structured reporting is enabled). "
+        "POST: manually trigger a new report."
+    ),
     responses={200: SituationReportSerializer(many=True)},
 )
 @api_view(["GET", "POST"])

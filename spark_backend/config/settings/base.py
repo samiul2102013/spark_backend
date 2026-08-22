@@ -213,3 +213,5 @@ EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="noreply@chargesafe.com")
 
 FIREBASE_CREDENTIALS_PATH = BASE_DIR / "secrets" / "firebase-service-account.json"
+
+APPLE_BUNDLE_ID = env("APPLE_BUNDLE_ID")

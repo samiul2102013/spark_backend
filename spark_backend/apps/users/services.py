@@ -1,4 +1,5 @@
 import secrets
+import uuid
 from typing import Optional
 
 from django.conf import settings
@@ -104,6 +105,36 @@ class AuthService:
             user = User.objects.get(biometric_key=key, is_active=True)
         except User.DoesNotExist:
             raise AuthError("Invalid biometric key.")
+        return _jwt_response(user)
+
+    # ── Apple Sign-In ──────────────────────────────────────────────
+
+    def apple_login(self, identity_token: str, full_name: str = "") -> dict:
+        from .apple_auth import AppleTokenVerifier
+
+        verifier = AppleTokenVerifier()
+        claims = verifier.verify(identity_token)
+
+        sub = claims["sub"]
+        email = claims.get("email")
+
+        try:
+            user = User.objects.get(apple_user_id=sub)
+            return _jwt_response(user)
+        except User.DoesNotExist:
+            pass
+
+        # Do NOT auto-link by email — that would let anyone with knowledge of
+        # your email claim an Apple-linked account. A separate account is created.
+        phone_number = f"apple-{uuid.uuid4().hex[:12]}"
+        user = User.objects.create_user(
+            phone_number=phone_number,
+            full_name=full_name or "Apple User",
+            apple_user_id=sub,
+            email=email,
+            role="resident",
+            is_active=True,
+        )
         return _jwt_response(user)
 
     # ── Offline Token ──────────────────────────────────────────────

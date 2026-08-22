@@ -211,6 +211,11 @@ class GovReportsView(APIView):
                 data.append({
                     "id": report.id,
                     "summary": report.summary,
+                    "extraction": report.extraction,
+                    "hazard_classification": report.hazard_classification,
+                    "triage": report.triage,
+                    "report_period_start": report.report_period_start,
+                    "report_period_end": report.report_period_end,
                     "generated_by": report.generated_by,
                     "created_at": report.created_at,
                     "pdf_url": pdf_url,

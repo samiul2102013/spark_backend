@@ -9,6 +9,7 @@ from core.responses import created_response, error_response, success_response
 from .blacklist import blacklist_refresh_token, is_token_blacklisted
 from .serializers import (
     AcceptInviteSerializer,
+    AppleLoginSerializer,
     BiometricLoginSerializer,
     BiometricRegisterSerializer,
     ChangePasswordSerializer,
@@ -513,6 +514,40 @@ class SetPasswordView(APIView):
             return error_response(str(e), http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class AppleLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        tags=["mobile", "Auth"],
+        summary="Sign in with Apple",
+        description="Verify an Apple identity token and login or create an account. "
+        "The iOS client should send the identityToken from ASAuthorizationAppleIDCredential. "
+        "On the first login only, Apple provides the user's full_name — capture it and send it along.",
+        request=AppleLoginSerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Apple Login Example",
+                value={
+                    "identity_token": "eyJraWQiOiJhSFB...",
+                    "full_name": "John Appleseed",
+                },
+                request_only=True,
+            ),
+        ],
+    )
+    def post(self, request):
+        serializer = AppleLoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+        try:
+            service = AuthService()
+            result = service.apple_login(**serializer.validated_data)
+            return success_response(result)
+        except Exception as e:
+            return error_response(str(e), http_status=status.HTTP_400_BAD_REQUEST)
+
+
 class DeleteAccountView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -524,6 +559,8 @@ class DeleteAccountView(APIView):
         responses={200: None},
     )
     def delete(self, request):
+        # TODO: revoke Apple token on account deletion — requires APPLE_TEAM_ID,
+        # APPLE_KEY_ID, and .p8 private key for server-to-server Apple revocation.
         AuthService().delete_my_account(request.user)
         return success_response({"message": "Account deleted."})
 

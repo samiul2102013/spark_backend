@@ -33,6 +33,10 @@ class AIReportingConfigSerializer(serializers.ModelSerializer):
             "include_alerts_summary",
             "include_ai_performance",
             "use_ai_summary",
+            "structured_reporting",
+            "include_extraction",
+            "include_classification",
+            "include_triage",
             "updated_at",
         ]
         read_only_fields = ["updated_at"]
@@ -68,6 +72,12 @@ class SituationReportSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "summary",
+            "extraction",
+            "hazard_classification",
+            "triage",
+            "context_snapshot",
+            "report_period_start",
+            "report_period_end",
             "generated_by",
             "is_auto",
             "pdf_url",

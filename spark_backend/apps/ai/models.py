@@ -5,6 +5,12 @@ from core.models import TimeStampedModel
 
 class SituationReport(TimeStampedModel):
     summary = models.TextField()
+    extraction = models.JSONField(null=True, blank=True)
+    hazard_classification = models.JSONField(null=True, blank=True)
+    triage = models.JSONField(null=True, blank=True)
+    context_snapshot = models.JSONField(null=True, blank=True)
+    report_period_start = models.DateTimeField(null=True, blank=True)
+    report_period_end = models.DateTimeField(null=True, blank=True)
     generated_by = models.CharField(max_length=20, default="ai")
     pdf_file = models.FileField(upload_to="reports/", null=True, blank=True)
     is_auto = models.BooleanField(default=True)
@@ -64,6 +70,10 @@ class AIReportingConfig(models.Model):
     include_alerts_summary = models.BooleanField(default=True)
     include_ai_performance = models.BooleanField(default=False)
     use_ai_summary = models.BooleanField(default=False)
+    structured_reporting = models.BooleanField(default=True)
+    include_extraction = models.BooleanField(default=True)
+    include_classification = models.BooleanField(default=True)
+    include_triage = models.BooleanField(default=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

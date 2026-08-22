@@ -136,6 +136,11 @@ class ReportSerializer(serializers.Serializer):
 class GovReportSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     summary = serializers.CharField()
+    extraction = serializers.JSONField(allow_null=True)
+    hazard_classification = serializers.JSONField(allow_null=True)
+    triage = serializers.JSONField(allow_null=True)
+    report_period_start = serializers.DateTimeField(allow_null=True)
+    report_period_end = serializers.DateTimeField(allow_null=True)
     generated_by = serializers.CharField()
     created_at = serializers.DateTimeField()
     pdf_url = serializers.URLField(allow_null=True)

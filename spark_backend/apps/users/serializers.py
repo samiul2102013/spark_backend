@@ -35,6 +35,11 @@ class BiometricLoginSerializer(serializers.Serializer):
     key = serializers.CharField(max_length=255)
 
 
+class AppleLoginSerializer(serializers.Serializer):
+    identity_token = serializers.CharField(required=True)
+    full_name = serializers.CharField(required=False, allow_blank=True)
+
+
 class InviteGovernmentSerializer(serializers.Serializer):
     email = serializers.EmailField()
     full_name = serializers.CharField(max_length=255)
