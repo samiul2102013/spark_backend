@@ -19,8 +19,10 @@ urlpatterns = [
         name="auth-biometric-register",
     ),
     path("auth/biometric/login/", views.BiometricLoginView.as_view(), name="auth-biometric-login"),
-    # Apple Sign-In
+    # Apple Sign-In (deprecated)
     path("auth/apple/login/", views.AppleLoginView.as_view(), name="apple-login"),
+    # Social Login (Apple / Google — frontend handles Firebase Auth)
+    path("auth/social/login/", views.SocialLoginView.as_view(), name="social-login"),
     # Offline Token
     path("auth/offline-token/", views.OfflineTokenView.as_view(), name="auth-offline-token"),
     # Government Invite

@@ -40,6 +40,12 @@ class AppleLoginSerializer(serializers.Serializer):
     full_name = serializers.CharField(required=False, allow_blank=True)
 
 
+class SocialLoginSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255)
+    phone = serializers.CharField(max_length=20)
+    provider = serializers.ChoiceField(choices=["google", "apple"])
+
+
 class InviteGovernmentSerializer(serializers.Serializer):
     email = serializers.EmailField()
     full_name = serializers.CharField(max_length=255)

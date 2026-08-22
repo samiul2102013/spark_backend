@@ -137,6 +137,32 @@ class AuthService:
         )
         return _jwt_response(user)
 
+    # ── Social Login (Apple / Google — frontend handles Firebase Auth) ──
+
+    def social_login(self, name: str, phone: str, provider: str) -> dict:
+        phone = SMSAdapter._to_e164(phone)
+        provider_field = "apple_user_id" if provider == "apple" else None
+
+        try:
+            user = User.objects.get(phone_number=phone)
+            if not user.is_active:
+                user.is_active = True
+                user.save(update_fields=["is_active"])
+            return _jwt_response(user)
+        except User.DoesNotExist:
+            pass
+
+        extra = {"role": "resident", "is_active": True}
+        if provider == "apple":
+            extra["apple_user_id"] = phone
+
+        user = User.objects.create_user(
+            phone_number=phone,
+            full_name=name,
+            **extra,
+        )
+        return _jwt_response(user)
+
     # ── Offline Token ──────────────────────────────────────────────
 
     def issue_offline_token(self, user: User) -> dict:

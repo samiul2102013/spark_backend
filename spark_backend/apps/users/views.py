@@ -22,6 +22,7 @@ from .serializers import (
     RegisterSerializer,
     ResetPasswordSerializer,
     SetPasswordSerializer,
+    SocialLoginSerializer,
     VerifyResetOTPSerializer,
 )
 from .services import AuthService
@@ -519,10 +520,9 @@ class AppleLoginView(APIView):
 
     @extend_schema(
         tags=["mobile", "Auth"],
-        summary="Sign in with Apple",
+        summary="Sign in with Apple (deprecated — use /firebase/login/)",
         description="Verify an Apple identity token and login or create an account. "
-        "The iOS client should send the identityToken from ASAuthorizationAppleIDCredential. "
-        "On the first login only, Apple provides the user's full_name — capture it and send it along.",
+        "Deprecated in favor of the unified Firebase endpoint.",
         request=AppleLoginSerializer,
         responses={200: None},
         examples=[
@@ -543,6 +543,42 @@ class AppleLoginView(APIView):
         try:
             service = AuthService()
             result = service.apple_login(**serializer.validated_data)
+            return success_response(result)
+        except Exception as e:
+            return error_response(str(e), http_status=status.HTTP_400_BAD_REQUEST)
+
+
+class SocialLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        tags=["mobile", "Auth"],
+        summary="Social login via phone (Apple / Google)",
+        description="Login or register with phone number after frontend Firebase Auth. "
+        "Frontend handles Firebase sign-in (Apple/Google), then sends the user's name, "
+        "phone number, and provider. Backend looks up by phone — if user exists, returns "
+        "JWT. If not, creates a new account and returns JWT.",
+        request=SocialLoginSerializer,
+        responses={200: None},
+        examples=[
+            OpenApiExample(
+                "Social Login Example",
+                value={
+                    "name": "John Doe",
+                    "phone": "01856669533",
+                    "provider": "google",
+                },
+                request_only=True,
+            ),
+        ],
+    )
+    def post(self, request):
+        serializer = SocialLoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+        try:
+            service = AuthService()
+            result = service.social_login(**serializer.validated_data)
             return success_response(result)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_400_BAD_REQUEST)

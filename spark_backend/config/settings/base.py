@@ -214,4 +214,4 @@ DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="noreply@chargesafe.c
 
 FIREBASE_CREDENTIALS_PATH = BASE_DIR / "secrets" / "firebase-service-account.json"
 
-APPLE_BUNDLE_ID = env("APPLE_BUNDLE_ID")
+APPLE_BUNDLE_ID = env.str("APPLE_BUNDLE_ID", default="")
