@@ -549,6 +549,7 @@ class AppleLoginView(APIView):
 
 
 class SocialLoginView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     @extend_schema(
@@ -583,6 +584,7 @@ class SocialLoginView(APIView):
 
 
 class SocialRegisterView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     @extend_schema(
