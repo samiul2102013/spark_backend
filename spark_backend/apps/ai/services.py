@@ -603,12 +603,14 @@ class ReportGenerationService:
         return {
             "abstract": {
                 "summary": (
-                    f"{total_hazards} active incidents, {len(critical_list)} critical. "
-                    f"{operational} of {total_hubs} hubs online. "
-                    f"{assistance_list} pending assistance requests."
+                    f"The SPARK platform is reporting {active_count} active incidents across Jamaica, "
+                    f"with {len(critical_list)} classified as CRITICAL. "
+                    f"{operational} of {total_hubs} hubs are operational, "
+                    f"{low_battery} at low battery risk. "
+                    f"{len(assistance_list)} check-ins require immediate assistance."
                 ),
                 "status": "ESCALATING" if len(critical_list) > 3 else "STABLE",
-                "total_incidents": total_hazards,
+                "total_incidents": active_count,
                 "critical_count": len(critical_list),
                 "period_start": delta_data.get("period_start", ""),
                 "period_end": delta_data.get("period_end", ""),
