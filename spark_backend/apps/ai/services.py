@@ -8,41 +8,60 @@ SPARK_SYSTEM_PROMPT = (
     "- Use ONLY the numbers provided — never invent data\n"
     "- Be specific with counts, locations, and severity\n"
     "- Use professional, factual language\n"
-    "- Do NOT add commentary, opinions, or speculative recommendations\n"
     "- Output ONLY valid JSON — no markdown, no code fences, no prefixes\n\n"
-    "OUTPUT FORMAT — return a JSON object with these three keys:\n"
-    '1. "extraction": {\n'
-    '   "summary": "1-2 sentence overview of the reporting period",\n'
-    '   "total_hazards": <int>,\n'
-    '   "total_checkins_need_assistance": <int>,\n'
-    '   "total_hubs_online": <int>,\n'
+    "OUTPUT FORMAT — return a JSON object with these keys:\n"
+    '1. "abstract": {\n'
+    '   "summary": "2-3 sentence narrative overview",\n'
+    '   "status": "ESCALATING|STABLE|DECALATING|STEADY",\n'
+    '   "total_incidents": <int>,\n'
+    '   "critical_count": <int>,\n'
     '   "period_start": "<ISO datetime>",\n'
     '   "period_end": "<ISO datetime>"\n'
     "}\n"
     '2. "hazard_classification": {\n'
-    '   "categories": [{"category": "<name>", "count": <int>, "high_severity": <int>}],\n'
-    '   "most_common_category": "<name>",\n'
-    '   "total_high_severity": <int>,\n'
-    '   "new_hazards_since_last": <int>\n'
+    '   "entries": [\n'
+    '     {"hazard_type": "<name>", "default": "CRITICAL|HIGH|MEDIUM|LOW", '
+    '"final": "CRITICAL|HIGH|MEDIUM|LOW", "basis": "<explanation>"}\n'
+    "   ],\n"
+    '   "escalation_rules": "<rule text>"\n'
     "}\n"
     '3. "triage": {\n'
-    '   "priorities": [\n'
-    '     {"priority": "critical|high|medium|low", "incident": "<description>", '
-    '"location": "<area>", "details": "<specifics>"}\n'
+    '   "entries": [\n'
+    '     {"severity": "CRITICAL|HIGH|MEDIUM|LOW", "incident": "<name>", '
+    '"locations": "<places>", "count": <int>, "status": "Active|Pending", "notes": "<text>"}\n'
     "   ],\n"
-    '   "resource_needs": ["<need>"],\n'
-    '   "affected_areas": ["<area>"],\n'
-    '   "concurrent_incidents": <int>,\n'
-    '   "overall_assessment": "<1-2 sentence triage assessment>"\n'
-    "}"
+    '   "concurrent_incidents": <int>\n'
+    "}\n"
+    '4. "triage_rationale": {\n'
+    '   "CRITICAL": "<paragraph>",\n'
+    '   "HIGH": "<paragraph>",\n'
+    '   "MEDIUM": "<paragraph>"\n'
+    "}\n"
+    '5. "statistics": {\n'
+    '   "hazards": {"total_reported": <int>, "active": <int>, "pending_review": <int>, '
+    '"auto_classified": <int>, "manually_reviewed": <int>, "resolved": <int>},\n'
+    '   "hubs": {"total": <int>, "operational": <int>, "low_battery": <int>, '
+    '"offline": <int>, "silent_communities": <int>},\n'
+    '   "checkins": {"last_24h": <int>, "auto_scored": <int>, "pending_review": <int>, '
+    '"need_assistance": <int>}\n'
+    "}\n"
+    '6. "recommendations": [\n'
+    '   {"priority": "IMMEDIATE|URGENT|HIGH|MEDIUM", "action": "<verb>", '
+    '"location": "<place>", "task": "<description>", "reason": "<explanation>"}\n'
+    "]"
 )
 
 
 SPARK_STRUCTURED_SYSTEM_PROMPT = (
     "You are a disaster response triage and reporting assistant for SPARK. "
     "Analyze the provided incident data and previous report context. "
-    "Output ONLY a valid JSON object with exactly three keys: extraction, hazard_classification, triage. "
-    "Be concise, factual, and use only the data provided."
+    "Output ONLY a valid JSON object with exactly six keys: "
+    "abstract, hazard_classification, triage, triage_rationale, statistics, recommendations. "
+    "Be concise, factual, and use only the data provided. "
+    "Use escalation rules: Rule 1 = community silence (no check-ins in 3h), "
+    "Rule 2 = hub offline or <20% battery, "
+    "Rule 3 = 3+ same-type reports from same community, "
+    "Rule 4 = active 6+ hours with no update."
 )
 
 
@@ -491,7 +510,8 @@ class ReportGenerationService:
             raw = raw.strip()
 
             result = json.loads(raw)
-            required = {"extraction", "hazard_classification", "triage"}
+            required = {"abstract", "hazard_classification", "triage",
+                         "triage_rationale", "statistics", "recommendations"}
             if not required.issubset(result.keys()):
                 logger.warning(
                     "Claude returned incomplete structure — missing %s",
@@ -511,9 +531,13 @@ class ReportGenerationService:
 
     @staticmethod
     def build_fallback_structured(delta_data: dict) -> dict:
+        from apps.hazards.models import Hazard
+        from apps.comms.models import CheckIn
+
         extraction = delta_data.get("extraction", {})
         classification = delta_data.get("classification", {})
         triage_data = delta_data.get("triage", {})
+        hubs = delta_data.get("hubs", {})
 
         cats = classification.get("hazards_by_category", {})
         sorted_cats = sorted(cats.items(), key=lambda x: x[1], reverse=True)
@@ -521,65 +545,129 @@ class ReportGenerationService:
         critical_list = triage_data.get("active_critical_hazards", [])
         assistance_list = triage_data.get("pending_assistance_checkins", [])
 
+        total_hazards = extraction.get("total_hazards_all", 0)
+        active_count = Hazard.objects.filter(status="active").count()
+        pending_review = Hazard.objects.filter(review_status="pending").count()
+        auto_classified = Hazard.objects.filter(risk_score__isnull=False).count()
+        manual_reviewed = Hazard.objects.filter(review_status="reviewed").count()
+        resolved = Hazard.objects.filter(review_status="resolved").count()
+
+        total_hubs = hubs.get("total", 0)
+        operational = hubs.get("open", 0)
+        low_battery = hubs.get("low_battery", 0)
+        offline = hubs.get("closed", 0) + hubs.get("critical", 0)
+        silent = Hazard.objects.filter(hub__checkins__isnull=True).count()
+
+        checkins_24h = extraction.get("new_checkins_need_assistance", 0)
+        checkins_auto = 0
+        checkins_pending = CheckIn.objects.filter(review_status="pending").count()
+        checkins_need = CheckIn.objects.filter(status="need_assistance").count()
+
+        hazard_entries = []
+        for cat, count in sorted_cats:
+            high_count = Hazard.objects.filter(category=cat, severity=3).count()
+            if count == 0 and high_count == 0:
+                continue
+            default = "CRITICAL" if high_count > 0 else "HIGH" if count > 2 else "MEDIUM" if count > 0 else "LOW"
+            final = default
+            basis = f"{count} reports, {high_count} high severity"
+            hazard_entries.append({
+                "hazard_type": cat.replace("_", " ").title(),
+                "default": default,
+                "final": final,
+                "basis": basis,
+            })
+
+        triage_entries = []
+        for h in critical_list[:5]:
+            triage_entries.append({
+                "severity": "CRITICAL",
+                "incident": h.get("category", "Unknown").replace("_", " ").title(),
+                "locations": h.get("hub__name") or f"({h.get('latitude')}, {h.get('longitude')})",
+                "count": 1,
+                "status": "Active",
+                "notes": h.get("description", "")[:100],
+            })
+        for c in assistance_list[:5]:
+            triage_entries.append({
+                "severity": "HIGH",
+                "incident": c.get("assistance_type", "Assistance needed").replace("_", " ").title(),
+                "locations": c.get("hub") or "Unknown",
+                "count": c.get("people_count", 1),
+                "status": "Active",
+                "notes": f"{c.get('user', 'Unknown')} needs help",
+            })
+
         return {
-            "extraction": {
+            "abstract": {
                 "summary": (
-                    f"{extraction.get('new_hazards', 0)} new hazards reported, "
-                    f"{extraction.get('new_checkins_need_assistance', 0)} new assistance requests. "
-                    f"{extraction.get('total_hubs_online', 0)} of {delta_data.get('hubs', {}).get('total', 0)} hubs online."
+                    f"{total_hazards} active incidents, {len(critical_list)} critical. "
+                    f"{operational} of {total_hubs} hubs online. "
+                    f"{assistance_list} pending assistance requests."
                 ),
-                "total_hazards": extraction.get("total_hazards_all", 0),
-                "total_checkins_need_assistance": extraction.get("total_checkins_all", 0),
-                "total_hubs_online": extraction.get("total_hubs_online", 0),
+                "status": "ESCALATING" if len(critical_list) > 3 else "STABLE",
+                "total_incidents": total_hazards,
+                "critical_count": len(critical_list),
                 "period_start": delta_data.get("period_start", ""),
                 "period_end": delta_data.get("period_end", ""),
             },
             "hazard_classification": {
-                "categories": [
-                    {"category": cat, "count": count, "high_severity": 0}
-                    for cat, count in sorted_cats[:8]
+                "entries": hazard_entries or [
+                    {"hazard_type": "None", "default": "LOW", "final": "LOW", "basis": "No hazards reported"}
                 ],
-                "most_common_category": sorted_cats[0][0] if sorted_cats else "none",
-                "total_high_severity": classification.get("hazards_by_severity", {}).get("3", 0),
-                "new_hazards_since_last": extraction.get("new_hazards", 0),
+                "escalation_rules": "Rule 1: community silence | Rule 2: hub offline or <20% battery | Rule 3: 3+ same-type reports from same community | Rule 4: active 6+ hours with no update",
             },
             "triage": {
-                "priorities": [
-                    {
-                        "priority": "critical",
-                        "incident": h.get("description", "Unknown critical hazard")[:100],
-                        "location": h.get("hub__name") or f"({h.get('latitude')}, {h.get('longitude')})",
-                        "details": f"{h.get('category')} — severity 3",
-                    }
-                    for h in critical_list[:5]
-                ] + [
-                    {
-                        "priority": "high",
-                        "incident": c.get("assistance_type") or "Assistance needed",
-                        "location": c.get("hub") or f"({c.get('latitude')}, {c.get('longitude')})",
-                        "details": f"{c.get('people_count')} person(s) — {c.get('user')}",
-                    }
-                    for c in assistance_list[:5]
+                "entries": triage_entries or [
+                    {"severity": "LOW", "incident": "None", "locations": "N/A", "count": 0, "status": "Pending", "notes": "No active incidents"}
                 ],
-                "resource_needs": [
-                    "Medical evacuation" if any(
-                        c.get("assistance_type") == "medical" for c in assistance_list
-                    ) else None,
-                    "Road clearance" if any(
-                        h.get("category") in ("blocked_road", "fallen_tree")
-                        for h in critical_list
-                    ) else None,
-                ],
-                "affected_areas": list(set(
-                    [h.get("hub__name") for h in critical_list if h.get("hub__name")]
-                    + [c.get("hub") for c in assistance_list if c.get("hub")]
-                )),
                 "concurrent_incidents": len(critical_list) + len(assistance_list),
-                "overall_assessment": (
-                    f"{len(critical_list)} critical hazards and "
-                    f"{len(assistance_list)} pending assistance requests require immediate attention."
-                ),
             },
+            "triage_rationale": {
+                "CRITICAL": f"{len(critical_list)} critical incidents require immediate attention. "
+                           f"Affected areas: {', '.join(set(h.get('hub__name', 'Unknown') for h in critical_list))}.",
+                "HIGH": f"{len(assistance_list)} assistance requests pending.",
+                "MEDIUM": "Monitor and assign when resources allow.",
+            },
+            "statistics": {
+                "hazards": {
+                    "total_reported": total_hazards,
+                    "active": active_count,
+                    "pending_review": pending_review,
+                    "auto_classified": auto_classified,
+                    "manually_reviewed": manual_reviewed,
+                    "resolved": resolved,
+                },
+                "hubs": {
+                    "total": total_hubs,
+                    "operational": operational,
+                    "low_battery": low_battery,
+                    "offline": offline,
+                    "silent_communities": silent,
+                },
+                "checkins": {
+                    "last_24h": checkins_24h,
+                    "auto_scored": checkins_auto,
+                    "pending_review": checkins_pending,
+                    "need_assistance": checkins_need,
+                },
+            },
+            "recommendations": [
+                {
+                    "priority": "IMMEDIATE",
+                    "action": "Deploy",
+                    "location": "Affected areas",
+                    "task": "Respond to critical incidents",
+                    "reason": f"{len(critical_list)} active critical hazards require immediate response.",
+                },
+                {
+                    "priority": "URGENT",
+                    "action": "Contact",
+                    "location": "Silent communities",
+                    "task": "Establish communication with areas reporting no check-ins",
+                    "reason": "Silent communities may indicate infrastructure failure or displacement.",
+                },
+            ],
         }
 
     @staticmethod
@@ -587,137 +675,264 @@ class ReportGenerationService:
         import os
         from datetime import datetime
         from django.conf import settings
-        from reportlab.pdfgen import canvas
+        from reportlab.lib import colors
         from reportlab.lib.pagesizes import letter
         from reportlab.lib.units import inch
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.platypus import (
+            SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak,
+        )
+        from reportlab.lib.enums import TA_LEFT, TA_CENTER
 
         reports_dir = os.path.join(settings.MEDIA_ROOT, "reports")
         os.makedirs(reports_dir, exist_ok=True)
-
         filepath = os.path.join(reports_dir, f"report_{report_id}.pdf")
 
-        c = canvas.Canvas(filepath, pagesize=letter)
-        width, height = letter
+        doc = SimpleDocTemplate(
+            filepath, pagesize=letter,
+            leftMargin=0.6 * inch, rightMargin=0.6 * inch,
+            topMargin=0.6 * inch, bottomMargin=0.6 * inch,
+        )
 
-        c.setFont("Helvetica-Bold", 20)
-        c.drawString(inch, height - 0.8 * inch, "SPARK Situation Report")
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle("ReportTitle", parent=styles["Title"],
+            fontSize=20, leading=24, spaceAfter=4, textColor=colors.HexColor("#1a1a2e"))
+        subtitle_style = ParagraphStyle("Subtitle", parent=styles["Normal"],
+            fontSize=9, leading=11, textColor=colors.HexColor("#666666"), spaceAfter=2)
+        section_style = ParagraphStyle("Section", parent=styles["Heading2"],
+            fontSize=13, leading=16, spaceBefore=12, spaceAfter=6,
+            textColor=colors.HexColor("#1a1a2e"), borderWidth=0)
+        body_style = ParagraphStyle("Body", parent=styles["Normal"],
+            fontSize=9, leading=12, spaceAfter=4)
+        cell_style = ParagraphStyle("Cell", parent=styles["Normal"],
+            fontSize=7.5, leading=9, spaceAfter=0)
+        header_cell = ParagraphStyle("HeaderCell", parent=styles["Normal"],
+            fontSize=8, leading=10, textColor=colors.white, spaceAfter=0)
+        rationale_style = ParagraphStyle("Rationale", parent=styles["Normal"],
+            fontSize=9, leading=12, spaceAfter=6, spaceBefore=4)
+        status_style = ParagraphStyle("Status", parent=styles["Normal"],
+            fontSize=12, leading=14, textColor=colors.HexColor("#cc3333"), spaceAfter=6)
 
-        c.setFont("Helvetica", 9)
-        c.drawString(inch, height - 1.2 * inch, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S %Z')}")
+        now = datetime.now()
+        elements = []
 
-        extraction = report_data.get("extraction", {})
-        classification = report_data.get("hazard_classification", {})
+        elements.append(Paragraph("SPARK AI SITUATION REPORT", title_style))
+        elements.append(Paragraph(
+            f"Report #{report_id}  |  {now.strftime('%B %d, %Y')}  |  "
+            f"{now.strftime('%I:%M %p')} Jamaica Time  |  Active Event Window",
+            subtitle_style))
+
+        abstract = report_data.get("abstract", {})
+        status = abstract.get("status", "STABLE")
+        status_color = colors.HexColor("#cc3333") if status == "ESCALATING" else \
+                       colors.HexColor("#e68a00") if status == "ESCALATING" else \
+                       colors.HexColor("#2d862d")
+        elements.append(Paragraph(f"<b>{status}</b>", ParagraphStyle("StatusLine",
+            parent=status_style, textColor=status_color, fontSize=14, spaceBefore=2, spaceAfter=8)))
+
+        elements.append(Paragraph("<b>A  Abstract</b>", section_style))
+        elements.append(Paragraph(abstract.get("summary", "No data available."), body_style))
+
+        # B  Hazard Classification
+        elements.append(Paragraph("<b>B  Hazard Classification</b>", section_style))
+        hc = report_data.get("hazard_classification", {})
+        hc_entries = hc.get("entries", [])
+        if hc_entries:
+            hc_data = [[Paragraph("Hazard Type", header_cell),
+                        Paragraph("Default", header_cell),
+                        Paragraph("Final", header_cell),
+                        Paragraph("Classification Basis", header_cell)]]
+            for e in hc_entries:
+                hc_data.append([
+                    Paragraph(e.get("hazard_type", ""), cell_style),
+                    Paragraph(e.get("default", ""), cell_style),
+                    Paragraph(e.get("final", ""), cell_style),
+                    Paragraph(e.get("basis", ""), cell_style),
+                ])
+            hc_table = Table(hc_data, colWidths=[1.4*inch, 0.7*inch, 0.7*inch, 3.8*inch])
+            hc_table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a1a2e")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTSIZE", (0, 0), (-1, -1), 8),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cccccc")),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f5f5f5")]),
+                ("TOPPADDING", (0, 0), (-1, -1), 3),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                ("LEFTPADDING", (0, 0), (-1, -1), 4),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+            ]))
+            elements.append(hc_table)
+        elements.append(Paragraph(hc.get("escalation_rules", ""), ParagraphStyle(
+            "Rules", parent=body_style, fontSize=7.5, textColor=colors.HexColor("#888888"), spaceBefore=4)))
+
+        # C  Triage
+        elements.append(Paragraph("<b>C  Triage</b>", section_style))
         triage = report_data.get("triage", {})
+        triage_entries = triage.get("entries", [])
+        if triage_entries:
+            triage_data = [[Paragraph("Severity", header_cell),
+                            Paragraph("Incident", header_cell),
+                            Paragraph("Location(s)", header_cell),
+                            Paragraph("Ct.", header_cell),
+                            Paragraph("Status", header_cell),
+                            Paragraph("Notes", header_cell)]]
+            for e in triage_entries:
+                sev = e.get("severity", "")
+                sev_color = colors.HexColor("#cc3333") if sev == "CRITICAL" else \
+                            colors.HexColor("#e68a00") if sev == "HIGH" else \
+                            colors.HexColor("#2d862d") if sev == "MEDIUM" else \
+                            colors.HexColor("#666666")
+                triage_data.append([
+                    Paragraph(f'<font color="{sev_color.hexval()}"><b>{sev}</b></font>', cell_style),
+                    Paragraph(e.get("incident", ""), cell_style),
+                    Paragraph(e.get("locations", ""), cell_style),
+                    Paragraph(str(e.get("count", 0)), cell_style),
+                    Paragraph(e.get("status", ""), cell_style),
+                    Paragraph(e.get("notes", ""), cell_style),
+                ])
+            t_table = Table(triage_data, colWidths=[0.7*inch, 1.3*inch, 1.2*inch, 0.4*inch, 0.6*inch, 2.4*inch])
+            t_table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a1a2e")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTSIZE", (0, 0), (-1, -1), 8),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("ALIGN", (3, 0), (3, -1), "CENTER"),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cccccc")),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f5f5f5")]),
+                ("TOPPADDING", (0, 0), (-1, -1), 3),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                ("LEFTPADDING", (0, 0), (-1, -1), 4),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+            ]))
+            elements.append(t_table)
 
-        y = height - 1.8 * inch
+        # D  Triage Rationale
+        elements.append(Paragraph("<b>D  Triage Rationale</b>", section_style))
+        rationale = report_data.get("triage_rationale", {})
+        for level in ("CRITICAL", "HIGH", "MEDIUM"):
+            text = rationale.get(level, "")
+            if text:
+                level_color = colors.HexColor("#cc3333") if level == "CRITICAL" else \
+                              colors.HexColor("#e68a00") if level == "HIGH" else \
+                              colors.HexColor("#2d862d")
+                elements.append(Paragraph(
+                    f'<font color="{level_color.hexval()}"><b>{level}</b></font>', body_style))
+                elements.append(Paragraph(text, rationale_style))
 
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(inch, y, "1. Extraction")
-        y -= 0.35 * inch
-        c.setFont("Helvetica", 10)
-        summary = extraction.get("summary", "No data available.")
-        from reportlab.lib.utils import simpleSplit
-        max_width = width - 2 * inch
-        for line in simpleSplit(summary, "Helvetica", 10, max_width):
-            c.drawString(inch + 10, y, line)
-            y -= 0.3 * inch
-            if y < 0.8 * inch:
-                c.showPage()
-                c.setFont("Helvetica", 10)
-                y = height - inch
+        # E  Statistics Breakdown
+        elements.append(Paragraph("<b>E  Statistics Breakdown</b>", section_style))
+        stats = report_data.get("statistics", {})
 
-        y -= 0.15 * inch
-        for key in ("total_hazards", "total_checkins_need_assistance", "total_hubs_online"):
-            val = extraction.get(key)
-            if val is not None:
-                c.drawString(inch + 10, y, f"{key.replace('_', ' ').title()}: {val}")
-                y -= 0.25 * inch
-                if y < 0.8 * inch:
-                    c.showPage()
-                    c.setFont("Helvetica", 10)
-                    y = height - inch
+        def make_stats_table(title, data_dict, key_order):
+            table_data = [[Paragraph(title, header_cell)]]
+            for key in key_order:
+                val = data_dict.get(key, 0)
+                label = key.replace("_", " ").title()
+                table_data.append([
+                    Paragraph(f"<b>{label}</b>", cell_style),
+                    Paragraph(str(val), cell_style),
+                ])
+            t = Table(table_data, colWidths=[1.8*inch, 0.8*inch])
+            t.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a1a2e")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTSIZE", (0, 0), (-1, -1), 8),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("ALIGN", (1, 0), (1, -1), "CENTER"),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cccccc")),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f5f5f5")]),
+                ("TOPPADDING", (0, 0), (-1, -1), 2),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+                ("LEFTPADDING", (0, 0), (-1, -1), 4),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+            ]))
+            return t
 
-        y -= 0.2 * inch
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(inch, y, "2. Hazard Classification")
-        y -= 0.35 * inch
-        c.setFont("Helvetica", 10)
+        haz_stats = stats.get("hazards", {})
+        hub_stats = stats.get("hubs", {})
+        ci_stats = stats.get("checkins", {})
 
-        for cat in classification.get("categories", []):
-            line = f"{cat.get('category', 'Unknown')}: {cat.get('count', 0)} ({cat.get('high_severity', 0)} high severity)"
-            c.drawString(inch + 10, y, line)
-            y -= 0.25 * inch
-            if y < 0.8 * inch:
-                c.showPage()
-                c.setFont("Helvetica", 10)
-                y = height - inch
+        stat_tables = []
+        if haz_stats:
+            stat_tables.append(make_stats_table(
+                "Hazard Status", haz_stats,
+                ["total_reported", "active", "pending_review", "auto_classified", "manually_reviewed", "resolved"]))
+        if hub_stats:
+            stat_tables.append(make_stats_table(
+                "Hub Status", hub_stats,
+                ["total", "operational", "low_battery", "offline", "silent_communities"]))
+        if ci_stats:
+            stat_tables.append(make_stats_table(
+                "Check-in Status", ci_stats,
+                ["last_24h", "auto_scored", "pending_review", "need_assistance"]))
 
-        c.drawString(inch + 10, y, f"Most common: {classification.get('most_common_category', 'N/A')}")
-        y -= 0.25 * inch
-        c.drawString(inch + 10, y, f"Total high severity: {classification.get('total_high_severity', 0)}")
-        y -= 0.25 * inch
-        c.drawString(inch + 10, y, f"New since last report: {classification.get('new_hazards_since_last', 0)}")
+        if stat_tables:
+            stat_grid = Table([[stat_tables[i] if i < len(stat_tables) else ""
+                                for i in range(3)]],
+                              colWidths=[2.8*inch, 2.8*inch, 2.8*inch])
+            stat_grid.setStyle(TableStyle([
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 4),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+            ]))
+            elements.append(stat_grid)
 
-        y -= 0.3 * inch
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(inch, y, "3. Triage")
-        y -= 0.35 * inch
-        c.setFont("Helvetica", 10)
+        # F  Coordinator Recommendations
+        elements.append(Paragraph("<b>F  Coordinator Recommendations</b>", section_style))
+        recs = report_data.get("recommendations", [])
+        if recs:
+            rec_data = [[Paragraph("#", header_cell),
+                         Paragraph("Priority", header_cell),
+                         Paragraph("Action / Location", header_cell),
+                         Paragraph("Task", header_cell),
+                         Paragraph("Reason", header_cell)]]
+            for i, r in enumerate(recs, 1):
+                pri = r.get("priority", "")
+                pri_color = colors.HexColor("#cc3333") if pri == "IMMEDIATE" else \
+                            colors.HexColor("#e68a00") if pri == "URGENT" else \
+                            colors.HexColor("#2d862d") if pri == "HIGH" else \
+                            colors.HexColor("#666666")
+                action = r.get("action", "")
+                location = r.get("location", "")
+                action_loc = f"{action} — {location}" if action and location else action or location
+                rec_data.append([
+                    Paragraph(str(i), cell_style),
+                    Paragraph(f'<font color="{pri_color.hexval()}"><b>{pri}</b></font>', cell_style),
+                    Paragraph(action_loc, cell_style),
+                    Paragraph(r.get("task", ""), cell_style),
+                    Paragraph(r.get("reason", ""), cell_style),
+                ])
+            r_table = Table(rec_data, colWidths=[0.3*inch, 0.7*inch, 1.2*inch, 2.0*inch, 2.4*inch])
+            r_table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a1a2e")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTSIZE", (0, 0), (-1, -1), 8),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("ALIGN", (0, 0), (0, -1), "CENTER"),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cccccc")),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f5f5f5")]),
+                ("TOPPADDING", (0, 0), (-1, -1), 3),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                ("LEFTPADDING", (0, 0), (-1, -1), 4),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+            ]))
+            elements.append(r_table)
 
-        for item in triage.get("priorities", []):
-            pri = item.get("priority", "unknown").upper()
-            inc = item.get("incident", "Unknown")
-            loc = item.get("location", "Unknown")
-            line = f"[{pri}] {inc} — {loc}"
-            for wrapped in simpleSplit(line, "Helvetica", 10, max_width):
-                c.drawString(inch + 10, y, wrapped)
-                y -= 0.25 * inch
-                if y < 0.8 * inch:
-                    c.showPage()
-                    c.setFont("Helvetica", 10)
-                    y = height - inch
+        model = settings.CLAUDE_MODEL
+        footer = Paragraph(
+            f"This report was generated by SPARK using Claude ({model}). "
+            "Hazard classification and escalation are based on incoming report data only. "
+            "Field verification is required before deploying emergency resources.",
+            ParagraphStyle("Footer", parent=body_style, fontSize=7.5, textColor=colors.HexColor("#888888"),
+                           spaceBefore=12, spaceAfter=0))
+        elements.append(footer)
 
-        y -= 0.15 * inch
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(inch + 10, y, "Resource Needs:")
-        y -= 0.25 * inch
-        c.setFont("Helvetica", 10)
-        for need in triage.get("resource_needs", []):
-            if need:
-                c.drawString(inch + 20, y, f"- {need}")
-                y -= 0.25 * inch
-                if y < 0.8 * inch:
-                    c.showPage()
-                    c.setFont("Helvetica", 10)
-                    y = height - inch
-
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(inch + 10, y, "Affected Areas:")
-        y -= 0.25 * inch
-        c.setFont("Helvetica", 10)
-        for area in triage.get("affected_areas", []):
-            c.drawString(inch + 20, y, f"- {area}")
-            y -= 0.25 * inch
-            if y < 0.8 * inch:
-                c.showPage()
-                c.setFont("Helvetica", 10)
-                y = height - inch
-
-        y -= 0.15 * inch
-        c.drawString(inch + 10, y, f"Concurrent incidents: {triage.get('concurrent_incidents', 0)}")
-
-        y -= 0.3 * inch
-        c.setFont("Helvetica-Oblique", 10)
-        assessment = triage.get("overall_assessment", "")
-        for line in simpleSplit(assessment, "Helvetica-Oblique", 10, max_width):
-            c.drawString(inch + 10, y, line)
-            y -= 0.25 * inch
-            if y < 0.8 * inch:
-                c.showPage()
-                c.setFont("Helvetica-Oblique", 10)
-                y = height - inch
-
-        c.save()
+        doc.build(elements)
         return filepath
 
     @staticmethod
@@ -734,11 +949,14 @@ class ReportGenerationService:
         last_report = ReportGenerationService._get_last_report()
         since = last_report.report_period_end if last_report else None
         previous_context = None
-        if last_report and last_report.extraction:
+        if last_report:
             previous_context = {
-                "extraction": last_report.extraction,
+                "abstract": last_report.extraction,
                 "hazard_classification": last_report.hazard_classification,
                 "triage": last_report.triage,
+                "triage_rationale": None,
+                "statistics": None,
+                "recommendations": None,
             }
 
         delta_data = ReportGenerationService.gather_delta_stats(config, since=since)
@@ -748,16 +966,21 @@ class ReportGenerationService:
                 delta_data, previous_context, config
             )
             if ai_result:
-                extraction = ai_result.get("extraction") or {}
-                hazard_classification = ai_result.get("hazard_classification") or {}
-                triage = ai_result.get("triage") or {}
+                report_data = {
+                    "abstract": ai_result.get("abstract") or {},
+                    "hazard_classification": ai_result.get("hazard_classification") or {},
+                    "triage": ai_result.get("triage") or {},
+                    "triage_rationale": ai_result.get("triage_rationale") or {},
+                    "statistics": ai_result.get("statistics") or {},
+                    "recommendations": ai_result.get("recommendations") or [],
+                }
             else:
-                fallback = ReportGenerationService.build_fallback_structured(delta_data)
-                extraction = fallback["extraction"]
-                hazard_classification = fallback["hazard_classification"]
-                triage = fallback["triage"]
+                report_data = ReportGenerationService.build_fallback_structured(delta_data)
 
-            summary = extraction.get("summary", "No summary available.")
+            summary = report_data["abstract"].get("summary", "No summary available.")
+            extraction = report_data["abstract"]
+            hazard_classification = report_data["hazard_classification"]
+            triage = report_data["triage"]
         else:
             if config.use_ai_summary:
                 summary = ReportGenerationService.generate_ai_summary(delta_data, config)
@@ -765,6 +988,7 @@ class ReportGenerationService:
                     summary = ReportGenerationService.build_summary_text(delta_data)
             else:
                 summary = ReportGenerationService.build_summary_text(delta_data)
+            report_data = None
             extraction = None
             hazard_classification = None
             triage = None
@@ -777,19 +1001,16 @@ class ReportGenerationService:
             extraction=extraction,
             hazard_classification=hazard_classification,
             triage=triage,
-            context_snapshot=delta_data,
+            context_snapshot=report_data or delta_data,
             report_period_start=period_start,
             report_period_end=period_end,
             generated_by="ai",
             is_auto=is_auto,
         )
 
-        report_data = {
-            "extraction": extraction or {},
-            "hazard_classification": hazard_classification or {},
-            "triage": triage or {},
-        }
-        pdf_path = ReportGenerationService.generate_pdf(report.id, report_data)
+        pdf_path = ReportGenerationService.generate_pdf(
+            report.id, report_data or {"abstract": {"summary": summary}}
+        )
         from django.core.files import File
         with open(pdf_path, "rb") as f:
             report.pdf_file.save(f"report_{report.id}.pdf", File(f))
