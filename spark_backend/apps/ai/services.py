@@ -294,6 +294,10 @@ class ReportGenerationService:
             }
 
         if config.include_classification:
+            hazards_sev3 = Hazard.objects.filter(severity=3).values(
+                "id", "category", "description", "latitude", "longitude",
+                "hub__name", "created_at",
+            )
             stats["classification"] = {
                 "hazards_by_category": {
                     c: Hazard.objects.filter(category=c).count()
@@ -303,18 +307,17 @@ class ReportGenerationService:
                     str(s): Hazard.objects.filter(severity=s).count()
                     for s in (1, 2, 3)
                 },
-                "high_severity_hazards": list(
-                    Hazard.objects.filter(severity=3).values(
-                        "id", "category", "description", "latitude", "longitude",
-                        "hub__name", "created_at",
-                    )[:20]
-                ),
-                "new_high_severity": list(
-                    new_hazards.filter(severity=3).values(
+                "high_severity_hazards": [
+                    {**h, "created_at": h["created_at"].isoformat() if h["created_at"] else None}
+                    for h in hazards_sev3[:20]
+                ],
+                "new_high_severity": [
+                    {**h, "created_at": h["created_at"].isoformat() if h["created_at"] else None}
+                    for h in new_hazards.filter(severity=3).values(
                         "id", "category", "description", "latitude", "longitude",
                         "hub__name", "created_at",
                     )[:10]
-                ),
+                ],
             }
 
         if config.include_triage:
