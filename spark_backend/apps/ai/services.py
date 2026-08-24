@@ -580,18 +580,20 @@ class ReportGenerationService:
 
         triage_entries = []
         for h in critical_list[:5]:
+            category = h.get("category") or "Unknown"
             triage_entries.append({
                 "severity": "CRITICAL",
-                "incident": h.get("category", "Unknown").replace("_", " ").title(),
+                "incident": category.replace("_", " ").title(),
                 "locations": h.get("hub__name") or f"({h.get('latitude')}, {h.get('longitude')})",
                 "count": 1,
                 "status": "Active",
                 "notes": h.get("description", "")[:100],
             })
         for c in assistance_list[:5]:
+            assistance = c.get("assistance_type") or "Assistance needed"
             triage_entries.append({
                 "severity": "HIGH",
-                "incident": c.get("assistance_type", "Assistance needed").replace("_", " ").title(),
+                "incident": assistance.replace("_", " ").title(),
                 "locations": c.get("hub") or "Unknown",
                 "count": c.get("people_count", 1),
                 "status": "Active",
