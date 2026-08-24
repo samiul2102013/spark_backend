@@ -282,7 +282,7 @@ class ReportGenerationService:
                 "new_hazards": new_hazards.count(),
                 "new_hazards_by_category": {
                     c: new_hazards.filter(category=c).count()
-                    for c in Hazard.CATEGORY_CHOICES
+                    for c, _ in Hazard.CATEGORY_CHOICES
                 },
                 "new_checkins_need_assistance": new_checkins.filter(
                     status="need_assistance"
@@ -297,7 +297,7 @@ class ReportGenerationService:
             stats["classification"] = {
                 "hazards_by_category": {
                     c: Hazard.objects.filter(category=c).count()
-                    for c in Hazard.CATEGORY_CHOICES
+                    for c, _ in Hazard.CATEGORY_CHOICES
                 },
                 "hazards_by_severity": {
                     str(s): Hazard.objects.filter(severity=s).count()
