@@ -137,7 +137,7 @@ class AuthService:
         )
         return _jwt_response(user)
 
-    # ── Social Login (Apple / Google — frontend handles Firebase Auth) ──
+    # ── Social Login / Register (Apple / Google — frontend handles Firebase Auth) ──
 
     def social_login(self, name: str, phone: str, provider: str) -> dict:
         phone = SMSAdapter._to_e164(phone)
@@ -149,14 +149,7 @@ class AuthService:
                 user.save(update_fields=["is_active"])
             return _jwt_response(user)
         except User.DoesNotExist:
-            raise AuthError("Account not found. Please register first.")
-
-    def social_register(self, name: str, phone: str, provider: str) -> dict:
-        phone = SMSAdapter._to_e164(phone)
-
-        existing = User.objects.filter(phone_number=phone).first()
-        if existing:
-            return _jwt_response(existing)
+            pass
 
         extra = {"role": "resident", "is_active": True}
         if provider == "apple":

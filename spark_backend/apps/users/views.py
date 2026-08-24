@@ -554,9 +554,10 @@ class SocialLoginView(APIView):
 
     @extend_schema(
         tags=["mobile", "Auth"],
-        summary="Social login via phone (Apple / Google)",
-        description="Login with phone number after frontend Firebase Auth. "
-        "If account doesn't exist, returns an error — frontend should redirect to /auth/social/register/.",
+        summary="Social login / register via phone (Apple / Google)",
+        description="Single endpoint for Apple/Google sign-in. Frontend handles Firebase Auth, "
+        "then sends name, phone, and provider. If the user exists, logs in. If not, "
+        "creates a new account and returns a JWT.",
         request=SocialLoginSerializer,
         responses={200: None},
         examples=[
@@ -578,41 +579,6 @@ class SocialLoginView(APIView):
         try:
             service = AuthService()
             result = service.social_login(**serializer.validated_data)
-            return success_response(result)
-        except Exception as e:
-            return error_response(str(e), http_status=status.HTTP_400_BAD_REQUEST)
-
-
-class SocialRegisterView(APIView):
-    authentication_classes = []
-    permission_classes = [AllowAny]
-
-    @extend_schema(
-        tags=["mobile", "Auth"],
-        summary="Social register via phone (Apple / Google)",
-        description="Register a new account with phone number after frontend Firebase Auth. "
-        "If the account already exists, logs in and returns JWT.",
-        request=SocialLoginSerializer,
-        responses={200: None},
-        examples=[
-            OpenApiExample(
-                "Social Register Example",
-                value={
-                    "name": "John Doe",
-                    "phone": "01856669533",
-                    "provider": "google",
-                },
-                request_only=True,
-            ),
-        ],
-    )
-    def post(self, request):
-        serializer = SocialLoginSerializer(data=request.data)
-        if not serializer.is_valid():
-            return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
-        try:
-            service = AuthService()
-            result = service.social_register(**serializer.validated_data)
             return success_response(result)
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_400_BAD_REQUEST)

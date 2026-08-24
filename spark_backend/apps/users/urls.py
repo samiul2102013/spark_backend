@@ -23,7 +23,6 @@ urlpatterns = [
     path("auth/apple/login/", views.AppleLoginView.as_view(), name="apple-login"),
     # Social Login / Register (Apple / Google — frontend handles Firebase Auth)
     path("auth/social/login/", views.SocialLoginView.as_view(), name="social-login"),
-    path("auth/social/register/", views.SocialRegisterView.as_view(), name="social-register"),
     # Offline Token
     path("auth/offline-token/", views.OfflineTokenView.as_view(), name="auth-offline-token"),
     # Government Invite
