@@ -141,7 +141,6 @@ class AuthService:
 
     def social_login(self, name: str, phone: str, provider: str) -> dict:
         phone = SMSAdapter._to_e164(phone)
-        provider_field = "apple_user_id" if provider == "apple" else None
 
         try:
             user = User.objects.get(phone_number=phone)
@@ -150,7 +149,14 @@ class AuthService:
                 user.save(update_fields=["is_active"])
             return _jwt_response(user)
         except User.DoesNotExist:
-            pass
+            raise AuthError("Account not found. Please register first.")
+
+    def social_register(self, name: str, phone: str, provider: str) -> dict:
+        phone = SMSAdapter._to_e164(phone)
+
+        existing = User.objects.filter(phone_number=phone).first()
+        if existing:
+            return _jwt_response(existing)
 
         extra = {"role": "resident", "is_active": True}
         if provider == "apple":
