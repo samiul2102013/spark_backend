@@ -20,11 +20,8 @@ class TestToE164WithBangladeshCountryCode(SimpleTestCase):
     def test_e164_without_plus_bangladeshi_number(self):
         assert SMSAdapter._to_e164("8801521584710") == "+8801521584710"
 
-    def test_us_eleven_digit_number(self):
-        assert SMSAdapter._to_e164("12125551234") == "+12125551234"
-
-    def test_leading_001_prefix(self):
-        assert SMSAdapter._to_e164("0012125551234") == "+12125551234"
+    def test_bangladeshi_eleven_digit_without_leading_zero(self):
+        assert SMSAdapter._to_e164("18763456789") == "+88018763456789"
 
 
 @override_settings(PHONE_COUNTRY_CODE="+1")

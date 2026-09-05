@@ -52,6 +52,12 @@ class TestResolveUserByPhone(TestCase):
         assert user is not None
         assert user.phone_number == "01521584710"
 
+    def test_finds_legacy_plus1_stored_user_given_raw_input(self):
+        _create("+118763456789")
+        user = resolve_user_by_phone("18763456789")
+        assert user is not None
+        assert user.phone_number == "+118763456789"
+
     def test_returns_none_when_missing(self):
         assert resolve_user_by_phone("01999999999") is None
 

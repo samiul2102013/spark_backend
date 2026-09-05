@@ -15,11 +15,12 @@ class SMSAdapter:
         phone = phone.strip()
         if phone.startswith("+"):
             return phone
-        if phone.startswith("001"):
-            return f"+{phone[2:]}"
-        if phone.startswith("1") and len(phone) == 11:
-            return f"+{phone}"
         country_code = getattr(settings, "PHONE_COUNTRY_CODE", "+1")
+        if country_code == "+1":
+            if phone.startswith("001"):
+                return f"+{phone[2:]}"
+            if phone.startswith("1") and len(phone) == 11:
+                return f"+{phone}"
         if phone.startswith("0"):
             phone = phone[1:]
         if phone.startswith(country_code.lstrip("+")):

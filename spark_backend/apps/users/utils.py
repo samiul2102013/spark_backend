@@ -32,6 +32,10 @@ def resolve_user_by_phone(phone: str):
             candidates.append(local)
             if local.startswith("1") and not local.startswith("0"):
                 candidates.append(f"0{local}")
+    else:
+        country_digits = getattr(settings, "PHONE_COUNTRY_CODE", "+1").lstrip("+")
+        if country_digits != "1" and stripped.startswith("1") and len(stripped) == 11:
+            candidates.append(f"+1{stripped}")
     for candidate in dict.fromkeys(candidates):
         try:
             return User.objects.get(phone_number=candidate)
