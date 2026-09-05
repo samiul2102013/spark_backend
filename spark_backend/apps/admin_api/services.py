@@ -7,7 +7,9 @@ from apps.bookings.models import Booking
 from apps.comms.models import CheckIn, InboundMessage
 from apps.hazards.models import Hazard
 from apps.hubs.models import Hub
+from apps.users.adapters import SMSAdapter
 from apps.users.models import User
+from apps.users.utils import resolve_user_by_phone
 
 
 class AdminOverviewService:
@@ -135,7 +137,7 @@ class AdminUserService:
 
     def invite_user(self, data):
         phone = data.get("phone_number")
-        user = User.objects.filter(phone_number=phone).first()
+        user = resolve_user_by_phone(phone) if phone else None
         if user:
             user.full_name = data.get("full_name", user.full_name)
             user.role = data.get("role", user.role)
@@ -144,6 +146,7 @@ class AdminUserService:
             user.save()
             return user
 
+        phone = SMSAdapter._to_e164(phone)
         user = User.objects.create_user(
             phone_number=phone,
             full_name=data["full_name"],

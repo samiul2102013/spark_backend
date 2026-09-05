@@ -3,9 +3,41 @@ import random
 from typing import Optional, Tuple
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 
 from apps.hubs.models import Hub
+
+from .adapters import SMSAdapter
+
+User = get_user_model()
+
+
+def resolve_user_by_phone(phone: str):
+    """
+    Find a user by phone number, accepting both E.164 (e.g. "+8801856669533")
+    and raw formats (e.g. "01856669533") in either direction. Tries the
+    normalized E.164 form, the raw input, and the "local" form derived from an
+    E.164 input, so legacy/admin-created rows stored without a country code
+    still resolve. Returns the User or None.
+    """
+    stripped = phone.strip()
+    normalized = SMSAdapter._to_e164(stripped)
+    candidates = [normalized, stripped]
+    if stripped.startswith("+"):
+        digits = stripped.lstrip("+")
+        country_digits = getattr(settings, "PHONE_COUNTRY_CODE", "+1").lstrip("+")
+        if digits.startswith(country_digits):
+            local = digits[len(country_digits):]
+            candidates.append(local)
+            if local.startswith("1") and not local.startswith("0"):
+                candidates.append(f"0{local}")
+    for candidate in dict.fromkeys(candidates):
+        try:
+            return User.objects.get(phone_number=candidate)
+        except User.DoesNotExist:
+            continue
+    return None
 
 
 def generate_otp(phone: str) -> str:

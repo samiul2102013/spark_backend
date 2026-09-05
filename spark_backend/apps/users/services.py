@@ -13,7 +13,7 @@ from core.exceptions import SparkBaseError
 
 from .adapters import EmailAdapter, SMSAdapter
 from .authentication import authenticate
-from .utils import assign_hubs, generate_otp, verify_otp
+from .utils import assign_hubs, generate_otp, resolve_user_by_phone, verify_otp
 
 User = get_user_model()
 
@@ -38,9 +38,10 @@ class AuthService:
         household_size: Optional[int] = None,
         medical_needs: str = "",
     ) -> dict:
-        phone = SMSAdapter._to_e164(phone)
-        if User.objects.filter(phone_number=phone).exists():
+        if resolve_user_by_phone(phone) is not None:
             raise AuthError("Phone number already registered.")
+
+        phone = SMSAdapter._to_e164(phone)
 
         primary_hub, secondary_hub = assign_hubs(latitude, longitude)
 
@@ -61,22 +62,20 @@ class AuthService:
         return {"user_id": user.phone_number}
 
     def send_otp(self, phone: str) -> dict:
-        phone = SMSAdapter._to_e164(phone)
-        try:
-            User.objects.get(phone_number=phone, role__in=("resident", "coordinator"))
-        except User.DoesNotExist:
+        normalized = SMSAdapter._to_e164(phone)
+        user = resolve_user_by_phone(phone)
+        if user is None or user.role not in ("resident", "coordinator"):
             raise AuthError("No active resident or coordinator found with this number.")
-        code = generate_otp(phone)
-        SMSAdapter.send_otp(phone, code)
+        code = generate_otp(normalized)
+        SMSAdapter.send_otp(normalized, code)
         return {"message": "OTP sent"}
 
     def verify_otp(self, phone: str, code: str) -> dict:
-        phone = SMSAdapter._to_e164(phone)
-        if not verify_otp(phone, code):
+        normalized = SMSAdapter._to_e164(phone)
+        if not verify_otp(normalized, code):
             raise AuthError("Invalid or expired OTP.")
-        try:
-            user = User.objects.get(phone_number=phone)
-        except User.DoesNotExist:
+        user = resolve_user_by_phone(phone)
+        if user is None:
             raise AuthError("User not found.")
         if not user.is_active:
             user.is_active = True
@@ -140,17 +139,14 @@ class AuthService:
     # ── Social Login / Register (Apple / Google — frontend handles Firebase Auth) ──
 
     def social_login(self, name: str, phone: str, provider: str) -> dict:
-        phone = SMSAdapter._to_e164(phone)
-
-        try:
-            user = User.objects.get(phone_number=phone)
+        user = resolve_user_by_phone(phone)
+        if user is not None:
             if not user.is_active:
                 user.is_active = True
                 user.save(update_fields=["is_active"])
             return _jwt_response(user)
-        except User.DoesNotExist:
-            pass
 
+        phone = SMSAdapter._to_e164(phone)
         extra = {"role": "resident", "is_active": True}
         if provider == "apple":
             extra["apple_user_id"] = phone
@@ -223,13 +219,16 @@ class AuthService:
         try:
             if "@" in identifier:
                 user = User.objects.get(email=identifier)
+                code_key = identifier
             else:
-                identifier = SMSAdapter._to_e164(identifier)
-                user = User.objects.get(phone_number=identifier)
+                user = resolve_user_by_phone(identifier)
+                if user is None:
+                    raise User.DoesNotExist
+                code_key = SMSAdapter._to_e164(identifier)
         except User.DoesNotExist:
             raise AuthError("User not found.")
 
-        code = generate_otp(identifier)
+        code = generate_otp(code_key)
         if user.email:
             EmailAdapter.send_reset_code(user.email, code)
         else:
@@ -237,15 +236,19 @@ class AuthService:
         return {"message": "Reset code sent."}
 
     def verify_reset_otp(self, identifier: str, code: str) -> dict:
-        if "@" not in identifier:
-            identifier = SMSAdapter._to_e164(identifier)
-        if not verify_otp(identifier, code):
+        if "@" in identifier:
+            code_key = identifier
+        else:
+            code_key = SMSAdapter._to_e164(identifier)
+        if not verify_otp(code_key, code):
             raise AuthError("Invalid or expired code.")
         try:
             if "@" in identifier:
                 user = User.objects.get(email=identifier)
             else:
-                user = User.objects.get(phone_number=identifier)
+                user = resolve_user_by_phone(identifier)
+                if user is None:
+                    raise User.DoesNotExist
         except User.DoesNotExist:
             raise AuthError("User not found.")
         return {
