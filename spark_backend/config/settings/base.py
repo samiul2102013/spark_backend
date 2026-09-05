@@ -190,6 +190,9 @@ FRONTEND_URL = env.str("FRONTEND_URL", default="http://localhost:3000")
 # OTP Mock Mode (set True to use "000000" for all codes — dev only)
 OTP_MOCK_MODE = env.bool("OTP_MOCK_MODE", default=False)
 
+# Default country code applied when a bare (non-E.164) phone number is supplied
+PHONE_COUNTRY_CODE = env.str("PHONE_COUNTRY_CODE", default="+1")
+
 # Demo phone bypass — this phone + OTP always passes verification (no Twilio)
 DEMO_PHONE_NUMBER = env.str("DEMO_PHONE_NUMBER", default="+10000000000")
 DEMO_OTP_CODE = env.str("DEMO_OTP_CODE", default="000000")
