@@ -71,12 +71,12 @@ class AuthService:
         return {"message": "OTP sent"}
 
     def verify_otp(self, phone: str, code: str) -> dict:
-        normalized = SMSAdapter._to_e164(phone)
-        if not verify_otp(normalized, code):
-            raise AuthError("Invalid or expired OTP.")
         user = resolve_user_by_phone(phone)
         if user is None:
             raise AuthError("User not found.")
+        code_key = user.phone_number
+        if not verify_otp(code_key, code):
+            raise AuthError("Invalid or expired OTP.")
         if not user.is_active:
             user.is_active = True
             user.save(update_fields=["is_active"])
@@ -269,6 +269,22 @@ class AuthService:
         user.set_password(new_password)
         user.save(update_fields=["password"])
         return {"message": "Password reset successfully."}
+
+    def reset_password_with_otp(self, identifier: str, code: str, new_password: str) -> dict:
+        self.verify_reset_otp(identifier, code)
+        if "@" in identifier:
+            user = User.objects.get(email=identifier)
+        else:
+            user = resolve_user_by_phone(identifier)
+            if user is None:
+                raise AuthError("User not found.")
+        user.set_password(new_password)
+        user.save(update_fields=["password"])
+        return {
+            "message": "Password reset successfully.",
+            "access": str(RefreshToken.for_user(user).access_token),
+            "refresh": str(RefreshToken.for_user(user)),
+        }
 
     # ── Profile ────────────────────────────────────────────────────
 

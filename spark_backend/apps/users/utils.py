@@ -75,6 +75,7 @@ def verify_otp(phone: str, code: str) -> bool:
             or phone_digits == demo_digits
             or demo_digits.endswith(phone_digits)
             or phone_digits.endswith(demo_digits)
+            or (len(phone_digits) >= 10 and len(demo_digits) >= 10 and phone_digits[-10:] == demo_digits[-10:])
         ):
             return True
 

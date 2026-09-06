@@ -64,15 +64,34 @@ class AcceptInviteSerializer(serializers.Serializer):
 
 
 class ForgotPasswordSerializer(serializers.Serializer):
-    identifier = serializers.CharField(max_length=255)
+    identifier = serializers.CharField(max_length=255, required=False)
+    phone = serializers.CharField(max_length=255, required=False)
+
+    def validate(self, attrs):
+        if not attrs.get("identifier") and not attrs.get("phone"):
+            raise serializers.ValidationError("Either 'identifier' or 'phone' is required.")
+        if not attrs.get("identifier") and attrs.get("phone"):
+            attrs["identifier"] = attrs.pop("phone")
+        return attrs
 
 
 class VerifyResetOTPSerializer(serializers.Serializer):
-    identifier = serializers.CharField(max_length=255)
+    identifier = serializers.CharField(max_length=255, required=False)
+    phone = serializers.CharField(max_length=255, required=False)
     code = serializers.CharField(max_length=6)
+
+    def validate(self, attrs):
+        if not attrs.get("identifier") and not attrs.get("phone"):
+            raise serializers.ValidationError("Either 'identifier' or 'phone' is required.")
+        if not attrs.get("identifier") and attrs.get("phone"):
+            attrs["identifier"] = attrs.pop("phone")
+        return attrs
 
 
 class ResetPasswordSerializer(serializers.Serializer):
+    identifier = serializers.CharField(max_length=255, required=False)
+    phone = serializers.CharField(max_length=255, required=False)
+    code = serializers.CharField(max_length=6, required=False)
     new_password = serializers.CharField(min_length=8)
     confirm_password = serializers.CharField(min_length=8)
 
@@ -80,6 +99,8 @@ class ResetPasswordSerializer(serializers.Serializer):
         if attrs["new_password"] != attrs["confirm_password"]:
             raise serializers.ValidationError("Passwords do not match.")
         attrs.pop("confirm_password")
+        if not attrs.get("identifier") and attrs.get("phone"):
+            attrs["identifier"] = attrs.pop("phone")
         return attrs
 
 

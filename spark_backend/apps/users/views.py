@@ -2,9 +2,22 @@ from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from core.responses import created_response, error_response, success_response
+
+
+class OptionalJWTAuthentication(JWTAuthentication):
+    """
+    Authenticate if valid Bearer token provided; if invalid or expired,
+    silently return None instead of failing with 401 token_not_valid.
+    """
+    def authenticate(self, request):
+        try:
+            return super().authenticate(request)
+        except Exception:
+            return None
 
 from .blacklist import blacklist_refresh_token, is_token_blacklisted
 from .serializers import (
@@ -66,6 +79,7 @@ class RegisterView(APIView):
 
 class OTPSendView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     @extend_schema(
         tags=["mobile", "admin", "Auth"],
@@ -95,6 +109,7 @@ class OTPSendView(APIView):
 
 class OTPVerifyView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     @extend_schema(
         tags=["mobile", "admin", "Auth"],
@@ -124,6 +139,7 @@ class OTPVerifyView(APIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     @extend_schema(
         tags=["mobile", "dashboard", "admin", "Auth"],
@@ -308,6 +324,7 @@ class InviteAcceptView(APIView):
 
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     @extend_schema(
         tags=["mobile", "dashboard", "admin", "Auth"],
@@ -337,6 +354,7 @@ class ForgotPasswordView(APIView):
 
 class VerifyResetOTPView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     @extend_schema(
         tags=["mobile", "dashboard", "admin", "Auth"],
@@ -347,7 +365,7 @@ class VerifyResetOTPView(APIView):
         examples=[
             OpenApiExample(
                 "Verify Reset OTP Example",
-                value={"identifier": "gov@example.com", "code": "123456"},
+                value={"identifier": "01521584710", "code": "000000"},
                 request_only=True,
             ),
         ],
@@ -365,17 +383,28 @@ class VerifyResetOTPView(APIView):
 
 
 class ResetPasswordView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
+    authentication_classes = [OptionalJWTAuthentication]
 
     @extend_schema(
         tags=["mobile", "dashboard", "admin", "Auth"],
         summary="Reset password",
-        description="Set a new password for the authenticated user. No old password required.",
+        description="Set a new password. Can be used either with an Authorization Bearer token OR directly without auth headers by passing identifier and code.",
         request=ResetPasswordSerializer,
         responses={200: None},
         examples=[
             OpenApiExample(
-                "Reset Password Example",
+                "Reset Password with OTP Example (No Auth Header)",
+                value={
+                    "identifier": "01521584710",
+                    "code": "000000",
+                    "new_password": "newSecurePass123",
+                    "confirm_password": "newSecurePass123",
+                },
+                request_only=True,
+            ),
+            OpenApiExample(
+                "Reset Password with Auth Header Example",
                 value={
                     "new_password": "newSecurePass123",
                     "confirm_password": "newSecurePass123",
@@ -388,12 +417,28 @@ class ResetPasswordView(APIView):
         serializer = ResetPasswordSerializer(data=request.data)
         if not serializer.is_valid():
             return error_response(serializer.errors, http_status=status.HTTP_400_BAD_REQUEST)
+        
+        identifier = serializer.validated_data.get("identifier")
+        code = serializer.validated_data.get("code")
+        new_password = serializer.validated_data["new_password"]
+
         try:
             service = AuthService()
-            result = service.reset_password(
-                user=request.user, new_password=serializer.validated_data["new_password"]
-            )
-            return success_response(result)
+            if identifier and code:
+                result = service.reset_password_with_otp(
+                    identifier=identifier, code=code, new_password=new_password
+                )
+                return success_response(result)
+            elif request.user and request.user.is_authenticated:
+                result = service.reset_password(
+                    user=request.user, new_password=new_password
+                )
+                return success_response(result)
+            else:
+                return error_response(
+                    "Either valid Authorization header or both 'identifier' and 'code' are required.",
+                    http_status=status.HTTP_400_BAD_REQUEST,
+                )
         except Exception as e:
             return error_response(str(e), http_status=status.HTTP_400_BAD_REQUEST)
 
