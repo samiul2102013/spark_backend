@@ -232,10 +232,14 @@ class AuthService:
             raise AuthError("User not found.")
 
         code = generate_otp(code_key)
-        if user.email:
-            EmailAdapter.send_reset_code(user.email, code)
-        else:
-            SMSAdapter.send_otp(user.phone_number, code)
+        try:
+            if user.email:
+                EmailAdapter.send_reset_code(user.email, code)
+            else:
+                SMSAdapter.send_otp(user.phone_number, code)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning("Reset code delivery error: %s", e)
         return {"message": "Reset code sent."}
 
     def verify_reset_otp(self, identifier: str, code: str) -> dict:

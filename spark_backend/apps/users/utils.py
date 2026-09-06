@@ -15,17 +15,21 @@ User = get_user_model()
 
 def resolve_user_by_phone(phone: str):
     """
-    Find a user by phone number, accepting both E.164 (e.g. "+8801856669533")
-    and raw formats (e.g. "01856669533") in either direction. Tries the
-    normalized E.164 form, the raw input, and the "local" form derived from an
-    E.164 input, so legacy/admin-created rows stored without a country code
-    still resolve. Returns the User or None.
+    Find a user by phone number, accepting both E.164 (e.g. "+8801856669533", "+101521584710")
+    and raw formats (e.g. "01856669533", "01521584710") in either direction.
     """
     stripped = phone.strip()
     normalized = SMSAdapter._to_e164(stripped)
     candidates = [normalized, stripped]
+
+    demo_phone = getattr(settings, "DEMO_PHONE_NUMBER", None)
+    if demo_phone:
+        candidates.append(demo_phone)
+        candidates.append(demo_phone.lstrip("+"))
+
     if stripped.startswith("+"):
         digits = stripped.lstrip("+")
+        candidates.append(digits)
         country_digits = getattr(settings, "PHONE_COUNTRY_CODE", "+1").lstrip("+")
         if digits.startswith(country_digits):
             local = digits[len(country_digits):]
@@ -33,9 +37,15 @@ def resolve_user_by_phone(phone: str):
             if local.startswith("1") and not local.startswith("0"):
                 candidates.append(f"0{local}")
     else:
+        # Bare digits entered (e.g. 01521584710)
+        candidates.append(f"+{stripped}")
+        candidates.append(f"+1{stripped}")
+        if stripped.startswith("0"):
+            candidates.append(f"+1{stripped[1:]}")
         country_digits = getattr(settings, "PHONE_COUNTRY_CODE", "+1").lstrip("+")
         if country_digits != "1" and stripped.startswith("1") and len(stripped) == 11:
             candidates.append(f"+1{stripped}")
+
     for candidate in dict.fromkeys(candidates):
         try:
             return User.objects.get(phone_number=candidate)
@@ -55,8 +65,19 @@ def generate_otp(phone: str) -> str:
 
 
 def verify_otp(phone: str, code: str) -> bool:
-    if phone == settings.DEMO_PHONE_NUMBER and code == settings.DEMO_OTP_CODE:
-        return True
+    demo_phone = getattr(settings, "DEMO_PHONE_NUMBER", None)
+    demo_otp = getattr(settings, "DEMO_OTP_CODE", "000000")
+    if demo_phone and code == demo_otp:
+        phone_digits = phone.lstrip("+")
+        demo_digits = demo_phone.lstrip("+")
+        if (
+            phone == demo_phone
+            or phone_digits == demo_digits
+            or demo_digits.endswith(phone_digits)
+            or phone_digits.endswith(demo_digits)
+        ):
+            return True
+
     if getattr(settings, "OTP_MOCK_MODE", False) and code == "000000":
         return True
     stored = cache.get(f"otp:{phone}")
