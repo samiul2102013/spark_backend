@@ -224,7 +224,10 @@ class AuthService:
                 user = resolve_user_by_phone(identifier)
                 if user is None:
                     raise User.DoesNotExist
-                code_key = SMSAdapter._to_e164(identifier)
+                # Use the canonical stored phone as the cache key so that
+                # verify_reset_otp (which also resolves the same way) hits the
+                # same cache slot — regardless of how the identifier was typed.
+                code_key = user.phone_number
         except User.DoesNotExist:
             raise AuthError("User not found.")
 
@@ -238,19 +241,21 @@ class AuthService:
     def verify_reset_otp(self, identifier: str, code: str) -> dict:
         if "@" in identifier:
             code_key = identifier
+            try:
+                user = User.objects.get(email=identifier)
+            except User.DoesNotExist:
+                raise AuthError("User not found.")
         else:
-            code_key = SMSAdapter._to_e164(identifier)
+            user = resolve_user_by_phone(identifier)
+            if user is None:
+                raise AuthError("User not found.")
+            # Use the stored canonical phone as the cache key — matches what
+            # forgot_password stored (user.phone_number) rather than the
+            # raw-input-normalized form which can differ when PHONE_COUNTRY_CODE
+            # doesn't match the stored number's country prefix.
+            code_key = user.phone_number
         if not verify_otp(code_key, code):
             raise AuthError("Invalid or expired code.")
-        try:
-            if "@" in identifier:
-                user = User.objects.get(email=identifier)
-            else:
-                user = resolve_user_by_phone(identifier)
-                if user is None:
-                    raise User.DoesNotExist
-        except User.DoesNotExist:
-            raise AuthError("User not found.")
         return {
             "message": "OTP verified.",
             "access": str(RefreshToken.for_user(user).access_token),
